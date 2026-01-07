@@ -21,6 +21,8 @@ export class DashboardComponent {
     leads: false,
     customers: false,
     reports: false,
+    segregation: false,
+    performance: false,
     connector: false,
     tools: false
   };
@@ -33,7 +35,7 @@ export class DashboardComponent {
   // Check if user has admin rights
   get isAdminUser(): boolean {
     const adminRights = localStorage.getItem('isadminrights');
-   // console.log(adminRights);
+    // console.log(adminRights);
     return adminRights === 'true';
   }
 
@@ -43,13 +45,13 @@ export class DashboardComponent {
   }
 
   constructor(
-    private auth: AuthService, 
+    private auth: AuthService,
     private router: Router,
     private themeService: ThemeService
   ) {
     this.availableThemes = this.themeService.themes;
     this.currentTheme = this.themeService.getCurrentTheme();
-    
+
     // Subscribe to theme changes
     this.themeService.currentTheme$.subscribe(theme => {
       this.currentTheme = theme;

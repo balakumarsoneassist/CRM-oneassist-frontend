@@ -1,0 +1,321 @@
+<div class="target-achievement-container">
+  <div class="header-section">
+    <div class="header-top">
+      <h2>{{ isAdmin ? 'Target' : 'Targets and Achievements' }}</h2>
+      <div class="header-controls">
+        <button class="assign-btn" *ngIf="isAdmin" (click)="openAssignTargetModal()">
+          👤 Assign Target
+        </button>
+        <span class="view-only-badge" *ngIf="!isAdmin"> 📖 View Only </span>
+      </div>
+    </div>
+
+    <!-- Assign Target Modal -->
+    <div class="modal-overlay" *ngIf="isAssignModalOpen">
+      <div class="modal-content">
+        <h3>Assign Targets to Employee</h3>
+
+        <!-- Step 1: List of Unassigned Employees (Quick Pick) -->
+        <div class="unassigned-selection-list" *ngIf="!searchedEmployee && unassignedEmployees.length > 0">
+          <h4>Select Employee to Assign</h4>
+          <div class="simple-list">
+            <div class="simple-list-item" *ngFor="let emp of unassignedEmployees"
+              (click)="selectEmployeeForAssignment(emp)">
+              <div class="emp-basic">
+                <span class="name">{{ emp.name }}</span>
+                <span class="role">{{ emp.designation }}</span>
+              </div>
+              <button class="select-btn">Select</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="employee-details-section" *ngIf="searchedEmployee">
+          <div class="info-card">
+            <div class="info-row">
+              <span class="label">Name:</span>
+              <span class="value">{{ searchedEmployee.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Designation:</span>
+              <span class="value">{{ searchedEmployee.designation }}</span>
+            </div>
+          </div>
+
+          <div class="target-form-grid">
+            <div class="form-group">
+              <label>Logins / Files</label>
+              <input type="number" [(ngModel)]="editModel.logins" />
+            </div>
+
+            <div class="form-group">
+              <label>Sanctions</label>
+              <input type="number" [(ngModel)]="editModel.sanctions" />
+            </div>
+
+            <div class="form-group">
+              <label>Converted Leads</label>
+              <input type="number" [(ngModel)]="editModel.converted_leads" />
+            </div>
+
+            <div class="form-group">
+              <label>Disbursement Volume (₹)</label>
+              <input type="number" [(ngModel)]="editModel.disbursement_volume" />
+            </div>
+
+            <div class="form-group">
+              <label>Attended Calls (Target)</label>
+              <input type="number" [(ngModel)]="editModel.attended_calls_target" />
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button class="cancel-btn" (click)="closeAssignModal()">
+              Cancel
+            </button>
+            <button class="save-btn" (click)="saveAssignedTargets()" [disabled]="isSearching">
+              {{ isSearching ? "Saving..." : "Save & Assign" }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Show close if no employee searched yet to allow exit -->
+        <div class="modal-actions" *ngIf="!searchedEmployee">
+          <button class="cancel-btn" (click)="closeAssignModal()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Modal Overlay (Legacy/Self) -->
+    <div class="modal-overlay" *ngIf="isEditing">
+      <div class="modal-content">
+        <h3>Update My Metrics</h3>
+        <p class="modal-info" *ngIf="!isAdmin">
+          You do not have permission to edit targets. Please contact an
+          administrator.
+        </p>
+
+        <div class="form-group">
+          <label>Logins / Files</label>
+          <input type="number" [(ngModel)]="editModel.logins" />
+        </div>
+
+        <div class="form-group">
+          <label>Sanctions</label>
+          <input type="number" [(ngModel)]="editModel.sanctions" />
+        </div>
+
+        <div class="form-group">
+          <label>Disbursement Volume (₹)</label>
+          <input type="number" [(ngModel)]="editModel.disbursement_volume" />
+        </div>
+
+        <div class="form-group">
+          <label>Attended Calls (Actual)</label>
+          <input type="number" [(ngModel)]="editModel.attended_calls" />
+        </div>
+
+        <div class="form-group">
+          <label>Attended Calls (Target)</label>
+          <input type="number" [(ngModel)]="editModel.attended_calls_target" />
+        </div>
+
+        <div class="form-group">
+          <label>Converted Leads</label>
+          <input type="number" [(ngModel)]="editModel.converted_leads" />
+        </div>
+
+        <div class="modal-actions">
+          <button class="cancel-btn" (click)="closeEditModal()">Cancel</button>
+          <button class="save-btn" (click)="saveMetrics()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+    <!-- Premium Dashboard: 5 Specific Metrics (EMPLOYEE VIEW ONLY) -->
+    <div class="premium-dashboard" *ngIf="!isAdmin">
+      <!-- Row 1: High-Level Stats (Logins, Sanctions, Converted) -->
+      <div class="stats-row-1">
+        <!-- Card 1: Logins / Files -->
+        <div class="stat-card blue-accent">
+          <div class="card-icon-wrapper">
+            <span class="card-icon">📁</span>
+          </div>
+          <div class="card-info">
+            <span class="card-label">Logins / Files</span>
+            <h3 class="card-value">{{ loginsActual }} / {{ loginsTarget }}</h3>
+          </div>
+          <div class="mini-chart">
+            <!-- Simple CSS bar representation -->
+            <div class="bar-pill" style="height: 40%"></div>
+            <div class="bar-pill" style="height: 60%"></div>
+            <div class="bar-pill active" style="height: 80%"></div>
+          </div>
+        </div>
+
+        <!-- Card 2: Sanctions -->
+        <div class="stat-card green-accent">
+          <div class="card-icon-wrapper">
+            <span class="card-icon">✅</span>
+          </div>
+          <div class="card-info">
+            <span class="card-label">Sanctions</span>
+            <h3 class="card-value">
+              {{ sanctionsActual }} / {{ sanctionsTarget }}
+            </h3>
+          </div>
+          <div class="growth-badge">
+            <span>+12%</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Converted Leads -->
+        <div class="stat-card purple-accent">
+          <div class="card-icon-wrapper">
+            <span class="card-icon">🌪️</span>
+          </div>
+          <div class="card-info">
+            <span class="card-label">Converted Leads</span>
+            <h3 class="card-value">
+              {{ convertedActual }} / {{ convertedTarget }}
+            </h3>
+          </div>
+          <div class="conversion-rate">
+            <span>14% Conv.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Detailed Performance (Disbursement, Calls) -->
+      <div class="stats-row-2">
+        <!-- Card 4: Disbursement Volume -->
+        <div class="detail-card">
+          <div class="detail-header">
+            <div class="header-left">
+              <span class="detail-icon">💼</span>
+              <span class="detail-title">Disbursement </span>
+            </div>
+            <div class="header-right">
+              <span class="detail-value">{{
+                disbursementActual | currency : "INR" : "symbol" : "1.0-0"
+                }}
+                /
+                {{
+                disbursementTarget | currency : "INR" : "symbol" : "1.0-0"
+                }}</span>
+            </div>
+          </div>
+          <div class="detail-body">
+            <div class="progress-container-lg">
+              <div class="progress-bar-gradient" [style.width.%]="
+                  (disbursementActual / disbursementTarget) * 100 || 0
+                "></div>
+            </div>
+            <div class="progress-meta">
+              <span>Current</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Attended Calls -->
+        <div class="detail-card">
+          <div class="detail-header">
+            <div class="header-left">
+              <span class="detail-icon">📞</span>
+              <span class="detail-title">Attended Calls</span>
+            </div>
+            <div class="header-right">
+              <span class="detail-value">{{ attendedCalls }} / {{ attendedCallsTarget }}</span>
+            </div>
+          </div>
+          <div class="detail-body">
+            <div class="calls-visual">
+              <!-- Simple circular indicator concept -->
+              <div class="circle-gauge">
+                <div class="gauge-fill" [style.transform]="
+                    'rotate(' +
+                    (attendedCalls / attendedCallsTarget) * 180 +
+                    'deg)'
+                  "></div>
+                <div class="gauge-center">
+                  <span>{{
+                    (attendedCalls / attendedCallsTarget) * 100
+                    | number : "1.0-0"
+                    }}%</span>
+                </div>
+              </div>
+            </div>
+            <div class="progress-meta centered-meta">
+              <span>Monthly Call Target</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN VIEW: Assignment Status Lists -->
+    <div class="admin-dashboard-lists" *ngIf="isAdmin">
+      <div class="admin-actions-row">
+        <!-- Additional Edit Button as requested (Though list edit handles it, adding explicit button for valid redundancy/instruction) -->
+        <!-- Note: Assign Target is already in header-top, keeping Edit Target here or adjacent? -->
+        <!-- Integrating to layout naturally -->
+      </div>
+
+      <div class="lists-container">
+        <!-- Card 1: Assigned Targets (Full Width now) -->
+        <div class="list-card assigned-card" style="grid-column: span 2">
+          <div class="list-header">
+            <h3>✅ Assigned Targets ({{ assignedEmployees.length }})</h3>
+          </div>
+          <div class="list-body">
+            <div class="list-item" *ngFor="let emp of assignedEmployees">
+              <div class="emp-info">
+                <span class="emp-name">{{ emp.name }}</span>
+                <span class="emp-role">{{ emp.designation }}</span>
+              </div>
+              <div class="emp-stats-brief">
+                <span title="Logins">📁 {{ emp.logins }}</span>
+                <span title="Sanctions">✅ {{ emp.sanctions }}</span>
+                <span title="Converted Leads">🔃 {{ emp.converted_leads }}</span>
+                <span title="Disbursement">💰
+                  {{
+                  emp.disbursement_volume || 0
+                  | currency : "INR" : "symbol" : "1.0-0"
+                  }}</span>
+                <span title="Call Target">📞 {{ emp.attended_calls || 0 }} /
+                  {{ emp.attended_calls_target || 0 }}</span>
+              </div>
+              <button class="icon-btn" (click)="editTargetForEmployee(emp.id)" title="Edit Target">
+                ✏️
+              </button>
+            </div>
+            <div class="empty-msg" *ngIf="assignedEmployees.length === 0">
+              No employees assigned.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table Section (Always Visible for All) -->
+  <div *ngIf="!loading && !error" class="table-wrapper">
+    <div class="table-container" *ngIf="paginatedData.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th *ngFor="let col of displayColumns">{{ col.label }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of paginatedData">
+            <td *ngFor="let col of displayColumns">
+              {{ getColumnValue(row, col.key) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>  

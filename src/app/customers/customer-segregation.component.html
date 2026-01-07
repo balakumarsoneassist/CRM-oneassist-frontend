@@ -1,0 +1,211 @@
+<div class="customer-list-container">
+  <div class="header-section">
+    <!-- Top row: Title + Refresh -->
+    <div class="header-top">
+      <h2>Customer Segregation</h2>
+      <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
+        {{ loading ? "Loading..." : "Refresh" }}
+      </button>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="header-bottom">
+      <input type="text" class="search-box" placeholder="Search customers..." [(ngModel)]="searchText"
+        (input)="applyFilter()" />
+
+      <button class="all-filters-btn" (click)="openFilterModal()">
+        <span class="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path
+              d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z" />
+          </svg>
+        </span>
+        All Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Modal Overlay -->
+  <div class="modal-overlay" *ngIf="showFilterModal">
+    <div class="modal-container">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h3>Filters</h3>
+        <button class="clear-filters-text-btn" (click)="clearAllFilters()">Clear Filters</button>
+      </div>
+
+      <!-- Modal Body (Split View) -->
+      <div class="modal-body">
+        <!-- Sidebar -->
+        <div class="filter-sidebar">
+          <div class="sidebar-item" [class.active]="activeFilterCategory === 'Customer Segment'"
+            (click)="setActiveCategory('Customer Segment')">
+            Customer Segment
+            <span class="active-dot" *ngIf="tempSelectedSegments.length > 0"></span>
+          </div>
+          <div class="sidebar-item" [class.active]="activeFilterCategory === 'Company Category'"
+            (click)="setActiveCategory('Company Category')">
+            Company Category
+            <span class="active-dot" *ngIf="tempSelectedCategories.length > 0"></span>
+          </div>
+          <div class="sidebar-item" [class.active]="activeFilterCategory === 'Bank Name'"
+            (click)="setActiveCategory('Bank Name')">
+            Bank Name
+            <span class="active-dot" *ngIf="tempSelectedBanks.length > 0"></span>
+          </div>
+          <div class="sidebar-item" [class.active]="activeFilterCategory === 'Loan Type'"
+            (click)="setActiveCategory('Loan Type')">
+            Loan Type
+            <span class="active-dot" *ngIf="tempSelectedLoanTypes.length > 0"></span>
+          </div>
+          <div class="sidebar-item" [class.active]="activeFilterCategory === 'Loan Amount'"
+            (click)="setActiveCategory('Loan Amount')">
+            Loan Amount
+            <span class="active-dot" *ngIf="tempMinLoanAmount !== null || tempMaxLoanAmount !== null"></span>
+          </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="filter-content">
+          <!-- Customer Segment Content -->
+          <div *ngIf="activeFilterCategory === 'Customer Segment'" class="checkbox-list">
+            <div *ngFor="let opt of segmentOptions" class="checkbox-item">
+              <label>
+                <input type="checkbox" [checked]="isSelected(tempSelectedSegments, opt)"
+                  (change)="toggleSelection(tempSelectedSegments, opt)">
+                {{ opt }}
+              </label>
+            </div>
+          </div>
+
+          <!-- Company Category Content -->
+          <div *ngIf="activeFilterCategory === 'Company Category'" class="checkbox-list">
+            <div *ngFor="let opt of categoryOptions" class="checkbox-item">
+              <label>
+                <input type="checkbox" [checked]="isSelected(tempSelectedCategories, opt)"
+                  (change)="toggleSelection(tempSelectedCategories, opt)">
+                {{ opt }}
+              </label>
+            </div>
+          </div>
+
+          <!-- Bank Name Content -->
+          <div *ngIf="activeFilterCategory === 'Bank Name'" class="checkbox-list">
+            <div *ngFor="let opt of bankOptions" class="checkbox-item">
+              <label>
+                <input type="checkbox" [checked]="isSelected(tempSelectedBanks, opt)"
+                  (change)="toggleSelection(tempSelectedBanks, opt)">
+                {{ opt }}
+              </label>
+            </div>
+          </div>
+
+          <!-- Loan Type Content -->
+          <div *ngIf="activeFilterCategory === 'Loan Type'" class="checkbox-list">
+            <div *ngFor="let opt of loanTypeOptions" class="checkbox-item">
+              <label>
+                <input type="checkbox" [checked]="isSelected(tempSelectedLoanTypes, opt)"
+                  (change)="toggleSelection(tempSelectedLoanTypes, opt)">
+                {{ opt }}
+              </label>
+            </div>
+          </div>
+
+          <!-- Loan Amount Content -->
+          <div *ngIf="activeFilterCategory === 'Loan Amount'" class="amount-content">
+            <div class="input-group">
+              <label>Min Amount</label>
+              <input type="number" [(ngModel)]="tempMinLoanAmount" placeholder="Min">
+            </div>
+            <div class="input-group">
+              <label>Max Amount</label>
+              <input type="number" [(ngModel)]="tempMaxLoanAmount" placeholder="Max">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <div class="footer-left">
+          <!-- Count logic could go here -->
+        </div>
+        <div class="footer-right">
+          <button class="close-btn" (click)="closeFilterModal()">Close</button>
+          <button class="apply-btn" (click)="applyModalFilters()">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Data Table -->
+  <div *ngIf="!loading && !error" class="table-wrapper">
+    <div class="table-header">
+      <span class="record-count">
+        Showing {{ paginatedData.length }} of
+        {{ filteredData.length }} customers
+      </span>
+    </div>
+
+    <div class="table-container" *ngIf="paginatedData.length > 0">
+      <table class="customer-table">
+        <thead>
+          <tr>
+            <th *ngFor="let col of displayColumns">{{ col.label }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of paginatedData; trackBy: trackById" class="customer-row">
+            <td *ngFor="let col of displayColumns" [class]="'col-' + col.key">
+              <span class="cell-content">{{
+                getColumnValue(row, col.key) || "-"
+                }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls" *ngIf="filteredData.length > 0">
+      <div class="page-size-selector">
+        <label for="pageSize">Rows per page:</label>
+        <select id="pageSize" [(ngModel)]="itemsPerPage" (change)="onPageSizeChange()" class="page-size-dropdown">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="30">30</option>
+          <option [value]="40">40</option>
+          <option [value]="50">50</option>
+          <!-- <option [value]="60">60</option>
+          <option [value]="70">70</option>
+          <option [value]="80">80</option>
+          <option [value]="90">90</option>
+          <option [value]="100">100</option> -->
+        </select>
+      </div>
+
+      <div class="pagination-buttons">
+        <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+
+        <span class="page-info">
+          Page
+          <input type="number" [min]="1" [max]="totalPages" [(ngModel)]="currentPage" (change)="onPageChange()"
+            class="page-input">
+          of {{ totalPages }}
+        </span>
+
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+          Next
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredData.length === 0" class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>No Customers Found</h3>
+      <p>There are currently no customers matching your criteria.</p>
+      <button class="refresh-btn" (click)="refreshData()">Refresh Data</button>
+    </div>
+  </div>
+</div>

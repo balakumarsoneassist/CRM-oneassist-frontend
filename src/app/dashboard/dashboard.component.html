@@ -65,7 +65,8 @@
             <i class="sub-icon">📝</i>
             <span>Customer Entry</span>
           </a>
-          <a routerLink="customer-followup" routerLinkActive="active" class="submenu-link" aria-label="customer followup">
+          <a routerLink="customer-followup" routerLinkActive="active" class="submenu-link"
+            aria-label="customer followup">
             <i class="sub-icon">📞</i>
             <span>Customer Followup</span>
           </a>
@@ -88,11 +89,13 @@
             <i class="sub-icon">👤</i>
             <span>Contact</span>
           </a>
-          <a routerLink="unassigned-contacts" routerLinkActive="active" class="submenu-link" aria-label="unassigned contacts">
+          <a routerLink="unassigned-contacts" routerLinkActive="active" class="submenu-link"
+            aria-label="unassigned contacts">
             <i class="sub-icon">📝</i>
             <span>Unassigned Contacts</span>
           </a>
-          <a routerLink="assigned-contacts" routerLinkActive="active" class="submenu-link" aria-label="assigned contacts">
+          <a routerLink="assigned-contacts" routerLinkActive="active" class="submenu-link"
+            aria-label="assigned contacts">
             <i class="sub-icon">✅</i>
             <span>Assigned Contacts</span>
           </a>
@@ -145,6 +148,22 @@
         </div>
       </div>
 
+      <!-- Customer Segregation Module -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('segregation')">
+          <i class="icon customers-icon">📊</i>
+          <span>Customer Segregation</span>
+          <i class="chevron" [class.expanded]="expandedSections.segregation">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.segregation">
+          <a routerLink="customer-segregation" routerLinkActive="active" class="submenu-link"
+            aria-label="customer segregation">
+            <i class="sub-icon">🔎</i>
+            <span>All Segregated Data</span>
+          </a>
+        </div>
+      </div>
+
       <!-- Reports - Only show if user has admin rights -->
       <div class="menu-section" *ngIf="isAdminUser">
         <div class="section-header" (click)="toggleSection('reports')">
@@ -157,9 +176,30 @@
             <i class="sub-icon">📅</i>
             <span>Daily Report</span>
           </a>
-          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link" aria-label="status summary report">
+          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link"
+            aria-label="status summary report">
             <i class="sub-icon">📈</i>
             <span>Status Summary Report</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Performance & Achievements Module -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('performance')">
+          <i class="icon reports-icon">🏆</i>
+          <span>{{ isAdminUser ? 'Performance & Targets' : 'My Performance' }}</span>
+          <i class="chevron" [class.expanded]="expandedSections.performance">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.performance">
+          <a routerLink="achievement" routerLinkActive="active" class="submenu-link" aria-label="achievement">
+            <i class="sub-icon">📈</i>
+            <span>{{ isAdminUser ? 'Achievement Metrics' : 'My Achievements' }}</span>
+          </a>
+          <a *ngIf="isAdminUser" routerLink="target-achievement" routerLinkActive="active" class="submenu-link"
+            aria-label="target achievement">
+            <i class="sub-icon">🎯</i>
+            <span>Target Assignments</span>
           </a>
         </div>
       </div>
@@ -191,11 +231,13 @@
           <i class="chevron" [class.expanded]="expandedSections.tools">▶</i>
         </div>
         <div class="submenu" [class.expanded]="expandedSections.tools">
-          <a routerLink="qr-code-generator" routerLinkActive="active" class="submenu-link" aria-label="qr code generator">
+          <a routerLink="qr-code-generator" routerLinkActive="active" class="submenu-link"
+            aria-label="qr code generator">
             <i class="sub-icon">📱</i>
             <span>QR Code Generator</span>
           </a>
-          <a routerLink="qr-contacts-report" routerLinkActive="active" class="submenu-link" aria-label="qr contacts report">
+          <a routerLink="qr-contacts-report" routerLinkActive="active" class="submenu-link"
+            aria-label="qr contacts report">
             <i class="sub-icon">📊</i>
             <span>QR Contacts Report</span>
           </a>
@@ -217,7 +259,7 @@
         <span>Welcome - {{ username }}</span>
       </div>
       <button (click)="openSettings()"><span>Settings</span></button>
-      
+
       <!-- Theme Selector -->
       <div class="theme-selector">
         <button (click)="toggleThemeSelector()" class="theme-button">
@@ -225,20 +267,16 @@
           <span>{{ currentTheme.displayName }}</span>
           <span class="chevron" [class.expanded]="showThemeSelector">▼</span>
         </button>
-        
+
         <div class="theme-dropdown" *ngIf="showThemeSelector" clickOutside (clickOutside)="closeThemeSelector()">
-          <div 
-            class="theme-option" 
-            *ngFor="let theme of availableThemes"
-            [class.active]="theme.name === currentTheme.name"
-            (click)="selectTheme(theme)"
-          >
+          <div class="theme-option" *ngFor="let theme of availableThemes"
+            [class.active]="theme.name === currentTheme.name" (click)="selectTheme(theme)">
             <div class="theme-preview" [style.background]="theme.gradient"></div>
             <span class="theme-name">{{ theme.displayName }}</span>
           </div>
         </div>
       </div>
-      
+
       <button (click)="openProfile()"><span>Profile</span></button>
       <a routerLink="change-password" class="change-password-link">
         <button class="change-password-btn">

@@ -1,0 +1,296 @@
+/* --- Existing Dashboard Styles --- */
+.achievement-container {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.header-section {
+  margin-bottom: 2rem;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1f36;
+  margin: 0;
+}
+
+/* Stats Cards */
+.premium-dashboard {
+  display: grid;
+  gap: 24px;
+  margin-top: 30px; /* added spacing */
+}
+
+.stats-row-1 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  border: 1px solid rgba(255,255,255,0.6);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+
+.blue-accent { border-top: 4px solid #3b82f6; }
+.green-accent { border-top: 4px solid #10b981; }
+.purple-accent { border-top: 4px solid #8b5cf6; }
+
+.card-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 16px;
+  background: #f3f4f6;
+}
+
+.card-info {
+  flex: 1;
+}
+
+.card-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.card-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+/* Detailed Cards */
+.stats-row-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+  margin-top: 10px;
+}
+
+.detail-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-left { display: flex; align-items: center; gap: 12px; }
+.detail-icon { font-size: 20px; }
+.detail-title { font-weight: 600; color: #374151; font-size: 16px; }
+.header-right .detail-value { font-weight: 700; color: #111827; font-size: 18px; }
+
+.progress-container-lg {
+  height: 12px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-bar-gradient {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  border-radius: 6px;
+  transition: width 1s ease;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: center;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+
+/* --- COPIED Customer List Table Styles --- */
+
+.refresh-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+}
+
+.refresh-btn:hover {
+  background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Table Wrapper */
+.table-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.table-wrapper::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color, #007bff) 0%,
+    #28a745 50%,
+    #ffc107 100%
+  );
+}
+
+.table-header {
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.record-count {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 0; /* Override previous margin */
+}
+
+/* Renamed to generic data-table to match existing HTML or update HTML to use customer-table class */
+/* Using .customer-table styles but applying to .data-table for consistency with new design requirements */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.data-table th {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%); /* Customer List Header Style */
+  color: white;
+  padding: 1rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #495057;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.data-table td {
+  padding: 0.875rem 0.75rem;
+  border-bottom: 1px solid #f1f3f4;
+  color: #495057;
+  vertical-align: middle;
+}
+
+.data-table tr:hover {
+  background: linear-gradient(90deg, #f8f9ff 0%, #fff 100%);
+  transform: scale(1.001);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.data-table tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.data-table tr:nth-child(even):hover {
+  background: linear-gradient(90deg, #f0f8ff 0%, #fafbfc 100%);
+}
+
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.pagination-controls button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  color: white;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+  transition: all 0.3s ease;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.pagination-controls button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+}

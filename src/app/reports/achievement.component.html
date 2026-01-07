@@ -1,0 +1,191 @@
+<div class="achievement-container">
+    <div class="header-section">
+        <!-- Top row: Title + Refresh -->
+        <div class="header-top">
+            <h2>Achievements & Performance</h2>
+            <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
+                {{ loading ? "Loading..." : "Refresh" }}
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="loading-spinner">
+        Loading achievement data...
+    </div>
+
+    <!-- ADMIN VIEW: All User Achievements Table -->
+    <div class="admin-view" *ngIf="!loading && isAdmin">
+
+        <div class="table-wrapper">
+            <div class="table-header">
+                <span class="record-count">
+                    Showing {{ paginatedMetrics.length }} of
+                    {{ totalRecords }} employees
+                </span>
+            </div>
+
+            <div class="table-container" *ngIf="paginatedMetrics.length > 0">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Designation</th>
+                            <th>Login/Files</th>
+                            <th>Sanctions </th>
+                            <th>Converted Leads</th>
+                            <th>Disbursement </th>
+                            <th>Calls </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let emp of paginatedMetrics" (click)="selectEmployee(emp)"
+                            [style.background-color]="selectedEmployee?.id === emp.id ? '#f0f9ff' : ''">
+                            <td style="font-weight: 600; color: #2c3e50;">
+                                {{ emp.name }}
+                            </td>
+                            <td>{{ emp.designation }}</td>
+                            <td>
+                                <span style="font-weight:600;">{{ emp.logins_actual }}</span> / {{
+                                emp.logins_target }}
+                            </td>
+                            <td>
+                                <span style="font-weight:600;">{{ emp.sanctions_actual }}</span> / {{
+                                emp.sanctions_target }}
+                            </td>
+                            <td>
+                                <span style="font-weight:600;">{{ emp.converted_actual }}</span> / {{
+                                emp.converted_target }}
+                            </td>
+                            <td>
+                                <span style="font-weight:600;">{{ emp.disbursement_actual |
+                                    currency:'INR':'symbol':'1.0-0' }}</span> /
+                                {{ emp.disbursement_target | currency:'INR':'symbol':'1.0-0' }}
+                            </td>
+                            <td>
+                                {{ emp.attended_calls }} / {{ emp.attended_calls_target }}
+                                <span style="font-size:11px; color:#6b7280; margin-left:4px;">
+                                    ({{ emp.attended_calls_target > 0 ? (emp.attended_calls / emp.attended_calls_target
+                                    * 100 | number:'1.0-0') : 0 }}%)
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="pagination-controls" *ngIf="totalRecords > itemsPerPage">
+                <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+                <span style="align-self: center; font-weight: 500; color: #495057;">Page {{ currentPage }} of {{
+                    totalPages }}</span>
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="paginatedMetrics.length === 0" style="padding: 2rem; text-align: center; color: #6c757d;">
+                <h3>No Data Found</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Cards (Master-Detail View) -->
+    <div class="premium-dashboard" *ngIf="!loading && selectedEmployee">
+        <!-- Admin Header for Dashboard -->
+        <div class="admin-dashboard-header" *ngIf="isAdmin" style="margin-bottom: 20px;">
+            <span class="org-badge"
+                style="background:#dbeafe; color:#1e40af; padding:6px 16px; border-radius:20px; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:8px;">
+                👤 {{ selectedEmployee.name }}'s Performance
+            </span>
+        </div>
+
+        <!-- Row 1: High-Level Stats -->
+        <div class="stats-row-1">
+            <!-- Card 1: Logins -->
+            <div class="stat-card blue-accent">
+                <div class="card-icon-wrapper" style="color:#3b82f6;">
+                    <span class="card-icon">📁</span>
+                </div>
+                <div class="card-info">
+                    <span class="card-label">Logins Achieved</span>
+                    <h3 class="card-value">{{ loginsCount }} / {{ loginsTarget }}</h3>
+                </div>
+            </div>
+
+            <!-- Card 2: Sanctions -->
+            <div class="stat-card green-accent">
+                <div class="card-icon-wrapper" style="color:#10b981;">
+                    <span class="card-icon">✅</span>
+                </div>
+                <div class="card-info">
+                    <span class="card-label">Sanctions Cleared</span>
+                    <h3 class="card-value">{{ sanctionsCount }} / {{ sanctionsTarget }}</h3>
+                </div>
+            </div>
+
+            <!-- Card 3: Converted Leads -->
+            <div class="stat-card purple-accent">
+                <div class="card-icon-wrapper" style="color:#8b5cf6;">
+                    <span class="card-icon">🌪️</span>
+                </div>
+                <div class="card-info">
+                    <span class="card-label">Leads Converted</span>
+                    <h3 class="card-value">{{ converted_leads }} / {{ convertedLeadsTarget }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Detailed Performance -->
+        <div class="stats-row-2">
+            <!-- Card 4: Disbursement Volume -->
+            <div class="detail-card">
+                <div class="detail-header">
+                    <div class="header-left">
+                        <span class="detail-icon">💼</span>
+                        <span class="detail-title">Total Disbursement Volume</span>
+                    </div>
+                    <div class="header-right">
+                        <span class="detail-value">
+                            {{ disbursementVolume | currency:'INR':'symbol':'1.0-0' }} /
+                            {{ disbursementVolumeTarget | currency:'INR':'symbol':'1.0-0' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="detail-body">
+                    <div class="progress-container-lg">
+                        <div class="progress-bar-gradient"
+                            [style.width.%]="disbursementVolumeTarget > 0 ? (disbursementVolume / disbursementVolumeTarget) * 100 : 0">
+                        </div>
+                    </div>
+                    <div class="progress-meta">
+                        <span>Reached {{ disbursementVolumeTarget > 0 ? ((disbursementVolume / disbursementVolumeTarget)
+                            * 100 | number:'1.0-0') : 0 }}% of Target Volume</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 5: Attended Calls -->
+            <div class="detail-card">
+                <div class="detail-header">
+                    <div class="header-left">
+                        <span class="detail-icon">📞</span>
+                        <span class="detail-title">Calls Performance</span>
+                    </div>
+                    <div class="header-right">
+                        <span class="detail-value">{{ attendedCalls }} / {{ attendedCallsTarget }}</span>
+                    </div>
+                </div>
+                <div class="detail-body">
+                    <div class="progress-container-lg">
+                        <div class="progress-bar-gradient"
+                            [style.width.%]="attendedCallsTarget > 0 ? (attendedCalls / attendedCallsTarget) * 100 : 0"
+                            style="background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div>
+                    </div>
+                    <div class="progress-meta">
+                        <span>Reached {{ attendedCallsTarget > 0 ? ((attendedCalls / attendedCallsTarget) * 100 |
+                            number:'1.0-0') : 0 }}% of Target</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

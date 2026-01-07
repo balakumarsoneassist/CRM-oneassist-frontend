@@ -36,6 +36,9 @@ import { LoanListComponent } from './loans/loan-list.component';
 import { QRContactsReportComponent } from './contacts/qr-contacts-report.component';
 import { ConnectorComponent } from './connectors/connector.component';
 import { ConnectorListComponent } from './connectors/connector-list.component';
+import { CustomerSegregationComponent } from './customers/customer-segregation.component';
+import { AchievementComponent } from './reports/achievement.component';
+import { TargetAchievementComponent } from './reports/target-achievement.component';
 
 
 export const routes: Routes = [
@@ -78,7 +81,10 @@ export const routes: Routes = [
       { path: 'profile', component: ProfileComponent },
       { path: 'calltrackhistory/:tracknumber', component: CallTrackHistoryComponent },
       { path: 'contactfollowupdetails', component: ContactFollowupDetailsComponent },
-      { path: 'contactfollowtrack/:tracknumber', component: ContactFollowTrackComponent }
+      { path: 'contactfollowtrack/:tracknumber', component: ContactFollowTrackComponent },
+      { path: 'customer-segregation', component: CustomerSegregationComponent },
+      { path: 'achievement', component: AchievementComponent },
+      { path: 'target-achievement', component: TargetAchievementComponent }
     ]
   },
   { path: '**', redirectTo: 'login' }
