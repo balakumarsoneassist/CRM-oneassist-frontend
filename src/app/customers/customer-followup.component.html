@@ -1,0 +1,135 @@
+<div class="report-container customer-followup-component">
+  <h2>Customer Followup</h2>
+
+  <!-- Column visibility toggles -->
+  <button class="toggle-btn" (click)="openDialog()">Show / Hide Columns</button>
+
+  <!-- Modal Dialog -->
+  <div class="dialog-backdrop" *ngIf="showDialog">
+    <div class="dialog parameter-dialog">
+      <div class="dialog-header">
+        <h3>Show / Hide Columns</h3>
+        <button class="close-btn" (click)="closeDialog()">&times;</button>
+      </div>
+      <div class="dialog-content">
+        <div class="toggles-grid">
+          <label *ngFor="let field of fields" class="toggle-item">
+            <input type="checkbox" [(ngModel)]="field.visible" />
+            <span class="toggle-label">{{ field.label }}</span>
+          </label>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button class="primary-btn" (click)="closeDialog()">Apply Changes</button>
+        <button class="secondary-btn" (click)="closeDialog()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Follow-up Details Popup -->
+  <div class="dialog-backdrop" *ngIf="showFollowupPopup">
+    <div class="dialog followup-dialog">
+      <div class="dialog-header">
+        <h3>Customer Follow-up Details</h3>
+        <button class="close-btn" (click)="closeFollowupPopup()">&times;</button>
+      </div>
+      <div class="dialog-content">
+        <!-- Customer Info -->
+        <div class="customer-info">
+          <h4>Customer: {{ selectedCustomer['name'] || 'Unknown' }}</h4>
+          <p>Mobile: {{ selectedCustomer['mobileno'] || 'N/A' }} | Location: {{ selectedCustomer['location'] || 'N/A' }}</p>
+        </div>
+
+        <!-- Visit Details Form -->
+        <div class="form-section">
+          <h4>Visit Details</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="dateofvisit">Date of Visit:</label>
+              <input 
+                type="datetime-local" 
+                id="dateofvisit" 
+                [(ngModel)]="followupForm.dateofvisit" 
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label for="nextvisit">Next Visit:</label>
+              <input 
+                type="datetime-local" 
+                id="nextvisit" 
+                [(ngModel)]="followupForm.nextvisit" 
+                class="form-control"
+              />
+            </div>
+            <div class="form-group full-width">
+              <label for="remarks">Remarks:</label>
+              <textarea 
+                id="remarks" 
+                [(ngModel)]="followupForm.remarks" 
+                class="form-control" 
+                rows="3" 
+                placeholder="Enter visit remarks..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="save-btn" (click)="saveFollowupDetails()">Save</button>
+            <button class="convert-btn" (click)="convertToContact()" [disabled]="convertingToContact">
+              {{ convertingToContact ? 'Converting...' : 'Convert to Contact' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Previous History -->
+        <div class="history-section">
+          <h4>Previous History</h4>
+          <div *ngIf="loadingHistory" class="loading-message">
+            Loading previous history...
+          </div>
+          <div *ngIf="!loadingHistory && previousHistory.length === 0" class="no-data-message">
+            No previous history found.
+          </div>
+          <div *ngIf="!loadingHistory && previousHistory.length > 0" class="history-table-container">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Date of Visit</th>
+                  <th>Next Visit</th>
+                  <th>Remarks</th>
+                  <th>Visit By</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let history of previousHistory">
+                  <td>{{ history['dateofvisit'] || 'N/A' }}</td>
+                  <td>{{ history['nextvisit'] || 'N/A' }}</td>
+                  <td>{{ history['remarks'] || 'N/A' }}</td>
+                  <td>{{ history['visitby'] || history['empname'] || 'N/A' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data table -->
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th *ngFor="let col of visibleColumns">{{ getLabel(col) }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let customer of customers">
+          <td><button class="followup-btn" (click)="followupCustomer(customer)" aria-label="Follow Up">📞</button></td>
+          <td *ngFor="let col of visibleColumns">{{ customer[col] }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

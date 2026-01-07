@@ -1,0 +1,256 @@
+<div class="layout">
+  <!-- Side Menu -->
+  <aside class="sidemenu">
+    <h3 class="logo">CRM</h3>
+    <nav class="fancy-nav">
+      <!-- Home -->
+      <div class="menu-item">
+        <a routerLink="/dashboard" routerLinkActive="active" class="menu-link home-link" aria-label="home">
+          <i class="icon home-icon">🏠</i>
+          <span>Home</span>
+        </a>
+      </div>
+
+      <!-- Masters -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('masters')">
+          <i class="icon masters-icon">⚙️</i>
+          <span>Masters</span>
+          <i class="chevron" [class.expanded]="expandedSections.masters">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.masters">
+          <a routerLink="bankmaster" routerLinkActive="active" class="submenu-link" aria-label="bank master">
+            <i class="sub-icon">🏦</i>
+            <span>Bank Master</span>
+          </a>
+          <a routerLink="branchmaster" routerLinkActive="active" class="submenu-link" aria-label="branch master">
+            <i class="sub-icon">🏢</i>
+            <span>Branch Master</span>
+          </a>
+          <a routerLink="locationmaster" routerLinkActive="active" class="submenu-link" aria-label="location master">
+            <i class="sub-icon">📍</i>
+            <span>Location Master</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Employee - Only show if user has admin rights -->
+      <div class="menu-section" *ngIf="isAdminUser">
+        <div class="section-header" (click)="toggleSection('employee')">
+          <i class="icon employee-icon">👥</i>
+          <span>Employee</span>
+          <i class="chevron" [class.expanded]="expandedSections.employee">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.employee">
+          <a routerLink="employee-entry" routerLinkActive="active" class="submenu-link" aria-label="employee entry">
+            <i class="sub-icon">➕</i>
+            <span>Employee Entry</span>
+          </a>
+          <a routerLink="employee-list" routerLinkActive="active" class="submenu-link" aria-label="employee list">
+            <i class="sub-icon">📋</i>
+            <span>Employee List</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Sales Visit -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('salesvisit')">
+          <i class="icon salesvisit-icon">🏢</i>
+          <span>Sales Visit</span>
+          <i class="chevron" [class.expanded]="expandedSections.salesvisit">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.salesvisit">
+          <a routerLink="customer-entry" routerLinkActive="active" class="submenu-link" aria-label="customer entry">
+            <i class="sub-icon">📝</i>
+            <span>Customer Entry</span>
+          </a>
+          <a routerLink="customer-followup" routerLinkActive="active" class="submenu-link" aria-label="customer followup">
+            <i class="sub-icon">📞</i>
+            <span>Customer Followup</span>
+          </a>
+          <a routerLink="overall-report" routerLinkActive="active" class="submenu-link" aria-label="overall report">
+            <i class="sub-icon">📊</i>
+            <span>Overall Report</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Contacts -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('contacts')">
+          <i class="icon contacts-icon">📞</i>
+          <span>Contacts</span>
+          <i class="chevron" [class.expanded]="expandedSections.contacts">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.contacts">
+          <a routerLink="contact" routerLinkActive="active" class="submenu-link" aria-label="contact">
+            <i class="sub-icon">👤</i>
+            <span>Contact</span>
+          </a>
+          <a routerLink="unassigned-contacts" routerLinkActive="active" class="submenu-link" aria-label="unassigned contacts">
+            <i class="sub-icon">📝</i>
+            <span>Unassigned Contacts</span>
+          </a>
+          <a routerLink="assigned-contacts" routerLinkActive="active" class="submenu-link" aria-label="assigned contacts">
+            <i class="sub-icon">✅</i>
+            <span>Assigned Contacts</span>
+          </a>
+          <a routerLink="trackcontacts" routerLinkActive="active" class="submenu-link" aria-label="track contacts">
+            <i class="sub-icon">🔍</i>
+            <span>Track Contacts</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Leads -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('leads')">
+          <i class="icon leads-icon">🎯</i>
+          <span>Leads</span>
+          <i class="chevron" [class.expanded]="expandedSections.leads">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.leads">
+          <a routerLink="unassignedleads" routerLinkActive="active" class="submenu-link" aria-label="unassigned leads">
+            <i class="sub-icon">📝</i>
+            <span>Unassigned Leads</span>
+          </a>
+          <a routerLink="assignedleads" routerLinkActive="active" class="submenu-link" aria-label="assigned leads">
+            <i class="sub-icon">✅</i>
+            <span>Assigned Leads</span>
+          </a>
+          <a routerLink="trackleads" routerLinkActive="active" class="submenu-link" aria-label="track leads">
+            <i class="sub-icon">🔍</i>
+            <span>Track Leads</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Customers -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('customers')">
+          <i class="icon customers-icon">👥</i>
+          <span>Customers</span>
+          <i class="chevron" [class.expanded]="expandedSections.customers">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.customers">
+          <a routerLink="customer-list" routerLinkActive="active" class="submenu-link" aria-label="customer list">
+            <i class="sub-icon">📋</i>
+            <span>Customer List</span>
+          </a>
+          <a routerLink="loan-list" routerLinkActive="active" class="submenu-link" aria-label="loan list">
+            <i class="sub-icon">💰</i>
+            <span>Loan List</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Reports - Only show if user has admin rights -->
+      <div class="menu-section" *ngIf="isAdminUser">
+        <div class="section-header" (click)="toggleSection('reports')">
+          <i class="icon reports-icon">📊</i>
+          <span>Reports</span>
+          <i class="chevron" [class.expanded]="expandedSections.reports">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.reports">
+          <a routerLink="daily-report" routerLinkActive="active" class="submenu-link" aria-label="daily report">
+            <i class="sub-icon">📅</i>
+            <span>Daily Report</span>
+          </a>
+          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link" aria-label="status summary report">
+            <i class="sub-icon">📈</i>
+            <span>Status Summary Report</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Connector -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('connector')">
+          <i class="icon connector-icon">🔗</i>
+          <span>Connector</span>
+          <i class="chevron" [class.expanded]="expandedSections.connector">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.connector">
+          <a routerLink="connector" routerLinkActive="active" class="submenu-link" aria-label="connector">
+            <i class="sub-icon">➕</i>
+            <span>Connector</span>
+          </a>
+          <a routerLink="connector-list" routerLinkActive="active" class="submenu-link" aria-label="connector list">
+            <i class="sub-icon">📋</i>
+            <span>Connector List</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Tools - Only show if user has admin rights -->
+      <div class="menu-section" *ngIf="isAdminUser">
+        <div class="section-header" (click)="toggleSection('tools')">
+          <i class="icon tools-icon">🛠️</i>
+          <span>Tools</span>
+          <i class="chevron" [class.expanded]="expandedSections.tools">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.tools">
+          <a routerLink="qr-code-generator" routerLinkActive="active" class="submenu-link" aria-label="qr code generator">
+            <i class="sub-icon">📱</i>
+            <span>QR Code Generator</span>
+          </a>
+          <a routerLink="qr-contacts-report" routerLinkActive="active" class="submenu-link" aria-label="qr contacts report">
+            <i class="sub-icon">📊</i>
+            <span>QR Contacts Report</span>
+          </a>
+          <a routerLink="import-data" routerLinkActive="active" class="submenu-link" aria-label="import data">
+            <i class="sub-icon">📥</i>
+            <span>Import Data</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <section class="content">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <span class="spacer"></span>
+      <div class="welcome-message">
+        <span>Welcome - {{ username }}</span>
+      </div>
+      <button (click)="openSettings()"><span>Settings</span></button>
+      
+      <!-- Theme Selector -->
+      <div class="theme-selector">
+        <button (click)="toggleThemeSelector()" class="theme-button">
+          <span class="theme-preview" [style.background]="currentTheme.gradient"></span>
+          <span>{{ currentTheme.displayName }}</span>
+          <span class="chevron" [class.expanded]="showThemeSelector">▼</span>
+        </button>
+        
+        <div class="theme-dropdown" *ngIf="showThemeSelector" clickOutside (clickOutside)="closeThemeSelector()">
+          <div 
+            class="theme-option" 
+            *ngFor="let theme of availableThemes"
+            [class.active]="theme.name === currentTheme.name"
+            (click)="selectTheme(theme)"
+          >
+            <div class="theme-preview" [style.background]="theme.gradient"></div>
+            <span class="theme-name">{{ theme.displayName }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <button (click)="openProfile()"><span>Profile</span></button>
+      <a routerLink="change-password" class="change-password-link">
+        <button class="change-password-btn">
+          <span class="btn-icon">🔐</span>
+          <span>Change Password</span>
+        </button>
+      </a>
+      <button (click)="logout()"><span>Logout</span></button>
+    </header>
+
+    <main class="main">
+      <router-outlet></router-outlet>
+    </main>
+  </section>
+</div>

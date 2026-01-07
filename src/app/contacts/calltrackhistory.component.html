@@ -1,0 +1,50 @@
+<h2>Call Track History</h2>
+
+<!-- Debug Information -->
+<!-- <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; font-size: 12px;">
+  <strong>Debug Info:</strong><br>
+  Loading: {{ loading }}<br>
+  Data Length: {{ data.length }}<br>
+  Data: {{ data | json }}<br>
+  Show Table: {{ !loading && data.length > 0 }}<br>
+  Show No Data: {{ !loading && data.length === 0 }}
+</div> -->
+
+<div *ngIf="loading" class="loading-message">
+  <p>Loading call history...</p>
+</div>
+
+<div class="table-container" *ngIf="!loading && data.length > 0">
+  <table class="history-table">
+    <thead>
+      <tr>
+        <th>Created On</th>
+        <th>Notes</th>
+        <th>Appointment Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of data">
+        <td data-label="Created On">{{ item.createon | date:'short' }}</td>
+        <td data-label="Notes">{{ item.notes }}</td>
+        <td data-label="Appointment Date">{{ item.appoinmentdate | date:'short' }}</td>
+        <td data-label="Status">
+          <span class="status-badge">{{ item.status }}</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="!loading && data.length === 0" class="no-data-message">
+  <p>No history found.</p>
+</div>
+
+<!-- Force render test -->
+<!-- <div style="background: #e0e0e0; padding: 10px; margin: 10px 0;">
+  <strong>Force Render Test:</strong><br>
+  <div *ngFor="let item of data; let i = index">
+    {{ i + 1 }}. {{ item.notes }} - {{ item.status }}
+  </div>
+</div> -->

@@ -1,0 +1,48 @@
+<div class="locationmaster">
+  <h2>Location Master</h2>
+  <button class="add-btn" (click)="openAdd()">➕ Add New Location</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Location</th>
+        <th>State</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let loc of locations">
+        <td>{{ loc.location }}</td>
+        <td>{{ loc.state }}</td>
+        <td>
+          <button (click)="openEdit(loc)">Edit</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Popup Overlay -->
+<div class="modal" *ngIf="showPopup">
+  <div class="modal-content">
+    <h3>{{ editingLocationId === null ? 'Add Location' : 'Edit Location' }}</h3>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Location
+        <input type="text" formControlName="location" />
+      </label>
+
+      <label>
+        State
+        <select formControlName="state">
+          <option *ngFor="let st of states" [value]="st">{{ st }}</option>
+        </select>
+      </label>
+
+      <div class="buttons">
+        <button type="submit" [disabled]="form.invalid">Save</button>
+        <button type="button" class="secondary" (click)="close()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

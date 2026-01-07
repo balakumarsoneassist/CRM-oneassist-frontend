@@ -1,0 +1,79 @@
+<div class="daily-report">
+  <h2>Daily Report</h2>
+  
+  <!-- Report Parameters Form -->
+  <div class="report-form-container">
+    <form [formGroup]="reportForm" class="report-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="assignee">Assignee *</label>
+          <select id="assignee" formControlName="assignee" class="form-control">
+            <option value="">--Select Employee--</option>
+            <option *ngFor="let employee of employees" [value]="employee.id">
+              {{ employee.name }}
+            </option>
+          </select>
+          <div class="error" *ngIf="reportForm.get('assignee')?.invalid && reportForm.get('assignee')?.touched">
+            Please select an assignee
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="startdate">Start Date *</label>
+          <input 
+            type="date" 
+            id="startdate" 
+            formControlName="startdate" 
+            class="form-control"
+          />
+          <div class="error" *ngIf="reportForm.get('startdate')?.invalid && reportForm.get('startdate')?.touched">
+            Start date is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="enddate">End Date *</label>
+          <input 
+            type="date" 
+            id="enddate" 
+            formControlName="enddate" 
+            class="form-control"
+          />
+          <div class="error" *ngIf="reportForm.get('enddate')?.invalid && reportForm.get('enddate')?.touched">
+            End date is required
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          (click)="generateReport()"
+          [disabled]="reportForm.invalid || isLoading"
+        >
+          <span *ngIf="isLoading" class="spinner"></span>
+          {{ isLoading ? 'Generating...' : 'Generate Report' }}
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="resetForm()"
+        >
+          Reset
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div id="loading-box" class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+    <p>Generating report, please wait...</p>
+  </div>
+
+  <!-- Report Results Container -->
+  <div id="report-results-container" class="report-results" style="display: none;">
+    <div id="report-content"></div>
+  </div>
+</div>

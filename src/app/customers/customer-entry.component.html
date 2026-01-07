@@ -1,0 +1,81 @@
+<div class="customer-form-container">
+  <div class="form-header">
+    <h2>Customer Entry Form</h2>
+  </div>
+  
+  <form [formGroup]="form" (ngSubmit)="submit()" class="customer-form">
+    <div class="grid-container">
+      <!-- Basic Customer Information -->
+      <label>
+        Name *:
+        <input type="text" formControlName="name" />
+        <div class="error" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+          Name is required
+        </div>
+      </label>
+      
+      <label>
+        Mobile Number *:
+        <input type="tel" formControlName="mobileno" />
+        <div class="error" *ngIf="form.get('mobileno')?.invalid && form.get('mobileno')?.touched">
+          Mobile number is required
+        </div>
+      </label>
+      
+      <label>
+        Profession:
+        <input type="text" formControlName="profession" />
+      </label>
+      
+      <label>
+        Designation:
+        <input type="text" formControlName="designation" />
+      </label>
+      
+      <label>
+        Location:
+        <input type="text" formControlName="location" />
+      </label>
+      
+      <label>
+        Distance (km):
+        <input type="number" formControlName="distance" min="0" />
+        <div class="error" *ngIf="form.get('distance')?.invalid && form.get('distance')?.touched">
+          Distance must be a positive number
+        </div>
+      </label>
+      
+      <label class="span-2">
+        Notes:
+        <textarea formControlName="notes" rows="3"></textarea>
+      </label>
+    </div>
+
+    <!-- Visit Details Section -->
+    <div class="section-header">
+      <h3>Visit Details</h3>
+    </div>
+    
+    <div class="grid-container">
+      <label>
+        Date of Visit:
+        <input type="datetime-local" formControlName="dateofvisit" />
+      </label>
+      
+      <label>
+        Next Visit:
+        <input type="datetime-local" formControlName="nextvisit" />
+      </label>
+      
+      <label class="span-2">
+        Remarks:
+        <textarea formControlName="remarks" rows="3"></textarea>
+      </label>
+    </div>
+    
+    <div class="buttons">
+      <button type="submit" [disabled]="form.invalid">Add Customer</button>
+      <button type="button" class="secondary" onclick="history.back()">Cancel</button>
+    </div>
+  </form>
+</div>

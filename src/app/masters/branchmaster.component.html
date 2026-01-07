@@ -1,0 +1,51 @@
+<div class="branchmaster">
+  <h2>Branch Master</h2>
+  <button class="add-btn" (click)="openAdd()">➕ Add New Branch</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Is Active</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let branch of branches">
+        <td>{{ branch.name }}</td>
+
+        <td>{{ branch.location }}</td>
+        <td>{{ branch.isactive ? 'Yes' : 'No' }}</td>
+        <td>
+          <button (click)="openEdit(branch)">Edit</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Popup Overlay -->
+<div class="modal" *ngIf="showPopup">
+  <div class="modal-content">
+    <h3>{{ editingBranchId === null ? 'Add Branch' : 'Edit Branch' }}</h3>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Name
+        <input type="text" formControlName="name" />
+      </label>
+     
+      <label>
+        Location
+        <input type="text" formControlName="location" />
+      </label>
+      <label>
+        <input type="checkbox" formControlName="isactive" /> Is Active
+      </label>  
+      <div class="buttons">
+        <button type="submit" [disabled]="form.invalid">Save</button>
+        <button type="button" class="secondary" (click)="close()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

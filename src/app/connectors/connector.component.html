@@ -1,0 +1,118 @@
+<div class="connector-container">
+  <div class="connector-header">
+    <h2>Connector Management</h2>
+    <p>Add new connector information</p>
+  </div>
+
+  <!-- Success Message -->
+  <div class="success-message" [style.display]="showSuccessMessage ? 'block' : 'none'">
+    <i class="fas fa-check-circle"></i>
+    Connector saved successfully!
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" [style.display]="showErrorMessage ? 'block' : 'none'">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Connector Form -->
+  <div class="form-container">
+    <form (ngSubmit)="onSubmit()" #connectorFormRef="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Name <span class="required">*</span></label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            [(ngModel)]="connectorForm.name"
+            required
+            placeholder="Enter connector name"
+            class="form-control"
+            [disabled]="isSubmitting"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="mobilenumber">Mobile Number <span class="required">*</span></label>
+          <input
+            type="tel"
+            id="mobilenumber"
+            name="mobilenumber"
+            [(ngModel)]="connectorForm.mobilenumber"
+            required
+            placeholder="Enter mobile number"
+            class="form-control"
+            [disabled]="isSubmitting"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="emailid">Email ID</label>
+          <input
+            type="email"
+            id="emailid"
+            name="emailid"
+            [(ngModel)]="connectorForm.emailid"
+            placeholder="Enter email address"
+            class="form-control"
+            [disabled]="isSubmitting"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input
+            type="text"
+            id="location"
+            name="location"
+            [(ngModel)]="connectorForm.location"
+            placeholder="Enter location"
+            class="form-control"
+            [disabled]="isSubmitting"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              name="isactive"
+              [(ngModel)]="connectorForm.isactive"
+              [disabled]="isSubmitting"
+            />
+            <span class="checkmark"></span>
+            Active Status
+          </label>
+          <small class="help-text">Check to mark connector as active</small>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="resetForm()"
+          [disabled]="isSubmitting"
+        >
+          <i class="fas fa-undo"></i>
+          Reset
+        </button>
+        
+        <button
+          type="submit"
+          class="btn btn-primary submit-btn"
+          [disabled]="isSubmitting || !connectorFormRef.form.valid"
+        >
+          <i class="fas fa-save"></i>
+          {{ isSubmitting ? 'Saving...' : 'Save Connector' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

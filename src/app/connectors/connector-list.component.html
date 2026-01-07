@@ -1,0 +1,63 @@
+<div class="connector-list">
+  <h2>Connector List</h2>
+
+  <div id="loading-box" style="padding: 20px; text-align: center; color: #666; display: block;">
+    <i class="fas fa-spinner fa-spin"></i> Loading connector data...
+  </div>
+  
+  <div id="connector-container" style="display: none;">
+    <div id="connector-table"></div>
+  </div>
+</div>
+
+<!-- Connector Edit Popup Overlay -->
+<div class="modal" [style.display]="showPopup ? 'flex' : 'none'">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Edit Connector</h3>
+      <button type="button" class="close-btn" (click)="close()">&times;</button>
+    </div>
+    <form (ngSubmit)="onSubmit()" class="connector-form">
+      <div class="grid-container">
+        <!-- Success Message -->
+        <div class="success-message span-2" style="display: none;">
+          <i class="fas fa-check-circle"></i> Connector updated successfully!
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message span-2" style="display: none;">
+          <i class="fas fa-exclamation-circle"></i> Error message will appear here
+        </div>
+
+        <label>
+          Name *:
+          <input type="text" [(ngModel)]="connectorForm.name" name="name" required />
+        </label>
+        
+        <label>
+          Mobile Number *:
+          <input type="text" [(ngModel)]="connectorForm.mobilenumber" name="mobilenumber" required />
+        </label>
+        
+        <label class="span-2">
+          Location:
+          <input type="text" [(ngModel)]="connectorForm.location" name="location" />
+        </label>
+        
+        <div class="span-2 checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="connectorForm.isactive" name="isactive" />
+            Is Active
+          </label>
+        </div>
+      </div>
+      
+      <div class="buttons">
+        <button type="submit" class="submit-btn" [disabled]="isSubmitting || !connectorForm.name || !connectorForm.mobilenumber">
+          {{ isSubmitting ? 'Updating...' : 'Update Connector' }}
+        </button>
+        <button type="button" class="secondary" (click)="close()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

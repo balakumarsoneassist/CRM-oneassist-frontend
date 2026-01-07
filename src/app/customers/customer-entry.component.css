@@ -1,0 +1,135 @@
+.customer-form-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-header {
+  background: var(--primary-color, #007bff);
+  color: white;
+  padding: 15px 20px;
+  margin: -20px -20px 20px -20px;
+  border-radius: 8px 8px 0 0;
+}
+
+.form-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.section-header {
+  margin: 30px 0 20px 0;
+  padding: 10px 0;
+  border-bottom: 2px solid var(--primary-color, #007bff);
+}
+
+.section-header h3 {
+  margin: 0;
+  color: var(--primary-color, #007bff);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.customer-form {
+  width: 100%;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+}
+
+label input,
+label select,
+label textarea {
+  margin-top: 5px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+label input:focus,
+label select:focus,
+label textarea:focus {
+  outline: none;
+  border-color: var(--primary-color, #007bff);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.buttons button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.buttons button[type="submit"] {
+  background: var(--primary-color, #007bff);
+  color: white;
+}
+
+.buttons button[type="submit"]:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.buttons button[type="submit"]:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.buttons button.secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.buttons button.secondary:hover {
+  background: #545b62;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .span-2 {
+    grid-column: span 1;
+  }
+}

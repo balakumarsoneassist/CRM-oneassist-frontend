@@ -1,0 +1,107 @@
+<div class="employee-customer-details-component">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <button class="back-btn" (click)="goBack()">
+        ← Previous
+      </button>
+      <div class="header-info">
+        <h2>Customer Details</h2>
+        <p class="employee-subtitle">{{ employee['name'] }} - Employee ID: {{ employee['id'] }}</p>
+      </div>
+      <button class="refresh-btn" (click)="refreshData()">
+        🔄 Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Employee Summary Cards -->
+  <div class="employee-summary">
+    <div class="summary-card">
+      <div class="card-icon">👤</div>
+      <div class="card-content">
+        <h3>{{ employee['name'] }}</h3>
+        <p>Employee Name</p>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon">🆔</div>
+      <div class="card-content">
+        <h3>{{ employee['id'] }}</h3>
+        <p>Employee ID</p>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon">👥</div>
+      <div class="card-content">
+        <h3>{{ employee['customers'] }}</h3>
+        <p>Total Customers</p>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon">📊</div>
+      <div class="card-content">
+        <h3>{{ customers.length }}</h3>
+        <p>Loaded Records</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-section">
+    <div class="loading-spinner"></div>
+    <p>Loading customer details...</p>
+  </div>
+
+  <!-- Customer Table -->
+  <div *ngIf="!loading" class="table-section">
+    <div class="table-header">
+      <h3>📋 Customer List</h3>
+      <div class="table-info">
+        <span class="record-count">{{ customers.length }} customers found</span>
+      </div>
+    </div>
+
+    <!-- No Data Message -->
+    <div *ngIf="customers.length === 0" class="no-data">
+      <div class="no-data-icon">📭</div>
+      <h4>No Customers Found</h4>
+      <p>This employee doesn't have any customers assigned yet.</p>
+      <button class="retry-btn" (click)="refreshData()">Try Again</button>
+    </div>
+
+    <!-- Data Table -->
+    <div *ngIf="customers.length > 0" class="table-wrapper">
+      <table class="customer-table">
+        <thead>
+          <tr>
+            <th>Customer ID</th>
+            <th>Customer Name</th>
+            <th>Mobile Number</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let customer of customers; let i = index">
+            <td>{{ customer['id'] }}</td>
+            <td>
+              <div class="customer-name">
+                <span class="name">{{ customer['name'] }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="mobile-info">
+                <span class="mobile">{{ customer['mobileno'] }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="location-info">
+                <span class="location">📍 {{ customer['location'] }}</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

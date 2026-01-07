@@ -1,0 +1,232 @@
+<div class="qr-generator-container">
+  <div class="header">
+    <button class="back-btn" (click)="goBack()">
+      ← Back to Dashboard
+    </button>
+    <h2>QR Code Generator</h2>
+    <p>Generate QR codes with contact and business information</p>
+  </div>
+
+  <!-- General Error Message -->
+  <div *ngIf="errors.general" class="error-message general-error">
+    {{ errors.general }}
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Form Section -->
+    <div class="form-section">
+      <form (ngSubmit)="generateQrCode()" #formRef="ngForm">
+        <div class="form-grid">
+          <!-- Name -->
+          <div class="form-group">
+            <label for="name">Name *</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              [(ngModel)]="qrForm.name"
+              [class.error]="errors.name"
+              placeholder="Enter name"
+              required
+              #name="ngModel"
+            />
+            <div *ngIf="errors.name" class="error-text">
+              {{ errors.name }}
+            </div>
+          </div>
+
+          <!-- Contact Person -->
+          <div class="form-group">
+            <label for="contactperson">Contact Person *</label>
+            <input
+              type="text"
+              id="contactperson"
+              name="contactperson"
+              [(ngModel)]="qrForm.contactperson"
+              [class.error]="errors.contactperson"
+              placeholder="Enter contact person"
+              required
+              #contactperson="ngModel"
+            />
+            <div *ngIf="errors.contactperson" class="error-text">
+              {{ errors.contactperson }}
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="form-group full-width">
+            <label for="address">Address *</label>
+            <textarea
+              id="address"
+              name="address"
+              [(ngModel)]="qrForm.address"
+              [class.error]="errors.address"
+              placeholder="Enter address"
+              rows="3"
+              required
+              #address="ngModel"
+            ></textarea>
+            <div *ngIf="errors.address" class="error-text">
+              {{ errors.address }}
+            </div>
+          </div>
+
+          <!-- City -->
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input
+              type="text"
+              id="city"
+              name="city"
+              [(ngModel)]="qrForm.city"
+              [class.error]="errors.city"
+              placeholder="Enter city"
+              required
+              #city="ngModel"
+            />
+            <div *ngIf="errors.city" class="error-text">
+              {{ errors.city }}
+            </div>
+          </div>
+
+          <!-- Pincode -->
+          <div class="form-group">
+            <label for="pincode">Pincode *</label>
+            <input
+              type="text"
+              id="pincode"
+              name="pincode"
+              [(ngModel)]="qrForm.pincode"
+              [class.error]="errors.pincode"
+              placeholder="Enter pincode"
+              required
+              #pincode="ngModel"
+            />
+            <div *ngIf="errors.pincode" class="error-text">
+              {{ errors.pincode }}
+            </div>
+          </div>
+
+          <!-- Email ID -->
+          <div class="form-group">
+            <label for="emailid">Email ID *</label>
+            <input
+              type="email"
+              id="emailid"
+              name="emailid"
+              [(ngModel)]="qrForm.emailid"
+              [class.error]="errors.emailid"
+              placeholder="Enter email ID"
+              required
+              #emailid="ngModel"
+            />
+            <div *ngIf="errors.emailid" class="error-text">
+              {{ errors.emailid }}
+            </div>
+          </div>
+
+          <!-- Mobile Number -->
+          <div class="form-group">
+            <label for="mobilenumber">Mobile Number *</label>
+            <input
+              type="tel"
+              id="mobilenumber"
+              name="mobilenumber"
+              [(ngModel)]="qrForm.mobilenumber"
+              [class.error]="errors.mobilenumber"
+              placeholder="Enter mobile number"
+              required
+              #mobilenumber="ngModel"
+            />
+            <div *ngIf="errors.mobilenumber" class="error-text">
+              {{ errors.mobilenumber }}
+            </div>
+          </div>
+
+          <!-- Referred by -->
+          <div class="form-group">
+            <label for="referer">Referred by</label>
+            <input
+              type="text"
+              id="referer"
+              name="referer"
+              [(ngModel)]="qrForm.referer"
+              [class.error]="errors.referer"
+              placeholder="Enter referrer name (optional)"
+              #referer="ngModel"
+            />
+            <div *ngIf="errors.referer" class="error-text">
+              {{ errors.referer }}
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            type="button"
+            class="reset-btn"
+            (click)="resetForm()"
+            [disabled]="loading"
+          >
+            Reset Form
+          </button>
+          <button
+            type="submit"
+            class="generate-btn"
+            [disabled]="loading"
+          >
+            <span *ngIf="loading" class="loading-spinner"></span>
+            {{ loading ? 'Generating...' : 'Generate QR Code' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- QR Code Display Section -->
+    <div class="qr-section" *ngIf="showQrCode">
+      <div class="qr-display">
+        <h3>Generated QR Code</h3>
+        <div class="qr-code-container">
+          <img [src]="qrCodeDataUrl" alt="Generated QR Code" class="qr-code-image" />
+        </div>
+        <div class="qr-actions">
+          <button
+            type="button"
+            class="download-btn"
+            (click)="exportToPdf()"
+          >
+            📄 Export as PDF
+          </button>
+          <button
+            type="button"
+            class="download-btn"
+            (click)="downloadQrCode()"
+          >
+            🖼️ Download Image
+          </button>
+          <button
+            type="button"
+            class="new-qr-btn"
+            (click)="resetForm()"
+          >
+            🔄 Generate New QR
+          </button>
+        </div>
+        
+        <!-- QR Code Data Preview -->
+        <div class="qr-data-preview">
+          <h4>QR Code Contains:</h4>
+          <div class="data-content">
+            <p><strong>URL:</strong> {{ qrUrl }}</p>
+            <p><strong>Token:</strong> {{ qrToken }}</p>
+            <div class="url-info">
+              <small>This QR code links to the loan application page with a unique token.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

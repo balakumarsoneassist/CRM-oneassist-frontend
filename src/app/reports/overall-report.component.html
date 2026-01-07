@@ -1,0 +1,85 @@
+<div class="report-container overall-report-component">
+  <h2>Overall Report - Sales Visit</h2>
+
+  <!-- Report Controls -->
+  <div class="report-controls">
+    <button class="toggle-btn" (click)="openDialog()">Show / Hide Columns</button>
+    <button class="refresh-btn" (click)="refreshReport()">🔄 Refresh</button>
+    <button class="export-btn" (click)="exportReport()">📊 Export</button>
+  </div>
+
+  <!-- Column visibility toggles dialog -->
+  <div class="dialog-backdrop" *ngIf="showDialog">
+    <div class="dialog parameter-dialog">
+      <div class="dialog-header">
+        <h3>Show / Hide Columns</h3>
+        <button class="close-btn" (click)="closeDialog()">&times;</button>
+      </div>
+      <div class="dialog-content">
+        <div class="toggles-grid">
+          <label *ngFor="let field of fields" class="toggle-item">
+            <input type="checkbox" [(ngModel)]="field.visible" />
+            <span class="toggle-label">{{ field.label }}</span>
+          </label>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button class="primary-btn" (click)="closeDialog()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading overall report...</p>
+  </div>
+
+  <!-- Report Summary -->
+  <div *ngIf="!loading" class="report-summary">
+    <div class="summary-card">
+      <h3>{{ totalEmployees }}</h3>
+      <p>Total Employees</p>
+    </div>
+    <div class="summary-card">
+      <h3>{{ totalCustomers }}</h3>
+      <p>Total Customers</p>
+    </div>
+    <div class="summary-card">
+      <h3>{{ averageCustomersPerEmployee }}</h3>
+      <p>Avg. Customers/Employee</p>
+    </div>
+  </div>
+
+  <!-- Data table -->
+  <div *ngIf="!loading" class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th *ngFor="let field of fields" [hidden]="!field.visible">
+            {{ field.label }}
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let employee of customers">
+          <td *ngFor="let field of fields" [hidden]="!field.visible">
+            {{ employee[field.key] || 'N/A' }}
+          </td>
+          <td>
+            <button class="drilldown-btn" (click)="drilldownEmployee(employee)">
+              🔍 View Details
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- No Data Message -->
+  <div *ngIf="!loading && customers.length === 0" class="no-data">
+    <p>No customer data available.</p>
+    <button class="refresh-btn" (click)="refreshReport()">🔄 Try Again</button>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<div class="bankmaster">
+  <h2>Bank Master</h2>
+  <button class="add-btn" (click)="openAdd()">➕ Add New Bank</button>
+
+  <!-- Loading indicator -->
+  <div id="loading-indicator" *ngIf="loading" style="padding: 20px; text-align: center; color: #666;">
+    <div>Loading banks...</div>
+    <div style="font-size: 12px; margin-top: 10px;">If this takes too long, check the browser console for errors</div>
+  </div>
+
+  <!-- Main table with both Angular template and DOM fallback -->
+  <table *ngIf="!loading">
+    <thead>
+      <tr>
+        <th>Bank Name</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Angular template rendering -->
+      <tr *ngFor="let bank of banks; trackBy: trackByBankId">
+        <td>{{ bank.bankname }}</td>
+        <td><button (click)="openEdit(bank)" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Edit</button></td>
+      </tr>
+      
+      <!-- Fallback message if no data -->
+      <tr *ngIf="banks.length === 0 && showContent && !loading">
+        <td colspan="2" style="text-align: center; padding: 20px; color: #666;">
+          <div>No banks found</div>
+          <div style="font-size: 12px; margin-top: 5px;">Check the browser console for any API errors</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+</div>
+
+<!-- Popup Overlay -->
+<div class="modal" *ngIf="showPopup">
+  <div class="modal-content">
+    <h3>{{ editingBankId === null ? 'Add Bank' : 'Edit Bank' }}</h3>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Bank Name
+        <input type="text" formControlName="bankname" />
+      </label>
+      <div class="buttons">
+        <button type="submit" [disabled]="form.invalid">Save</button>
+        <button type="button" class="secondary" (click)="close()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

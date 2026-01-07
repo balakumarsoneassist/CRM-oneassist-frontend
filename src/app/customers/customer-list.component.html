@@ -1,0 +1,55 @@
+<div class="customer-list-container">
+  <div class="header-section">
+    <h2>Customer List</h2>
+    <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
+      {{ loading ? 'Loading...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading customer data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <i class="error-icon">⚠️</i>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="refreshData()">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Customer Data Table -->
+  <div *ngIf="!loading && !error" class="table-wrapper">
+    <div class="table-header">
+      <span class="record-count">Total Customers: {{ customers.length }}</span>
+    </div>
+    
+    <div class="table-container">
+      <table class="customer-table">
+        <thead>
+          <tr>
+            <th *ngFor="let col of displayColumns">{{ col.label }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let customer of customers; trackBy: trackByCustomerId" class="customer-row">
+            <td *ngFor="let col of displayColumns" [class]="'col-' + col.key">
+              <span class="cell-content">{{ getColumnValue(customer, col.key) || '-' }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="customers.length === 0" class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>No Customers Found</h3>
+      <p>There are currently no customers in the system.</p>
+      <button class="refresh-btn" (click)="refreshData()">Refresh Data</button>
+    </div>
+  </div>
+</div>

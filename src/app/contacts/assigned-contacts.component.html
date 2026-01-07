@@ -1,0 +1,93 @@
+<div class="report-container">
+  <h2>Assigned Contacts</h2>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-filters">
+      <div class="search-field">
+        <label for="searchName">Search by Name:</label>
+        <input 
+          id="searchName"
+          type="text" 
+          [(ngModel)]="searchName" 
+          (input)="applySearch()"
+          placeholder="Enter name..."
+          class="search-input"
+        />
+      </div>
+      <div class="search-field">
+        <label for="searchMobileNumber">Search by Mobile Number:</label>
+        <input 
+          id="searchMobileNumber"
+          type="text" 
+          [(ngModel)]="searchMobileNumber" 
+          (input)="applySearch()"
+          placeholder="Enter mobile number..."
+          class="search-input"
+        />
+      </div>
+      <div class="search-actions">
+        <button class="clear-btn" (click)="clearSearch()">Clear Search</button>
+      </div>
+    </div>
+    <div class="search-results">
+      <span class="results-count">Showing {{ contacts.length }} contact(s)</span>
+    </div>
+  </div>
+
+  <!-- Column visibility toggles -->
+  <button class="toggle-btn" (click)="openDialog()">Show / Hide Columns</button>
+
+  <!-- Modal Dialog -->
+  <div class="dialog-backdrop" *ngIf="showDialog">
+    <div class="dialog parameter-dialog">
+      <div class="dialog-header">
+        <h3>Show / Hide Columns</h3>
+        <button class="close-btn" (click)="closeDialog()">&times;</button>
+      </div>
+      <div class="dialog-content">
+        <div class="toggles-grid">
+          <label *ngFor="let field of fields" class="toggle-item">
+            <input type="checkbox" [(ngModel)]="field.visible" />
+            <span class="toggle-label">{{ field.label }}</span>
+          </label>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button class="primary-btn" (click)="closeDialog()">Apply Changes</button>
+        <button class="secondary-btn" (click)="closeDialog()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data table -->
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th *ngFor="let col of visibleColumns">{{ getLabel(col) }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of contacts">
+          <td><button class="track-btn" (click)="trackContact(c)">Track</button></td>
+          <td *ngFor="let col of visibleColumns">{{ c[col] }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+<!-- Track popup overlay -->
+<div class="dialog-backdrop" *ngIf="showTrackPopup" (click)="closeTrackPopup()">
+  <div class="dialog track-dialog" (click)="$event.stopPropagation()">
+    <div class="dialog-header">
+      <h3>Contact Follow Track - {{ selectedTrackNumber }}</h3>
+      <button class="close-btn" (click)="closeTrackPopup()" title="Close">&times;</button>
+    </div>
+    <div class="dialog-content track-content">
+      <app-contactfollowtrack [tracknumber]="selectedTrackNumber" (closePopup)="closeTrackPopup()" (dataSaved)="onDataSaved()"></app-contactfollowtrack>
+    </div>
+  </div>
+</div>
+</div>

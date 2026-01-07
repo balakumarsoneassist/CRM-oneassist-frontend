@@ -1,0 +1,150 @@
+.employee-form-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dee2e6;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #495057;
+}
+
+.employee-form {
+  padding: 1.5rem;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.grid-container label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  color: #495057;
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.checkbox-group label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-weight: normal;
+  margin-bottom: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin-right: 0.5rem;
+  margin-top: 0;
+}
+
+.grid-container input[type="text"],
+.grid-container input[type="email"],
+.grid-container input[type="date"],
+.grid-container select {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.grid-container textarea {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.grid-container input:focus,
+.grid-container select:focus,
+.grid-container textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.error {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: normal;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.buttons button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.buttons button[type="submit"] {
+  background-color: #007bff;
+  color: white;
+}
+
+.buttons button[type="submit"]:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.buttons button[type="submit"]:not(:disabled):hover {
+  background-color: #0056b3;
+}
+
+button.secondary {
+  background: #6c757d;
+  color: white;
+}
+
+button.secondary:hover {
+  background: #545b62;
+}

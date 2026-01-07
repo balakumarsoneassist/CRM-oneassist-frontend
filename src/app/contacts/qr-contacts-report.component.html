@@ -1,0 +1,110 @@
+<div class="qr-contacts-report-container">
+  <div class="header-section">
+    <h2>QR Contacts Report</h2>
+    <div class="header-controls">
+      <button class="toggle-view-btn" (click)="toggleView()" [disabled]="loading">
+        {{ showGroupedView ? 'Show All Contacts' : 'Show Grouped View' }}
+      </button>
+      <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
+        {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" style="display: flex;">
+    <div class="loading-spinner"></div>
+    <p>Loading QR contacts data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" style="display: none;">
+    <div class="error-message">
+      <i class="error-icon">⚠️</i>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="refreshData()">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper" style="display: none;">
+    <!-- Summary Statistics Cards -->
+    <div class="summary-cards">
+      <div class="summary-card contacts-card">
+        <div class="card-icon">👥</div>
+        <div class="card-content">
+          <h3>Total Contacts</h3>
+          <div class="card-value total-contacts-value">{{ totalContacts | number }}</div>
+        </div>
+      </div>
+      
+      <div class="summary-card concerns-card">
+        <div class="card-icon">🏢</div>
+        <div class="card-content">
+          <h3>Total Concerns</h3>
+          <div class="card-value total-concerns-value">{{ totalConcerns | number }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grouped View Table -->
+    <div class="table-wrapper" *ngIf="showGroupedView">
+      <div class="table-header">
+        <span class="record-count">Grouped by Concern & City: {{ groupedContacts.length }} groups</span>
+      </div>
+      
+      <div class="table-container">
+        <table class="grouped-table">
+          <thead>
+            <tr>
+              <th>Concern</th>
+              <th>City</th>
+              <th>Contact Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let group of groupedContacts; trackBy: trackByGroupKey" class="group-row">
+              <td class="concern-cell"><strong>{{ group.concern }}</strong></td>
+              <td class="city-cell"><strong>{{ group.city }}</strong></td>
+              <td class="count-cell">
+                <span class="contact-count">{{ group.totalContacts }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Individual Contacts Table -->
+    <div class="table-wrapper" *ngIf="!showGroupedView">
+      <div class="table-header">
+        <span class="record-count">Total Contacts: {{ contacts.length }}</span>
+      </div>
+      
+      <div class="table-container">
+        <table class="contacts-table">
+          <thead>
+            <tr>
+              <th *ngFor="let col of displayColumns">{{ col.label }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let contact of contacts; trackBy: trackByContactMobile" class="contact-row">
+              <td *ngFor="let col of displayColumns" [class]="'col-' + col.key">
+                <span class="cell-content">{{ getColumnValue(contact, col.key) }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="contacts.length === 0" class="empty-state">
+      <div class="empty-icon">📱</div>
+      <h3>No QR Contact Data Found</h3>
+      <p>There are currently no QR contact records in the system.</p>
+      <button class="refresh-btn" (click)="refreshData()">Refresh Data</button>
+    </div>
+  </div>
+</div>

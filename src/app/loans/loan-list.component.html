@@ -1,0 +1,77 @@
+<div class="loan-list-container">
+  <div class="header-section">
+    <h2>Loan List Report</h2>
+    <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
+      {{ loading ? 'Loading...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" style="display: flex;">
+    <div class="loading-spinner"></div>
+    <p>Loading loan data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" style="display: none;">
+    <div class="error-message">
+      <i class="error-icon">⚠️</i>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="refreshData()">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper" style="display: none;">
+    <!-- Summary Statistics Cards -->
+    <div class="summary-cards">
+      <div class="summary-card customers-card">
+        <div class="card-icon">👥</div>
+        <div class="card-content">
+          <h3>Total Customers</h3>
+          <div class="card-value total-customers-value">{{ totalCustomers | number }}</div>
+        </div>
+      </div>
+      
+      <div class="summary-card amount-card">
+        <div class="card-icon">💰</div>
+        <div class="card-content">
+          <h3>Total Loan Amount</h3>
+          <div class="card-value total-amount-value">₹{{ totalLoanAmount | number }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loan Data Table -->
+    <div class="table-wrapper">
+      <div class="table-header">
+        <span class="record-count">Total Products: {{ loans.length }}</span>
+      </div>
+      
+      <div class="table-container">
+        <table class="loan-table">
+          <thead>
+            <tr>
+              <th *ngFor="let col of displayColumns">{{ col.label }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let loan of loans; trackBy: trackByLoanProduct" class="loan-row">
+              <td *ngFor="let col of displayColumns" [class]="'col-' + col.key">
+                <span class="cell-content">{{ getColumnValue(loan, col.key) }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="loans.length === 0" class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3>No Loan Data Found</h3>
+        <p>There are currently no loan records in the system.</p>
+        <button class="refresh-btn" (click)="refreshData()">Refresh Data</button>
+      </div>
+    </div>
+  </div>
+</div>

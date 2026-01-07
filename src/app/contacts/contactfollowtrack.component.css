@@ -1,0 +1,7 @@
+/* Styles for contactfollowtrack component */
+
+.contact-follow-track {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

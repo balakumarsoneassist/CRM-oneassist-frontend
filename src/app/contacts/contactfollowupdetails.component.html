@@ -1,0 +1,742 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="followup-form">
+  <h2>Contact Follow-Up Details</h2>
+
+  <!-- Verification Warning Banner -->
+  <div *ngIf="!isWhatsAppVerified && !isLoadingLeadPersonal" class="verification-warning"
+    style="background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 500;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>Form is disabled. Please verify the WhatsApp number below to enable editing.</span>
+  </div>
+
+  <!-- Lead Personal Details Display -->
+  <div class="lead-personal-info" *ngIf="hasPersonalDetails() && !isLoadingLeadPersonal">
+    <div class="personal-info-header">
+      <h3 style="margin: 0;">Contact Information</h3>
+      <div class="header-actions">
+        <button type="button" class="edit-contact-btn" (click)="onPersonalDetailsClick()"
+          [disabled]="!isWhatsAppVerified" [style.opacity]="isWhatsAppVerified ? '1' : '0.6'"
+          [style.cursor]="isWhatsAppVerified ? 'pointer' : 'not-allowed'"
+          style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px;">
+          <span class="btn-icon">✏️</span>
+          <span>Edit Contact</span>
+        </button>
+      </div>
+    </div>
+    <div class="personal-info-grid">
+      <div class="info-item">
+        <label>Name:</label>
+        <span>{{ (leadPersonalDetails.firstname || '') }} {{ (leadPersonalDetails.lastname || '') }}</span>
+      </div>
+      <div class="info-item">
+        <label>Mobile:</label>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-weight: 500;">{{ leadPersonalDetails.mobilenumber || 'Not provided' }}</span>
+
+          <!-- WhatsApp Verify Icon/Badge -->
+          <button *ngIf="!isWhatsAppVerified" type="button" class="verify-whatsapp-btn"
+            (click)="verificationSent ? refreshStatus() : verifyWhatsApp()" [disabled]="verifying"
+            [class.sent]="verificationSent" title="{{ verificationSent ? 'Verifying...' : 'Verify WhatsApp' }}">
+            <span class="wa-icon" *ngIf="!verifying">
+              <svg *ngIf="!isNotOnWhatsApp" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.767 5.767 0 1.258.405 2.422 1.096 3.363l-1.122 3.326 3.425-1.1c.904.537 1.956.844 3.082.844 3.181 0 5.767-2.586 5.767-5.767 0-3.181-2.586-5.767-5.767-5.767zm3.504 8.216c-.147.414-.732.744-1.171.8-.396.05-.913.045-1.468-.152-2.316-.822-3.804-3.172-3.92-3.328-.116-.156-.944-1.253-.944-2.392 0-1.139.593-1.697.804-1.921.21-.224.461-.28.614-.28.153 0 .307 0 .442.008.145.006.337-.056.528.406.191.462.651 1.587.708 1.701.056.114.094.246.019.396-.075.15-.113.243-.226.376-.112.133-.236.297-.338.4-.113.111-.23.232-.1.455.13.223.578.952 1.241 1.541.856.762 1.577 1.002 1.801 1.114.224.111.355.093.488-.06.133-.153.562-.656.712-.88.151-.224.302-.187.509-.112.207.076 1.313.62 1.537.732.224.112.373.167.429.263.056.096.056.554-.091.968z" />
+              </svg>
+              <!-- Info Icon for Not on WhatsApp -->
+              <svg *ngIf="isNotOnWhatsApp" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </span>
+            <span *ngIf="verifying" style="font-size: 10px; font-weight: bold;">...</span>
+            <span *ngIf="!verifying" style="margin-left: 2px;">
+              {{ isNotOnWhatsApp ? 'Not on WA' : (verificationSent ? 'Verifying...' : 'Verify') }}
+            </span>
+          </button>
+
+          <span *ngIf="isWhatsAppVerified" class="wa-badge" style="display: inline-flex; align-items: center; background: #eefdf4; color: #064e3b; padding: 4px 12px; border-radius: 20px; font-size: 0.825rem; font-weight: 700; border: 1px solid #10b981;">
+            <svg style="margin-right: 6px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Verified
+          </span>
+        </div>
+      </div>
+      <div class="info-item">
+        <label>Address:</label>
+        <span>{{ leadPersonalDetails.presentaddress || 'Not provided' }}</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Loading state for personal details -->
+  <div class="lead-personal-loading" *ngIf="isLoadingLeadPersonal">
+    <p>Loading contact information...</p>
+  </div>
+
+  <div class="grid-container">
+    <div class="details-card span-4">
+      <h3>Follow Details</h3>
+      <div class="details-grid">
+        <label>
+          Appointment Date :
+          <input type="datetime-local" formControlName="appoinmentdate" />
+        </label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" formControlName="isdirectmeet" /> Direct Meet</label>
+        </div>
+        <label>
+          Status:
+
+          <select formControlName="status">
+            <option value="">--Select--</option>
+            <option *ngFor="let status of StatusCode" [value]="status.Id">{{ status.Status }}</option>
+          </select>
+        </label>
+        <label>
+          Notes:
+          <textarea formControlName="notes"></textarea>
+        </label>
+
+      </div>
+    </div>
+  </div>
+  <div class="grid-container">
+    <!-- Basic Details -->
+    <div class="details-card span-4">
+      <h3>Basic Details</h3>
+      <div class="details-grid">
+        <label>
+          Occupation Type:
+          <select formControlName="occupationtype">
+            <option value="">--Select--</option>
+            <option *ngFor="let ot of occupationTypes" [value]="ot">{{ ot }}</option>
+          </select>
+        </label>
+        <label>
+          Loan Type:
+          <select formControlName="loantype">
+            <option value="">--Select--</option>
+            <option *ngFor="let lt of loanTypes" [value]="lt">{{ lt }}</option>
+          </select>
+        </label>
+
+
+        <label>
+          Desired Loan Amount:
+          <input type="number" formControlName="desireloanamount" />
+        </label>
+        <label>
+          Tenure (months):
+          <input type="number" formControlName="tenure" />
+        </label>
+        <label>
+          Preferred Bank:
+          <select formControlName="preferedbank">
+            <option value="">--Select--</option>
+            <option *ngFor="let bn of bankNames" [value]="bn">{{ bn }}</option>
+          </select>
+        </label>
+        <label>
+          CIBIL Score:
+          <input type="number" formControlName="cibilscore" />
+        </label>
+        <label>
+          Income Type:
+          <select formControlName="incometype">
+            <option value="">--Select--</option>
+            <option *ngFor="let bt of incomeTypes" [value]="bt">{{ bt }}</option>
+          </select>
+
+        </label>
+        <label>
+          Income Amount:
+          <input type="number" formControlName="incomeamount" />
+        </label>
+        <label>
+          Data Strength:
+          <select formControlName="datastrength">
+            <option value="">--Select--</option>
+            <option *ngFor="let ds of dataStrengthOptions" [value]="ds">{{ ds }}</option>
+          </select>
+        </label>
+        <label>
+          Company Name:
+          <input type="text" formControlName="compname" />
+        </label>
+        <label>
+          Company Category:
+          <select formControlName="compcat">
+            <option value="">--Select--</option>
+            <option *ngFor="let c of compCategories" [value]="c">{{ c }}</option>
+          </select>
+        </label>
+        <label>
+          Customer Segment:
+          <select formControlName="custsegment">
+            <option value="">--Select--</option>
+            <option *ngFor="let cs of custSegments" [value]="cs">{{ cs }}</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doc Details Section - Visible only when status >= 12 -->
+  <div class="grid-container" *ngIf="form.get('status')?.value >= 12">
+    <div class="details-card span-full">
+      <div class="doc-header"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Doc Details</h3>
+        <div *ngIf="model.requestedDocs" class="doc-summary-badge"
+          style="background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; border: 1px solid #bae6fd;">
+          Required: {{ model.requestedDocs }}
+        </div>
+      </div>
+      <div class="details-grid">
+        <div class="checkbox-group" style="display: flex; flex-direction: column;">
+          <!-- Row 1 -->
+          <div class="checkbox-row" style="display: flex; gap: 20px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" formControlName="isidproof" style="margin-right: 8px;" />
+              <label>ID Proof</label>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" formControlName="isageproof" style="margin-right: 8px;" />
+              <label>Age Proof</label>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" formControlName="isaddessproof" style="margin-right: 8px;" />
+              <label>Address Proof</label>
+            </div>
+          </div>
+          <!-- Row 2 -->
+          <div class="checkbox-row" style="display: flex; gap: 20px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" formControlName="iscreditcardstatement" style="margin-right: 8px;" />
+              <label>Credit Card Statement</label>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" formControlName="isexistingloantrack" style="margin-right: 8px;" />
+              <label>Existing Loan Track</label>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" formControlName="iscurrentaccountstatement" style="margin-right: 8px;" />
+              <label>Current Account Statement</label>
+            </div>
+          </div>
+          <!-- Row 3 -->
+          <div class="checkbox-row" style="display: flex; gap: 20px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" formControlName="isstabilityproof" style="margin-right: 8px;" />
+              <label>Stability Proof</label>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" formControlName="isbankstatement" style="margin-right: 8px;" />
+              <label>Bank Statement</label>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <input type="checkbox" formControlName="ispayslip" style="margin-right: 8px;" />
+              <label>Pay Slip</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Login Details Section - Visible only when status >= 13 -->
+  <div class="grid-container" *ngIf="form.get('status')?.value >= 13">
+    <div class="details-card span-4">
+      <h3>File Login Details</h3>
+      <div class="details-grid">
+        <label>
+          Bank Name:
+          <select formControlName="bankname">
+            <option value="">--Select--</option>
+            <option *ngFor="let bn of bankNames" [value]="bn">{{ bn }}</option>
+          </select>
+        </label>
+        <label>
+          Application Number:
+          <input type="text" formControlName="applicationnumber" />
+        </label>
+        <label>
+          Login Date:
+          <input type="datetime-local" formControlName="logindate" />
+        </label>
+        <label>
+          Login Value:
+          <input type="number" formControlName="loginvalue" />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sanction Details Section - Visible only when status >= 15 -->
+  <div class="grid-container" *ngIf="form.get('status')?.value >= 15">
+    <div class="details-card span-4">
+      <h3>Sanction Details</h3>
+      <div class="details-grid">
+        <label>
+          Sanction ROI:
+          <input type="number" step="0.01" formControlName="sanctionroi" />
+        </label>
+        <label>
+          Sanction Tenure[Years]:
+          <input type="number" formControlName="sanctiontenure" />
+        </label>
+        <label>
+          Sanction Value:
+          <input type="number" step="0.01" formControlName="sanctionvalue" />
+        </label>
+        <label>
+          Sanction Date:
+          <input type="datetime-local" formControlName="sanctiondate" />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disbursement Details Section - Visible only when status >= 17 -->
+  <div class="grid-container" *ngIf="form.get('status')?.value >= 17">
+    <div class="details-card span-4">
+      <h3>Disbursement Details</h3>
+      <div class="details-grid">
+        <label>
+          Disbursement Amount:
+          <input type="number" step="0.01" formControlName="disbursementamount" />
+        </label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" formControlName="islegal" /> Legal</label>
+          <label><input type="checkbox" formControlName="istechnical" /> Technical</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Show message when lead has already become customer -->
+  <div *ngIf="model?.customer == true" class="customer-status-message">
+    <p
+      style="color: #28a745; font-weight: bold; font-size: 1.1rem; text-align: center; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; margin: 20px 0;">
+      🎉 Lead become Customer.
+    </p>
+  </div>
+
+  <!-- Show buttons only when lead has not become customer -->
+  <div class="button-group" *ngIf="model?.customer != true">
+    <button type="submit" [disabled]="saving" class="save-btn">{{ saving ? 'Saving...' : 'Save' }}</button>
+    <button type="button" *ngIf="form.get('status')?.value == 17 && model?.customer != true"
+      [disabled]="convertingToCustomer" class="convert-customer-btn" (click)="convertToCustomer()">
+      {{ convertingToCustomer ? 'Converting...' : 'Convert to Customer' }}
+    </button>
+  </div>
+</form>
+
+<!-- Details Navigation Frame - Visible only when status >= 12 -->
+<div class="details-navigation-frame" *ngIf="form.get('status')?.value >= 12">
+  <div class="navigation-header">
+    <h3>Additional Details</h3>
+    <p>Access detailed information sections</p>
+  </div>
+
+  <div class="navigation-buttons">
+    <button type="button" class="detail-btn personal-btn" (click)="onPersonalDetailsClick()"
+      [disabled]="!isWhatsAppVerified">
+      <div class="btn-icon">👤</div>
+      <div class="btn-content">
+        <span class="btn-title">Personal Details</span>
+        <span class="btn-description">View personal information</span>
+      </div>
+    </button>
+
+    <button type="button" class="detail-btn occupation-btn" (click)="onOccupationalDetailsClick()"
+      [disabled]="!isWhatsAppVerified">
+      <div class="btn-icon">💼</div>
+      <div class="btn-content">
+        <span class="btn-title">Occupation Details</span>
+        <span class="btn-description">View employment information</span>
+      </div>
+    </button>
+
+    <button type="button" class="detail-btn bank-btn" (click)="onBankDetailsClick()" [disabled]="!isWhatsAppVerified">
+      <div class="btn-icon">🏦</div>
+      <div class="btn-content">
+        <span class="btn-title">Bank Details</span>
+        <span class="btn-description">View banking information</span>
+      </div>
+    </button>
+
+    <button type="button" class="detail-btn loan-btn" (click)="openLoanDetails()" [disabled]="!isWhatsAppVerified">
+      <div class="btn-icon">💰</div>
+      <div class="btn-content">
+        <span class="btn-title">Loan Details</span>
+        <span class="btn-description">View loan information</span>
+      </div>
+    </button>
+  </div>
+</div>
+
+<!-- Personal Details Modal -->
+<div class="modal-overlay" *ngIf="showPersonalDetailsModal" (click)="closePersonalDetailsModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Personal Details</h3>
+      <button type="button" class="close-btn" (click)="closePersonalDetailsModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="!isLoadingPersonalDetails">
+      <form [formGroup]="personalDetailsForm" class="personal-details-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstname">First Name <span class="required">*</span></label>
+            <input type="text" id="firstname" formControlName="firstname" class="form-control"
+              placeholder="Enter first name">
+            <div class="error-message"
+              *ngIf="personalDetailsForm.get('firstname')?.invalid && personalDetailsForm.get('firstname')?.touched">
+              First name is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="lastname">Last Name <span class="required">*</span></label>
+            <input type="text" id="lastname" formControlName="lastname" class="form-control"
+              placeholder="Enter last name">
+            <div class="error-message"
+              *ngIf="personalDetailsForm.get('lastname')?.invalid && personalDetailsForm.get('lastname')?.touched">
+              Last name is required
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="mobilenumber">Mobile Number <span class="required">*</span></label>
+            <input type="tel" id="mobilenumber" formControlName="mobilenumber" class="form-control"
+              placeholder="Enter 10-digit mobile number">
+            <div class="error-message"
+              *ngIf="personalDetailsForm.get('mobilenumber')?.invalid && personalDetailsForm.get('mobilenumber')?.touched">
+              <span *ngIf="personalDetailsForm.get('mobilenumber')?.errors?.['required']">Mobile number is
+                required</span>
+              <span *ngIf="personalDetailsForm.get('mobilenumber')?.errors?.['pattern']">Mobile number must be 10
+                digits</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email <span class="required">*</span></label>
+            <input type="email" id="email" formControlName="email" class="form-control"
+              placeholder="Enter email address">
+            <div class="error-message"
+              *ngIf="personalDetailsForm.get('email')?.invalid && personalDetailsForm.get('email')?.touched">
+              <span *ngIf="personalDetailsForm.get('email')?.errors?.['required']">Email is required</span>
+              <span *ngIf="personalDetailsForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pannumber">PAN Number</label>
+            <input type="text" id="pannumber" formControlName="pannumber" class="form-control"
+              placeholder="Enter PAN number" style="text-transform: uppercase;">
+          </div>
+
+          <div class="form-group">
+            <label for="aadharnumber">Aadhar Number</label>
+            <input type="text" id="aadharnumber" formControlName="aadharnumber" class="form-control"
+              placeholder="Enter 12-digit Aadhar number">
+            <div class="error-message"
+              *ngIf="personalDetailsForm.get('aadharnumber')?.invalid && personalDetailsForm.get('aadharnumber')?.touched">
+              Aadhar number must be 12 digits
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="presentaddress">Present Address</label>
+          <textarea id="presentaddress" formControlName="presentaddress" class="form-control" rows="3"
+            placeholder="Enter present address"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pincode">Pincode</label>
+            <input type="text" id="pincode" formControlName="pincode" class="form-control"
+              placeholder="Enter 6-digit pincode">
+            <div class="error-message"
+              *ngIf="personalDetailsForm.get('pincode')?.invalid && personalDetailsForm.get('pincode')?.touched">
+              Pincode must be 6 digits
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="remarks">Remarks</label>
+            <input type="text" id="remarks" formControlName="remarks" class="form-control" placeholder="Enter remarks">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-loading" *ngIf="isLoadingPersonalDetails">
+      <div class="loading-spinner"></div>
+      <p>Loading personal details...</p>
+    </div>
+
+    <div class="modal-footer" *ngIf="!isLoadingPersonalDetails">
+      <button type="button" class="btn btn-secondary" (click)="closePersonalDetailsModal()"
+        [disabled]="isSavingPersonalDetails">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="savePersonalDetails()"
+        [disabled]="isSavingPersonalDetails || personalDetailsForm.invalid">
+        <span *ngIf="isSavingPersonalDetails" class="spinner-border spinner-border-sm me-2"></span>
+        {{ isSavingPersonalDetails ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Occupational Details Modal -->
+<div class="modal-overlay" *ngIf="showOccupationalDetailsModal" (click)="closeOccupationalDetailsModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Occupational Details</h3>
+      <button type="button" class="close-btn" (click)="closeOccupationalDetailsModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="!isLoadingOccupationalDetails">
+      <form [formGroup]="occupationalDetailsForm" class="occupational-details-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="occupation">Occupation <span class="required">*</span></label>
+            <input type="text" id="occupation" formControlName="occupation" class="form-control"
+              placeholder="Enter occupation">
+            <div class="error-message"
+              *ngIf="occupationalDetailsForm.get('occupation')?.invalid && occupationalDetailsForm.get('occupation')?.touched">
+              Occupation is required
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="incometype">Income Type <span class="required">*</span></label>
+            <select id="incometype" formControlName="incometype" class="form-control">
+              <option value="">Select income type</option>
+              <option value="Salary">Salary</option>
+              <option value="Business">Business</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Investment">Investment</option>
+              <option value="Other">Other</option>
+            </select>
+            <div class="error-message"
+              *ngIf="occupationalDetailsForm.get('incometype')?.invalid && occupationalDetailsForm.get('incometype')?.touched">
+              Income type is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="companyname">Company Name <span class="required">*</span></label>
+            <input type="text" id="companyname" formControlName="companyname" class="form-control"
+              placeholder="Enter company name">
+            <div class="error-message"
+              *ngIf="occupationalDetailsForm.get('companyname')?.invalid && occupationalDetailsForm.get('companyname')?.touched">
+              Company name is required
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="companyaddress">Company Address</label>
+          <textarea id="companyaddress" formControlName="companyaddress" class="form-control" rows="3"
+            placeholder="Enter company address"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" formControlName="designation" class="form-control"
+              placeholder="Enter designation">
+          </div>
+
+          <div class="form-group">
+            <label for="joiningdate">Joining Date</label>
+            <input type="date" id="joiningdate" formControlName="joiningdate" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="officetelephonenumber">Office Telephone Number</label>
+            <input type="tel" id="officetelephonenumber" formControlName="officetelephonenumber" class="form-control"
+              placeholder="Enter office telephone number">
+            <div class="error-message"
+              *ngIf="occupationalDetailsForm.get('officetelephonenumber')?.invalid && occupationalDetailsForm.get('officetelephonenumber')?.touched">
+              Please enter a valid telephone number (10-15 digits)
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="companygstinnumber">Company GSTIN Number</label>
+            <input type="text" id="companygstinnumber" formControlName="companygstinnumber" class="form-control"
+              placeholder="Enter GSTIN number" style="text-transform: uppercase;">
+            <div class="error-message"
+              *ngIf="occupationalDetailsForm.get('companygstinnumber')?.invalid && occupationalDetailsForm.get('companygstinnumber')?.touched">
+              Please enter a valid GSTIN number
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="incomeamount">Income Amount <span class="required">*</span></label>
+          <input type="number" id="incomeamount" formControlName="incomeamount" class="form-control"
+            placeholder="Enter income amount" min="0">
+          <div class="error-message"
+            *ngIf="occupationalDetailsForm.get('incomeamount')?.invalid && occupationalDetailsForm.get('incomeamount')?.touched">
+            <span *ngIf="occupationalDetailsForm.get('incomeamount')?.errors?.['required']">Income amount is
+              required</span>
+            <span *ngIf="occupationalDetailsForm.get('incomeamount')?.errors?.['min']">Income amount must be greater
+              than 0</span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-loading" *ngIf="isLoadingOccupationalDetails">
+      <div class="loading-spinner"></div>
+      <p>Loading occupational details...</p>
+    </div>
+
+    <div class="modal-footer" *ngIf="!isLoadingOccupationalDetails">
+      <button type="button" class="btn btn-secondary" (click)="closeOccupationalDetailsModal()"
+        [disabled]="isSavingOccupationalDetails">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="saveOccupationalDetails()"
+        [disabled]="isSavingOccupationalDetails || occupationalDetailsForm.invalid">
+        <span *ngIf="isSavingOccupationalDetails" class="spinner-border spinner-border-sm me-2"></span>
+        {{ isSavingOccupationalDetails ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Bank Details Modal -->
+<div class="modal-overlay" *ngIf="showBankDetailsModal" (click)="closeBankDetailsModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()" style="max-width: 1000px;">
+    <div class="modal-header">
+      <h3>Bank Details</h3>
+      <button type="button" class="close-btn" (click)="closeBankDetailsModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="!isLoadingBankDetails">
+      <div class="bank-details-container">
+        <div class="grid-header">
+          <h4>Bank Account Information</h4>
+          <button type="button" class="btn btn-primary btn-sm" (click)="addBankRow()" [disabled]="isSavingBankDetails">
+            <i class="fas fa-plus"></i> Add Bank Account
+          </button>
+        </div>
+
+        <div class="bank-grid" *ngIf="bankDetailsData.length > 0">
+          <div class="grid-header-row">
+            <div class="grid-cell header">Bank Name</div>
+            <div class="grid-cell header">Branch</div>
+            <div class="grid-cell header">IFSC Code</div>
+            <div class="grid-cell header">Account Number</div>
+            <div class="grid-cell header">Actions</div>
+          </div>
+
+          <div class="grid-row" *ngFor="let row of bankDetailsData; let i = index">
+            <div class="grid-cell">
+              <input *ngIf="row.isEditing" type="text" [(ngModel)]="row.bankname" class="form-control grid-input"
+                placeholder="Enter bank name" required>
+              <span *ngIf="!row.isEditing">{{ row.bankname }}</span>
+            </div>
+
+            <div class="grid-cell">
+              <input *ngIf="row.isEditing" type="text" [(ngModel)]="row.branch" class="form-control grid-input"
+                placeholder="Enter branch" required>
+              <span *ngIf="!row.isEditing">{{ row.branch }}</span>
+            </div>
+
+            <div class="grid-cell">
+              <input *ngIf="row.isEditing" type="text" [(ngModel)]="row.ifsccode" class="form-control grid-input"
+                placeholder="Enter IFSC code" style="text-transform: uppercase;" required>
+              <span *ngIf="!row.isEditing">{{ row.ifsccode }}</span>
+            </div>
+
+            <div class="grid-cell">
+              <input *ngIf="row.isEditing" type="text" [(ngModel)]="row.accountnumber" class="form-control grid-input"
+                placeholder="Enter account number" required>
+              <span *ngIf="!row.isEditing">{{ row.accountnumber }}</span>
+            </div>
+
+            <div class="grid-cell actions">
+              <div class="action-buttons" *ngIf="row.isEditing">
+                <button type="button" class="btn btn-success btn-sm" (click)="saveBankRow(i)"
+                  [disabled]="isSavingBankDetails" title="Save">
+                  <span *ngIf="isSavingBankDetails" class="spinner-border spinner-border-sm"></span>
+                  <i *ngIf="!isSavingBankDetails" class="fas fa-check"></i>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="cancelBankRowEdit(i)"
+                  [disabled]="isSavingBankDetails" title="Cancel">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <div class="action-buttons" *ngIf="!row.isEditing">
+                <button type="button" class="btn btn-primary btn-sm" (click)="editBankRow(i)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="deleteBankRow(i)" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="bankDetailsData.length === 0">
+          <div class="empty-icon">🏦</div>
+          <h5>No Bank Details Found</h5>
+          <p>Click "Add Bank Account" to add your first bank account details.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-loading" *ngIf="isLoadingBankDetails">
+      <div class="loading-spinner"></div>
+      <p>Loading bank details...</p>
+    </div>
+
+    <div class="modal-footer" *ngIf="!isLoadingBankDetails">
+      <button type="button" class="btn btn-secondary" (click)="closeBankDetailsModal()"
+        [disabled]="isSavingBankDetails">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Contact Edit Modal -->
+<div class="modal-overlay" *ngIf="showContactEditModal" (click)="onContactModalClose()">
+  <div class="modal-content contact-modal" (click)="$event.stopPropagation()">
+    <app-contact [editMode]="true" [leadId]="model.leadid" (contactSaved)="onContactSaved()"
+      (closeModal)="onContactModalClose()">
+    </app-contact>
+  </div>
+</div>

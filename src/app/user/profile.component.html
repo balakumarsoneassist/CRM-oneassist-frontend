@@ -1,0 +1,137 @@
+<div class="profile-container">
+  <!-- Header -->
+  <div class="profile-header">
+    <button class="back-button" (click)="goBack()" aria-label="Go back to dashboard">
+      <i class="back-icon">←</i>
+      <span>Back to Dashboard</span>
+    </button>
+    <h1 class="page-title">My Profile</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading your profile...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error && !loading">
+    <div class="error-card">
+      <i class="error-icon">⚠️</i>
+      <h3>Unable to Load Profile</h3>
+      <p>{{ error }}</p>
+      <button class="retry-button" (click)="loadProfile()">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Profile Content -->
+  <div class="profile-content" *ngIf="profile && !loading && !error">
+    <!-- Profile Picture Section -->
+    <div class="profile-picture-section">
+      <div class="picture-card">
+        <div class="picture-container">
+          <div class="profile-picture">
+            <img 
+              *ngIf="previewUrl || profile.profilePicture" 
+              [src]="previewUrl || profile.profilePicture" 
+              [alt]="profile.name + ' profile picture'"
+              class="profile-img"
+            />
+            <div *ngIf="!previewUrl && !profile.profilePicture" class="placeholder-avatar">
+              <i class="avatar-icon">👤</i>
+            </div>
+          </div>
+          
+          <!-- Upload Controls -->
+          <div class="upload-controls">
+            <input 
+              type="file" 
+              id="profilePictureInput" 
+              (change)="onFileSelected($event)"
+              accept="image/*"
+              class="file-input"
+            />
+            <label for="profilePictureInput" class="upload-button">
+              <i class="upload-icon">📷</i>
+              <span>Change Photo</span>
+            </label>
+            
+            <div class="upload-actions" *ngIf="selectedFile">
+              <button class="save-button" (click)="uploadProfilePicture()">
+                <i class="save-icon">💾</i>
+                Save Photo
+              </button>
+              <button class="cancel-button" (click)="removePreview()">
+                <i class="cancel-icon">❌</i>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="profile-info-section">
+      <div class="info-card">
+        <h2 class="card-title">Personal Information</h2>
+        
+        <div class="info-grid">
+          <!-- Name -->
+          <div class="info-item">
+            <div class="info-label">
+              <i class="info-icon">👤</i>
+              <span>Full Name</span>
+            </div>
+            <div class="info-value">{{ profile.name || 'N/A' }}</div>
+          </div>
+
+          <!-- Email -->
+          <div class="info-item">
+            <div class="info-label">
+              <i class="info-icon">📧</i>
+              <span>Email Address</span>
+            </div>
+            <div class="info-value">{{ profile.emailid || 'N/A' }}</div>
+          </div>
+
+          <!-- Mobile Number -->
+          <div class="info-item">
+            <div class="info-label">
+              <i class="info-icon">📱</i>
+              <span>Mobile Number</span>
+            </div>
+            <div class="info-value">{{ profile.mobilenumber || 'N/A' }}</div>
+          </div>
+
+          <!-- Designation -->
+          <div class="info-item">
+            <div class="info-label">
+              <i class="info-icon">💼</i>
+              <span>Designation</span>
+            </div>
+            <div class="info-value">{{ profile.designation || 'N/A' }}</div>
+          </div>
+
+          <!-- Date of Birth -->
+          <div class="info-item">
+            <div class="info-label">
+              <i class="info-icon">🎂</i>
+              <span>Date of Birth</span>
+            </div>
+            <div class="info-value">{{ formatDate(profile.dateofbirth) }}</div>
+          </div>
+
+          <!-- Join Date -->
+          <div class="info-item">
+            <div class="info-label">
+              <i class="info-icon">📅</i>
+              <span>Join Date</span>
+            </div>
+            <div class="info-value">{{ formatDate(profile.joindate) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

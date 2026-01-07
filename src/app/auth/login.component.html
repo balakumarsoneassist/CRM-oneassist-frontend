@@ -1,0 +1,73 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo Section -->
+    <div class="logo-section">
+      <img src="./logo.png" alt="One Assist Logo" class="logo-image">
+      <!-- <h2>One Assist Monetary Consultants</h2> -->
+    </div>
+    
+    <!-- Login Form -->
+    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+      <!-- Username Field -->
+      <div class="input-group">
+        <label>Username</label>
+        <input 
+          type="text" 
+          formControlName="username" 
+          placeholder="Enter your username"
+          class="form-input"
+        />
+        <div class="error-message" *ngIf="form.get('username')?.invalid && form.get('username')?.touched">
+          Username is required
+        </div>
+      </div>
+      
+      <!-- Password Field -->
+      <div class="input-group">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input 
+            [type]="hidePassword ? 'password' : 'text'" 
+            formControlName="password" 
+            placeholder="Enter your password"
+            class="form-input password-input"
+          />
+          <button 
+            type="button" 
+            class="eye-toggle" 
+            (click)="togglePasswordVisibility()"
+          >
+            {{ hidePassword ? '👁️' : '🙈' }}
+          </button>
+        </div>
+        <div class="error-message" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
+          Password is required
+        </div>
+      </div>
+      
+      <!-- Forgot Password Link -->
+      <div class="forgot-password">
+        <a href="#" (click)="forgotPassword($event)">Forgot Password?</a>
+      </div>
+      
+      <!-- Login Button -->
+      <button 
+        type="submit" 
+        class="login-button"
+        [disabled]="form.invalid"
+      >
+        <span *ngIf="!isLoading">Sign In</span>
+        <span *ngIf="isLoading">Signing in...</span>
+      </button>
+      
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="loginError">
+        {{ loginError }}
+      </div>
+    </form>
+<!-- 
+    <img src="./logo.png" alt="test6">
+    <br>
+  -->
+  </div>
+</div>

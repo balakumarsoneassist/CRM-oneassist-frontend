@@ -1,0 +1,162 @@
+<div class="import-data-container">
+  <div class="header">
+    <button class="back-btn" (click)="goBack()">
+      ← Back to Dashboard
+    </button>
+    <h2>Import Data</h2>
+    <p>Upload CSV files to import lead personal data into the system</p>
+  </div>
+
+  <!-- General Error/Success Messages -->
+  <div *ngIf="errors.general" class="error-message general-error">
+    {{ errors.general }}
+  </div>
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <div class="content-wrapper">
+    <!-- CSV Requirements Section -->
+    <div class="info-section">
+      <h3>📋 CSV File Requirements</h3>
+      <div class="requirements-grid">
+        <div class="requirement-card">
+          <h4>Required Columns</h4>
+          <ul class="field-list">
+            <li><strong>firstname</strong> - First name (text)</li>
+            <li><strong>lastname</strong> - Last name (text)</li>
+            <li><strong>mobilenumber</strong> - Mobile number (text)</li>
+            <li><strong>email</strong> - Email address (text)</li>
+            <li><strong>presentaddress</strong> - Present address (text)</li>
+          </ul>
+        </div>
+        
+        <div class="requirement-card">
+          <h4>Auto-Added Fields</h4>
+          <ul class="field-list">
+            <!-- <li><strong>locationid:</strong> 5001</li>
+            <li><strong>status:</strong> 1</li>
+            <li><strong>organizationid:</strong> 1001</li> -->
+            <li><strong>contacttype:</strong> Company Contact</li>
+            <li><strong>createdon:</strong> Current timestamp</li>
+            <li><strong>createdby:</strong> Current user</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="sample-section">
+        <button type="button" class="download-sample-btn" (click)="downloadSampleCsv()">
+          📥 Download Sample CSV Template
+        </button>
+        <p class="sample-note">Download a sample CSV file with the correct format and example data</p>
+      </div>
+    </div>
+
+    <!-- File Upload Section -->
+    <div class="upload-section">
+      <h3>📁 Upload CSV File</h3>
+      
+      <div class="file-upload-area">
+        <div class="file-input-wrapper">
+          <input 
+            type="file" 
+            id="csvFile" 
+            accept=".csv" 
+            (change)="onFileSelected($event)"
+            class="file-input"
+          />
+          <label for="csvFile" class="file-input-label">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">
+              <span *ngIf="!selectedFile">Choose CSV File</span>
+              <span *ngIf="selectedFile">{{ selectedFile.name }}</span>
+            </div>
+          </label>
+        </div>
+        
+        <div *ngIf="errors.file" class="error-text">
+          {{ errors.file }}
+        </div>
+      </div>
+
+      <!-- Upload Progress -->
+      <div *ngIf="loading" class="progress-section">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+        </div>
+        <p class="progress-text">Processing... {{ uploadProgress }}%</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button 
+          type="button" 
+          class="reset-btn" 
+          (click)="resetForm()"
+          [disabled]="loading"
+        >
+          🔄 Reset
+        </button>
+        
+        <button 
+          type="button" 
+          class="upload-btn" 
+          (click)="uploadCsvData()"
+          [disabled]="!selectedFile || loading"
+        >
+          <span *ngIf="loading" class="loading-spinner"></span>
+          {{ loading ? 'Processing...' : '📤 Import Data' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Data Preview Section -->
+    <div *ngIf="csvData.length > 0 && !loading" class="preview-section">
+      <h3>📊 Data Preview</h3>
+      <div class="preview-stats">
+        <span class="stat-item">Total Records: <strong>{{ csvData.length }}</strong></span>
+      </div>
+      
+      <div class="preview-table-wrapper">
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Mobile</th>
+              <th>Email</th>
+              <th>Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of csvData.slice(0, 5); let i = index">
+              <td>{{ row.firstname }}</td>
+              <td>{{ row.lastname }}</td>
+              <td>{{ row.mobilenumber }}</td>
+              <td>{{ row.email }}</td>
+              <td>{{ row.presentaddress }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="csvData.length > 5" class="preview-note">
+          Showing first 5 records. Total: {{ csvData.length }} records
+        </p>
+      </div>
+    </div>
+
+    <!-- Instructions Section -->
+    <div class="instructions-section">
+      <h3>📝 Instructions</h3>
+      <ol class="instruction-list">
+        <li>Download the sample CSV template to see the required format</li>
+        <li>Prepare your CSV file with all required columns: firstname, lastname, mobilenumber, email, presentaddress</li>
+        <li>Make sure all required fields have values (no empty cells)</li>
+        <li>Select your CSV file using the file picker above</li>
+        <li>Click "Import Data" to process and upload the data</li>
+        <li>The system will automatically add fixed values like locationid, status, organizationid, etc.</li>
+        <li>Monitor the progress bar during import</li>
+        <li>Review the success/error messages after completion</li>
+      </ol>
+    </div>
+  </div>
+</div>
