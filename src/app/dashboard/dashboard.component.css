@@ -1,6 +1,7 @@
 .layout {
   display: flex;
-  min-height: 100dvh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Side Menu */
@@ -14,6 +15,16 @@
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow-y: auto;
+  height: 100vh;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+.sidemenu::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, and Opera */
 }
 
 .sidemenu::before {
@@ -223,6 +234,8 @@
   background: var(--theme-background);
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Top Bar */
@@ -382,4 +395,14 @@
   flex: 1;
   padding: 2rem;
   background: var(--theme-background);
+  overflow-y: auto;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+.main::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, and Opera */
 }
