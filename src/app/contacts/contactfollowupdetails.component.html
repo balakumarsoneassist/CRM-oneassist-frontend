@@ -1,27 +1,13 @@
 <form [formGroup]="form" (ngSubmit)="submit()" class="followup-form">
   <h2>Contact Follow-Up Details</h2>
 
-  <!-- Verification Warning Banner -->
-  <div *ngIf="!isWhatsAppVerified && !isLoadingLeadPersonal" class="verification-warning"
-    style="background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 500;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-      stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"></circle>
-      <line x1="12" y1="8" x2="12" y2="12"></line>
-      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-    </svg>
-    <span>Form is disabled. Please verify the WhatsApp number below to enable editing.</span>
-  </div>
-
   <!-- Lead Personal Details Display -->
   <div class="lead-personal-info" *ngIf="hasPersonalDetails() && !isLoadingLeadPersonal">
     <div class="personal-info-header">
       <h3 style="margin: 0;">Contact Information</h3>
       <div class="header-actions">
         <button type="button" class="edit-contact-btn" (click)="onPersonalDetailsClick()"
-          [disabled]="!isWhatsAppVerified" [style.opacity]="isWhatsAppVerified ? '1' : '0.6'"
-          [style.cursor]="isWhatsAppVerified ? 'pointer' : 'not-allowed'"
-          style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px;">
+          style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
           <span class="btn-icon">✏️</span>
           <span>Edit Contact</span>
         </button>
@@ -34,39 +20,61 @@
       </div>
       <div class="info-item">
         <label>Mobile:</label>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-weight: 500;">{{ leadPersonalDetails.mobilenumber || 'Not provided' }}</span>
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-weight: 500;">{{ leadPersonalDetails.mobilenumber || 'Not provided' }}</span>
 
-          <!-- WhatsApp Verify Icon/Badge -->
-          <button *ngIf="!isWhatsAppVerified" type="button" class="verify-whatsapp-btn"
-            (click)="verificationSent ? refreshStatus() : verifyWhatsApp()" [disabled]="verifying"
-            [class.sent]="verificationSent" title="{{ verificationSent ? 'Verifying...' : 'Verify WhatsApp' }}">
-            <span class="wa-icon" *ngIf="!verifying">
-              <svg *ngIf="!isNotOnWhatsApp" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.767 5.767 0 1.258.405 2.422 1.096 3.363l-1.122 3.326 3.425-1.1c.904.537 1.956.844 3.082.844 3.181 0 5.767-2.586 5.767-5.767 0-3.181-2.586-5.767-5.767-5.767zm3.504 8.216c-.147.414-.732.744-1.171.8-.396.05-.913.045-1.468-.152-2.316-.822-3.804-3.172-3.92-3.328-.116-.156-.944-1.253-.944-2.392 0-1.139.593-1.697.804-1.921.21-.224.461-.28.614-.28.153 0 .307 0 .442.008.145.006.337-.056.528.406.191.462.651 1.587.708 1.701.056.114.094.246.019.396-.075.15-.113.243-.226.376-.112.133-.236.297-.338.4-.113.111-.23.232-.1.455.13.223.578.952 1.241 1.541.856.762 1.577 1.002 1.801 1.114.224.111.355.093.488-.06.133-.153.562-.656.712-.88.151-.224.302-.187.509-.112.207.076 1.313.62 1.537.732.224.112.373.167.429.263.056.096.056.554-.091.968z" />
-              </svg>
-              <!-- Info Icon for Not on WhatsApp -->
-              <svg *ngIf="isNotOnWhatsApp" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-            </span>
-            <span *ngIf="verifying" style="font-size: 10px; font-weight: bold;">...</span>
-            <span *ngIf="!verifying" style="margin-left: 2px;">
-              {{ isNotOnWhatsApp ? 'Not on WA' : (verificationSent ? 'Verifying...' : 'Verify') }}
-            </span>
-          </button>
+            <!-- Show verify button here only if NO separate Whatsapp number -->
+            <ng-container *ngIf="!leadPersonalDetails.whatsappnumber">
+              <!-- Verify Button and Badge (Existing Logic) -->
+              <ng-container *ngTemplateOutlet="verifyButtonTemplate"></ng-container>
+            </ng-container>
+          </div>
 
-          <span *ngIf="isWhatsAppVerified" class="wa-badge" style="display: inline-flex; align-items: center; background: #eefdf4; color: #064e3b; padding: 4px 12px; border-radius: 20px; font-size: 0.825rem; font-weight: 700; border: 1px solid #10b981;">
-            <svg style="margin-right: 6px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            Verified
-          </span>
+          <!-- Separate WhatsApp Number Row -->
+          <div *ngIf="leadPersonalDetails.whatsappnumber" style="display: flex; align-items: center; gap: 10px;">
+            <label style="font-size: 0.85em; color: #666; margin: 0;">WhatsApp:</label>
+            <span style="font-weight: 500;">{{ leadPersonalDetails.whatsappnumber }}</span>
+            <!-- Verify Button for Explicit WhatsApp Number -->
+            <ng-container *ngTemplateOutlet="verifyButtonTemplate"></ng-container>
+          </div>
         </div>
       </div>
+
+      <!-- Reusable Template for Verify Button -->
+      <ng-template #verifyButtonTemplate>
+        <button *ngIf="!isWhatsAppVerified" type="button" class="verify-whatsapp-btn"
+          (click)="verificationSent ? refreshStatus() : verifyWhatsApp()" [disabled]="verifying"
+          [class.sent]="verificationSent" title="{{ verificationSent ? 'Verifying...' : 'Verify WhatsApp' }}">
+          <span class="wa-icon" *ngIf="!verifying">
+            <svg *ngIf="!isNotOnWhatsApp" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12.031 6.172c-3.181 0-5.767 2.586-5.767 5.767 0 1.258.405 2.422 1.096 3.363l-1.122 3.326 3.425-1.1c.904.537 1.956.844 3.082.844 3.181 0 5.767-2.586 5.767-5.767 0-3.181-2.586-5.767-5.767-5.767zm3.504 8.216c-.147.414-.732.744-1.171.8-.396.05-.913.045-1.468-.152-2.316-.822-3.804-3.172-3.92-3.328-.116-.156-.944-1.253-.944-2.392 0-1.139.593-1.697.804-1.921.21-.224.461-.28.614-.28.153 0 .307 0 .442.008.145.006.337-.056.528.406.191.462.651 1.587.708 1.701.056.114.094.246.019.396-.075.15-.113.243-.226.376-.112.133-.236.297-.338.4-.113.111-.23.232-.1.455.13.223.578.952 1.241 1.541.856.762 1.577 1.002 1.801 1.114.224.111.355.093.488-.06.133-.153.562-.656.712-.88.151-.224.302-.187.509-.112.207.076 1.313.62 1.537.732.224.112.373.167.429.263.056.096.056.554-.091.968z" />
+            </svg>
+            <!-- Info Icon for Not on WhatsApp -->
+            <svg *ngIf="isNotOnWhatsApp" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </span>
+          <span *ngIf="verifying" style="font-size: 10px; font-weight: bold;">...</span>
+          <span *ngIf="!verifying" style="margin-left: 2px;">
+            {{ isNotOnWhatsApp ? 'Not on WA' : (verificationSent ? 'Verifying...' : 'Verify') }}
+          </span>
+        </button>
+
+        <span *ngIf="isWhatsAppVerified" class="wa-badge"
+          style="display: inline-flex; align-items: center; background: #eefdf4; color: #064e3b; padding: 4px 12px; border-radius: 20px; font-size: 0.825rem; font-weight: 700; border: 1px solid #10b981;">
+          <svg style="margin-right: 6px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Verified
+        </span>
+      </ng-template>
       <div class="info-item">
         <label>Address:</label>
         <span>{{ leadPersonalDetails.presentaddress || 'Not provided' }}</span>
@@ -347,8 +355,7 @@
   </div>
 
   <div class="navigation-buttons">
-    <button type="button" class="detail-btn personal-btn" (click)="onPersonalDetailsClick()"
-      [disabled]="!isWhatsAppVerified">
+    <button type="button" class="detail-btn personal-btn" (click)="onPersonalDetailsClick()">
       <div class="btn-icon">👤</div>
       <div class="btn-content">
         <span class="btn-title">Personal Details</span>
@@ -356,8 +363,7 @@
       </div>
     </button>
 
-    <button type="button" class="detail-btn occupation-btn" (click)="onOccupationalDetailsClick()"
-      [disabled]="!isWhatsAppVerified">
+    <button type="button" class="detail-btn occupation-btn" (click)="onOccupationalDetailsClick()">
       <div class="btn-icon">💼</div>
       <div class="btn-content">
         <span class="btn-title">Occupation Details</span>
@@ -365,7 +371,7 @@
       </div>
     </button>
 
-    <button type="button" class="detail-btn bank-btn" (click)="onBankDetailsClick()" [disabled]="!isWhatsAppVerified">
+    <button type="button" class="detail-btn bank-btn" (click)="onBankDetailsClick()">
       <div class="btn-icon">🏦</div>
       <div class="btn-content">
         <span class="btn-title">Bank Details</span>
@@ -373,7 +379,7 @@
       </div>
     </button>
 
-    <button type="button" class="detail-btn loan-btn" (click)="openLoanDetails()" [disabled]="!isWhatsAppVerified">
+    <button type="button" class="detail-btn loan-btn" (click)="openLoanDetails()">
       <div class="btn-icon">💰</div>
       <div class="btn-content">
         <span class="btn-title">Loan Details</span>

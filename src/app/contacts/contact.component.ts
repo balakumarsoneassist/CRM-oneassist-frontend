@@ -38,6 +38,7 @@ export class ContactComponent implements OnInit {
       firstname: ['', Validators.required],
       lastname: [''],
       mobilenumber: ['', Validators.pattern('^[0-9]{10,15}$')],
+      whatsappnumber: ['', Validators.pattern('^[0-9]{10,15}$')], // New field
       locationid: [null, Validators.required],
       email: ['', [Validators.email]],
       dateofbirth: [''],
@@ -80,6 +81,14 @@ export class ContactComponent implements OnInit {
     if (this.editMode && this.leadId) {
       this.loadContactData();
     }
+
+    // Auto-fill Whatsapp number from mobile if empty (optional convenience)
+    this.form.get('mobilenumber')?.valueChanges.subscribe(val => {
+      const waControl = this.form.get('whatsappnumber');
+      if (val && !waControl?.value && !waControl?.dirty) {
+        waControl?.setValue(val);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -89,7 +98,7 @@ export class ContactComponent implements OnInit {
   loadContactData(): void {
     if (!this.leadId) return;
 
-    this.http.get<any>(`${environment.apiUrl}/leadpersonal/${this.leadId}`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/leadpersonaldetails/${this.leadId}`).subscribe({
       next: (response) => {
         console.log('Loading contact data for edit:', response);
 
@@ -104,7 +113,10 @@ export class ContactComponent implements OnInit {
         // Patch the form with existing data
         this.form.patchValue(data);
         this.checkVerificationStatus(data);
-        this.refreshStatus(true); // Sync with global status table
+        // Only refresh status if we have a whatsapp number
+        if (data.whatsappnumber) {
+          this.refreshStatus(true);
+        }
       },
       error: (err) => {
         console.error('Failed to load contact data', err);
@@ -121,8 +133,8 @@ export class ContactComponent implements OnInit {
 
     this.saving = true;
     const apiUrl = this.editMode && this.leadId
-      ? `${environment.apiUrl}/leadpersonal/${this.leadId}`
-      : `${environment.apiUrl}/leadpersonal`;
+      ? `${environment.apiUrl}/leadpersonaldetails/${this.leadId}`
+      : `${environment.apiUrl}/leadpersonaldetails`;
 
     const httpMethod = this.editMode ? this.http.put(apiUrl, this.form.value) : this.http.post(apiUrl, this.form.value);
 
@@ -173,17 +185,14 @@ export class ContactComponent implements OnInit {
     return localStorage.getItem('username') || '';
   }
 
-
-
-
   getOrganizationID(): string {
     return localStorage.getItem('organizationid') || '';
   }
 
   verifyWhatsApp(): void {
-    const mobile = this.form.get('mobilenumber')?.value;
-    if (!mobile) {
-      alert('Please enter a mobile number first');
+    const waNumber = this.form.get('whatsappnumber')?.value;
+    if (!waNumber) {
+      alert('Please enter a WhatsApp number first');
       return;
     }
 
@@ -195,7 +204,7 @@ export class ContactComponent implements OnInit {
     }
 
     this.verifying = true;
-    this.whatsappService.sendVerification(mobile).subscribe({
+    this.whatsappService.sendVerification(waNumber).subscribe({
       next: (res) => {
         this.verifying = false;
         this.verificationSent = true;
@@ -251,31 +260,25 @@ export class ContactComponent implements OnInit {
       this.isNotOnWhatsApp = false;
       this.verificationSent = false;
     }
-    this.toggleFormState();
+    // Logic to disable form is REMOVED intentionally
     this.cdr.detectChanges();
   }
 
   toggleFormState(): void {
-    if (this.isWhatsAppVerified) {
-      this.form.enable();
-    } else {
-      this.form.disable();
-      // ALWAYS keep mobilenumber enabled so verification can be triggered
-      this.form.get('mobilenumber')?.enable();
-    }
+    // Logic REMOVED - Saving is now allowed regardless of verification status
   }
 
   refreshStatus(silent: boolean = false): void {
-    const mobile = this.form.get('mobilenumber')?.value;
-    if (!mobile) return;
+    const waNumber = this.form.get('whatsappnumber')?.value;
+    if (!waNumber) return;
 
     if (!silent) {
       this.verifying = true;
       this.cdr.detectChanges();
     }
 
-    console.log(`🔄 Contact ${silent ? 'Auto' : 'Direct'} Refresh. Mobile:`, mobile);
-    const checkUrl = `${environment.apiUrl}/api/whatsapp/status/${mobile}`;
+    console.log(`🔄 Contact ${silent ? 'Auto' : 'Direct'} Refresh. Number:`, waNumber);
+    const checkUrl = `${environment.apiUrl}/api/whatsapp/status/${waNumber}`;
 
     this.http.get<any>(checkUrl).subscribe({
       next: (response) => {
@@ -304,7 +307,6 @@ export class ContactComponent implements OnInit {
           this.verificationSent = false;
           this.stopStatusPolling();
         }
-        this.toggleFormState();
         this.cdr.detectChanges();
       },
       error: (err) => {

@@ -70,8 +70,9 @@
             <i class="sub-icon">📞</i>
             <span>Customer Followup</span>
           </a>
-          <a routerLink="overall-report" routerLinkActive="active" class="submenu-link" aria-label="overall report">
-            <i class="sub-icon">📊</i>
+          <a *ngIf="isAdminUser" routerLink="overall-report" routerLinkActive="active" class="submenu-link"
+            aria-label="overall report">
+            <i class="sub-icon">📄</i>
             <span>Overall Report</span>
           </a>
         </div>
@@ -102,6 +103,26 @@
           <a routerLink="trackcontacts" routerLinkActive="active" class="submenu-link" aria-label="track contacts">
             <i class="sub-icon">🔍</i>
             <span>Track Contacts</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('reports')">
+          <i class="icon reports-icon">📊</i>
+          <span>Reports</span>
+          <i class="chevron" [class.expanded]="expandedSections.reports">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.reports">
+          <a routerLink="daily-report" routerLinkActive="active" class="submenu-link" aria-label="daily report">
+            <i class="sub-icon">📅</i>
+            <span>Daily Report</span>
+          </a>
+          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link"
+            aria-label="status summary report">
+            <i class="sub-icon">📈</i>
+            <span>Status Summary Report</span>
           </a>
         </div>
       </div>
@@ -164,25 +185,6 @@
         </div>
       </div>
 
-      <!-- Reports - Only show if user has admin rights -->
-      <div class="menu-section" *ngIf="isAdminUser">
-        <div class="section-header" (click)="toggleSection('reports')">
-          <i class="icon reports-icon">📊</i>
-          <span>Reports</span>
-          <i class="chevron" [class.expanded]="expandedSections.reports">▶</i>
-        </div>
-        <div class="submenu" [class.expanded]="expandedSections.reports">
-          <a routerLink="daily-report" routerLinkActive="active" class="submenu-link" aria-label="daily report">
-            <i class="sub-icon">📅</i>
-            <span>Daily Report</span>
-          </a>
-          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link"
-            aria-label="status summary report">
-            <i class="sub-icon">📈</i>
-            <span>Status Summary Report</span>
-          </a>
-        </div>
-      </div>
 
       <!-- Performance & Achievements Module -->
       <div class="menu-section">

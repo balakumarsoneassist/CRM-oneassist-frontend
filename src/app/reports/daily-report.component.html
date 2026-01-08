@@ -1,18 +1,20 @@
 <div class="daily-report">
   <h2>Daily Report</h2>
-  
+
   <!-- Report Parameters Form -->
   <div class="report-form-container">
     <form [formGroup]="reportForm" class="report-form">
       <div class="form-row">
         <div class="form-group">
           <label for="assignee">Assignee *</label>
-          <select id="assignee" formControlName="assignee" class="form-control">
+          <select *ngIf="isAdmin" id="assignee" formControlName="assignee" class="form-control">
             <option value="">--Select Employee--</option>
             <option *ngFor="let employee of employees" [value]="employee.id">
               {{ employee.name }}
             </option>
           </select>
+          <input *ngIf="!isAdmin" type="text" class="form-control" [value]="assigneeName" readonly disabled
+            style="background-color: #e9ecef; cursor: not-allowed; opacity: 1;">
           <div class="error" *ngIf="reportForm.get('assignee')?.invalid && reportForm.get('assignee')?.touched">
             Please select an assignee
           </div>
@@ -20,12 +22,7 @@
 
         <div class="form-group">
           <label for="startdate">Start Date *</label>
-          <input 
-            type="date" 
-            id="startdate" 
-            formControlName="startdate" 
-            class="form-control"
-          />
+          <input type="date" id="startdate" formControlName="startdate" class="form-control" />
           <div class="error" *ngIf="reportForm.get('startdate')?.invalid && reportForm.get('startdate')?.touched">
             Start date is required
           </div>
@@ -33,12 +30,7 @@
 
         <div class="form-group">
           <label for="enddate">End Date *</label>
-          <input 
-            type="date" 
-            id="enddate" 
-            formControlName="enddate" 
-            class="form-control"
-          />
+          <input type="date" id="enddate" formControlName="enddate" class="form-control" />
           <div class="error" *ngIf="reportForm.get('enddate')?.invalid && reportForm.get('enddate')?.touched">
             End date is required
           </div>
@@ -46,20 +38,12 @@
       </div>
 
       <div class="form-actions">
-        <button 
-          type="button" 
-          class="btn btn-primary" 
-          (click)="generateReport()"
-          [disabled]="reportForm.invalid || isLoading"
-        >
+        <button type="button" class="btn btn-primary" (click)="generateReport()"
+          [disabled]="reportForm.invalid || isLoading">
           <span *ngIf="isLoading" class="spinner"></span>
           {{ isLoading ? 'Generating...' : 'Generate Report' }}
         </button>
-        <button 
-          type="button" 
-          class="btn btn-secondary" 
-          (click)="resetForm()"
-        >
+        <button type="button" class="btn btn-secondary" (click)="resetForm()">
           Reset
         </button>
       </div>

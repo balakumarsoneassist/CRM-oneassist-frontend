@@ -594,7 +594,7 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
     console.log('Loading lead personal details for leadId:', leadId);
     console.log('API URL:', `${environment.apiUrl}/leadpersonal/${leadId}`);
 
-    this.http.get<any>(`${environment.apiUrl}/leadpersonal/${leadId}`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/leadpersonaldetails/${leadId}`).subscribe({
       next: (response) => {
         this.isLoadingLeadPersonal = false;
         let data = null;
@@ -681,9 +681,11 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
   }
 
   verifyWhatsApp(): void {
-    const mobile = this.leadPersonalDetails?.mobilenumber;
+    // Prioritize whatsappnumber, fall back to mobilenumber
+    const mobile = this.leadPersonalDetails?.whatsappnumber || this.leadPersonalDetails?.mobilenumber;
+
     if (!mobile) {
-      alert('Mobile number not found for verification.');
+      alert('Number not found for verification.');
       return;
     }
 
@@ -769,19 +771,14 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
   }
 
   toggleFormState(): void {
-    if (this.isWhatsAppVerified) {
-      this.form.enable();
-      this.personalDetailsForm.enable();
-    } else {
-      this.form.disable();
-      this.personalDetailsForm.disable();
-      // ALWAYS keep mobilenumber enabled in the modal form so verification can be attempted/corrected
-      this.personalDetailsForm.get('mobilenumber')?.enable();
-    }
+    // Logic REMOVED - Form is always enabled regardless of verification status
+    this.form.enable();
+    this.personalDetailsForm.enable();
   }
 
   refreshStatus(silent: boolean = false): void {
-    const mobile = this.leadPersonalDetails.mobilenumber;
+    // Prioritize whatsappnumber, fall back to mobilenumber
+    const mobile = this.leadPersonalDetails?.whatsappnumber || this.leadPersonalDetails?.mobilenumber;
     if (!mobile) return;
 
     if (!silent) {
@@ -854,7 +851,7 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
   loadPersonalDetails(leadId: string): void {
     this.isLoadingPersonalDetails = true;
     console.log('📥 loadPersonalDetails called for modal. leadId:', leadId);
-    this.http.get<any>(`${environment.apiUrl}/leadpersonal/${leadId}`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/leadpersonaldetails/${leadId}`).subscribe({
       next: (response) => {
         this.isLoadingPersonalDetails = false;
         console.log('📥 loadPersonalDetails Response:', response);
@@ -903,7 +900,7 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
 
     this.isSavingPersonalDetails = true;
     const personalDetails = this.personalDetailsForm.value;
-    this.http.put(`${environment.apiUrl}/leadpersonal/${this.model.leadid}`, personalDetails).subscribe({
+    this.http.put(`${environment.apiUrl}/leadpersonaldetails/${this.model.leadid}`, personalDetails).subscribe({
       next: () => {
         this.isSavingPersonalDetails = false;
         this.cdr.detectChanges(); // Force change detection before alert

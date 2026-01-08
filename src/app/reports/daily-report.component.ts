@@ -38,22 +38,32 @@ export class DailyReportComponent implements OnInit {
   reportData: ReportData[] = [];
   isLoading = false;
   hasReportData = false;
+  isAdmin = false;
+  currentUserId: string | null = null;
+  currentUserName: string | null = null;
 
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+    this.checkAdminStatus();
     this.initForm();
     this.loadEmployees();
   }
 
+  private checkAdminStatus(): void {
+    this.isAdmin = localStorage.getItem('isadminrights') === 'true';
+    this.currentUserId = localStorage.getItem('usernameID');
+    this.currentUserName = localStorage.getItem('username');
+  }
+
   private initForm(): void {
     this.reportForm = this.fb.group({
-      assignee: ['', Validators.required],
+      assignee: [{ value: this.isAdmin ? '' : this.currentUserId, disabled: !this.isAdmin }, Validators.required],
       startdate: ['', Validators.required],
       enddate: ['', Validators.required]
     });
@@ -66,21 +76,21 @@ export class DailyReportComponent implements OnInit {
       `${environment.apiUrl}/employees`,
       `${environment.apiUrl}/getemployees`
     ];
-    
+
     this.tryLoadEmployees(endpoints, 0);
   }
-  
+
   private tryLoadEmployees(endpoints: string[], index: number): void {
     if (index >= endpoints.length) {
       console.error('All employee endpoints failed');
       return;
     }
-    
+
     this.http.get<Employee[]>(endpoints[index]).subscribe({
       next: (data) => {
         console.log('Employee data loaded from:', endpoints[index], data);
         this.employees = data.filter(emp => emp.isactive !== false); // Only active employees
-        
+
         // Comprehensive change detection for employee dropdown
         this.forceEmployeeDropdownUpdate();
       },
@@ -90,24 +100,24 @@ export class DailyReportComponent implements OnInit {
       },
     });
   }
-  
+
   private forceEmployeeDropdownUpdate(): void {
     // Multiple approaches to ensure dropdown populates
     setTimeout(() => {
       this.employees = [...this.employees];
       this.forceChangeDetection();
-      
+
       // Additional fallbacks
       setTimeout(() => {
         this.employees = [...this.employees];
         this.cdr.detectChanges();
-        
+
         // Direct DOM manipulation if needed
         const selectElement = document.querySelector('select[formControlName="assignee"]') as HTMLSelectElement;
         if (selectElement && this.employees.length > 0) {
           // Force re-render of options
           const currentValue = selectElement.value;
-          selectElement.innerHTML = '<option value="">Select Assignee</option>' + 
+          selectElement.innerHTML = '<option value="">Select Assignee</option>' +
             this.employees.map(emp => `<option value="${emp.id}">${emp.name}</option>`).join('');
           selectElement.value = currentValue;
         }
@@ -121,8 +131,9 @@ export class DailyReportComponent implements OnInit {
       return;
     }
 
-    const formValues = this.reportForm.value;
-    
+    // Use getRawValue() because the 'assignee' field might be disabled for non-admins
+    const formValues = this.reportForm.getRawValue();
+
     // Validate date range
     if (new Date(formValues.startdate) > new Date(formValues.enddate)) {
       alert('Start date cannot be later than end date');
@@ -141,13 +152,13 @@ export class DailyReportComponent implements OnInit {
     console.log('Making API call with params:', params);
     console.log('API URL:', `${environment.apiUrl}/getuserreport`);
 
-    this.http.get<{success: boolean, data: ReportData[]}>(`${environment.apiUrl}/getuserreport`, { params }).subscribe({
+    this.http.get<{ success: boolean, data: ReportData[] }>(`${environment.apiUrl}/getuserreport`, { params }).subscribe({
       next: (response) => {
         console.log('API Response received:', response);
         console.log('Response type:', typeof response);
         console.log('Is Array?', Array.isArray(response));
         console.log('Response keys:', response ? Object.keys(response) : 'null/undefined');
-        
+
         // Handle wrapped response format {success: true, data: [...]}  
         if (response && response.success && Array.isArray(response.data)) {
           console.log('Response has success=true and data array with', response.data.length, 'items');
@@ -162,30 +173,30 @@ export class DailyReportComponent implements OnInit {
           console.log('Unexpected response format:', response);
           this.reportData = [];
         }
-        
+
         console.log('Final reportData:', this.reportData);
         console.log('Final reportData length:', this.reportData.length);
         console.log('Final reportData type:', typeof this.reportData);
-        
+
         // Update state and ensure UI updates with Promise.resolve
         this.hasReportData = this.reportData.length > 0;
         this.isLoading = false;
-        
+
         // FINAL SOLUTION: Direct DOM manipulation bypassing Angular's template system
         setTimeout(() => {
           this.reportData = [...this.reportData];
           this.hasReportData = true;
-          
+
           // Multiple change detection attempts
           setTimeout(() => {
             this.hasReportData = false;
             setTimeout(() => {
               this.hasReportData = true;
-              
+
               // FINAL SOLUTION: Direct DOM manipulation
               setTimeout(() => {
                 this.updateDOMDirectly();
-                
+
                 // Comprehensive button state reset
                 this.resetButtonState();
               }, 20);
@@ -212,11 +223,17 @@ export class DailyReportComponent implements OnInit {
     if (this.reportData && this.reportData.length > 0) {
       return this.reportData[0].assigneename || 'N/A';
     }
-    
+
     // Fallback: lookup from employees list if no report data yet
     const assigneeId = this.reportForm?.value?.assignee;
+
+    // If not admin and we have current user name, use it directly
+    if (!this.isAdmin && this.currentUserName) {
+      return this.currentUserName;
+    }
+
     if (!assigneeId) return 'N/A';
-    
+
     const employee = this.employees.find(emp => emp.id === assigneeId);
     return employee?.name || 'N/A';
   }
@@ -253,15 +270,15 @@ export class DailyReportComponent implements OnInit {
   private resetButtonState(): void {
     // Comprehensive approach to reset button state
     this.isLoading = false;
-    
+
     // Force multiple change detection cycles
     this.forceChangeDetection();
-    
+
     // Additional approaches to ensure button updates
     setTimeout(() => {
       this.isLoading = false;
       this.cdr.detectChanges();
-      
+
       // Direct DOM manipulation for button if needed
       const generateBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
       if (generateBtn) {
@@ -269,7 +286,7 @@ export class DailyReportComponent implements OnInit {
         generateBtn.textContent = 'Generate Report';
       }
     }, 50);
-    
+
     // Final fallback
     setTimeout(() => {
       this.isLoading = false;
@@ -281,14 +298,14 @@ export class DailyReportComponent implements OnInit {
     const loadingBox = document.getElementById('loading-box');
     const reportContainer = document.getElementById('report-results-container');
     const reportContent = document.getElementById('report-content');
-    
+
     // Hide loading, show content
     if (loadingBox) loadingBox.style.display = 'none';
-    
+
     // Display actual report data with full styling
     if (reportContainer && reportContent) {
       reportContainer.style.display = 'block';
-      
+
       if (this.reportData.length > 0) {
         // Generate report header HTML
         const headerHTML = `
@@ -299,7 +316,7 @@ export class DailyReportComponent implements OnInit {
             </button>
           </div>
         `;
-        
+
         // Generate summary HTML
         const summaryHTML = `
           <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
@@ -317,7 +334,7 @@ export class DailyReportComponent implements OnInit {
             </div>
           </div>
         `;
-        
+
         // Generate table HTML
         let tableHTML = `
           <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
@@ -338,7 +355,7 @@ export class DailyReportComponent implements OnInit {
               </thead>
               <tbody>
         `;
-        
+
         this.reportData.forEach((row, index) => {
           const bgColor = index % 2 === 0 ? '#f8f9fa' : 'white';
           tableHTML += `
@@ -360,13 +377,13 @@ export class DailyReportComponent implements OnInit {
             </tr>
           `;
         });
-        
+
         tableHTML += `
               </tbody>
             </table>
           </div>
         `;
-        
+
         reportContent.innerHTML = headerHTML + summaryHTML + tableHTML;
       } else {
         reportContent.innerHTML = `
@@ -388,7 +405,7 @@ export class DailyReportComponent implements OnInit {
     const csvContent = this.convertToCSV(this.reportData);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    
+
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
@@ -407,13 +424,13 @@ export class DailyReportComponent implements OnInit {
 
     const headers = Object.keys(data[0]);
     const csvHeaders = headers.join(',');
-    
-    const csvRows = data.map(row => 
+
+    const csvRows = data.map(row =>
       headers.map(header => {
         const value = row[header];
         // Escape commas and quotes in CSV
-        return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
-          ? `"${value.replace(/"/g, '""')}"` 
+        return typeof value === 'string' && (value.includes(',') || value.includes('"'))
+          ? `"${value.replace(/"/g, '""')}"`
           : value;
       }).join(',')
     );
