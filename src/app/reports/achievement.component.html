@@ -65,9 +65,7 @@
                             <th (click)="onSort('converted_leads')">Converted Leads <span
                                     *ngIf="sortBy === 'converted_leads'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                             </th>
-                            <th (click)="onSort('disbursement_volume')">Disbursement <span
-                                    *ngIf="sortBy === 'disbursement_volume'">{{ sortOrder === 'asc' ? '↑' : '↓'
-                                    }}</span></th>
+
                             <th (click)="onSort('attended_calls')">Calls <span *ngIf="sortBy === 'attended_calls'">{{
                                     sortOrder === 'asc' ? '↑' : '↓' }}</span></th>
                             <th (click)="onSort('revenue_achievement')">Revenue <span
@@ -94,11 +92,7 @@
                                 <span style="font-weight:600;">{{ emp.converted_actual }}</span> / {{
                                 emp.converted_target }}
                             </td>
-                            <td>
-                                <span style="font-weight:600;">{{ emp.disbursement_actual |
-                                    currency:'INR':'symbol':'1.0-0' }}</span> /
-                                {{ emp.disbursement_target | currency:'INR':'symbol':'1.0-0' }}
-                            </td>
+
                             <td>
                                 {{ emp.attended_calls }} / {{ emp.attended_calls_target }}
                                 <span style="font-size:11px; color:#6b7280; margin-left:4px;">

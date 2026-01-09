@@ -312,11 +312,7 @@
                 <span title="Logins">📁 {{ emp.logins }}</span>
                 <span title="Sanctions">✅ {{ emp.sanctions }}</span>
                 <span title="Converted Leads">🔃 {{ emp.converted_leads }}</span>
-                <span title="Disbursement">💰
-                  {{
-                  emp.disbursement_volume || 0
-                  | currency : "INR" : "symbol" : "1.0-0"
-                  }}</span>
+
                 <span title="Call Target">📞 {{ emp.attended_calls_target || 0 }}</span>
                 <span title="Revenue">💸
                   {{ emp.revenue_target || 0 | currency : "INR" : "symbol" : "1.0-0" }}</span>

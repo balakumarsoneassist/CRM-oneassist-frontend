@@ -10,6 +10,8 @@ interface FieldMeta {
   visible: boolean;
 }
 
+import { Router } from '@angular/router';
+
 @Component({
   selector: 'app-customer-followup',
   standalone: true,
@@ -53,11 +55,36 @@ export class CustomerFollowupComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
-  ) {}
+    private ngZone: NgZone,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.loadCustomers();
+
+    // Check if customer data passed from Customer List
+    const state = history.state;
+    if (state && state.customer) {
+      console.log('Received customer from navigation:', state.customer);
+
+      // Map Customer List format to Followup format
+      const mappedCustomer = {
+        svcid: state.customer.id, // Fallback to ID
+        id: state.customer.id,
+        name: state.customer.name,
+        mobileno: state.customer.mobilenumber, // Map mobilenumber -> mobileno
+        location: state.customer.bank, // Use Bank as location or appropriate field
+        details: state.customer
+      };
+
+      // Add to list if not present (optional, but good for UI consistency)
+      this.customers.unshift(mappedCustomer); // Add to top
+
+      // Auto-open followup
+      setTimeout(() => {
+        this.followupCustomer(mappedCustomer);
+      }, 500); // Small delay to allow init
+    }
   }
 
   loadCustomers(): void {
@@ -490,116 +517,7 @@ export class CustomerFollowupComponent implements OnInit {
       });
   }
 
-  convertToContact(): void {
-    // Validate that a customer is selected
-    if (!this.selectedCustomer || !this.selectedCustomer['name']) {
-      alert('No customer selected for conversion.');
-      return;
-    }
 
-    this.convertingToContact = true;
-
-    // Prepare lead data according to the specified mapping
-    const leadData = {
-      // CSV data mapping
-      firstname: this.selectedCustomer['name'] || '',
-      lastname: null,
-      mobilenumber: this.selectedCustomer['mobileno'] || '',
-      email: null,
-      presentaddress: this.selectedCustomer['location'] || '',
-
-      // Fixed values as specified
-      locationid: 5001,
-      status: 1,
-      organizationid: 1001,
-      createdon: new Date().toISOString(),
-      createdby: localStorage.getItem('usernameID') || '',
-      contacttype: 'Sales Contact',
-    };
-
-    console.log('Converting customer to contact:', leadData);
-
-    // Call the leadpersonal API to save the contact
-    this.http.post(`${environment.apiUrl}/leadpersonal`, leadData).subscribe({
-      next: (response) => {
-        console.log('Convert to contact response:', response);
-
-        // After successful contact creation, update the customer record
-        const customerId =
-          this.selectedCustomer['svcid'] || this.selectedCustomer['id'];
-        if (customerId) {
-          this.updateCustomerRecord(customerId);
-        } else {
-          // If no customer ID found, still show success and close popup
-          this.convertingToContact = false;
-          alert(
-            `Customer "${this.selectedCustomer['name']}" has been successfully converted to a contact!`
-          );
-          this.closeFollowupPopup();
-        }
-      },
-      error: (err) => {
-        console.error('Failed to convert customer to contact:', err);
-        this.convertingToContact = false;
-        alert('Failed to convert customer to contact. Please try again.');
-      },
-    });
-  }
-
-  private updateCustomerRecord(customerId: string): void {
-    console.log('Updating customer record with ID:', customerId);
-
-    // Prepare update data - you can customize what fields to update
-    const updateData = {
-      // Add any fields you want to update in the customer record
-      // For example, you might want to mark the customer as converted
-      lastmodified: new Date().toISOString(),
-      modifiedby: localStorage.getItem('usernameID') || '',
-      // Add other fields as needed
-    };
-
-    // Call the update customer API
-    this.http
-      .put(`${environment.apiUrl}/updatesvcustomer/${customerId}`, updateData)
-      .subscribe({
-        next: (response) => {
-          console.log('Customer record updated successfully:', response);
-
-          // Force UI update with multiple change detection cycles
-          this.ngZone.run(() => {
-            this.convertingToContact = false;
-            this.cdr.detectChanges();
-
-            setTimeout(() => {
-              this.cdr.detectChanges();
-              alert(
-                `Customer "${this.selectedCustomer['name']}" has been successfully converted to a contact!`
-              );
-
-              // Close the popup after successful conversion and update
-              this.closeFollowupPopup();
-            }, 100);
-          });
-        },
-        error: (err) => {
-          console.error('Failed to update customer record:', err);
-
-          // Force UI update for error case too
-          this.ngZone.run(() => {
-            this.convertingToContact = false;
-            this.cdr.detectChanges();
-
-            setTimeout(() => {
-              this.cdr.detectChanges();
-              alert(
-                `Customer "${this.selectedCustomer['name']}" has been converted to a contact, but failed to update customer record.`
-              );
-              this.closeFollowupPopup();
-            }, 100);
-          });
-        },
-      });
-  }
 
   toggleColumn(field: FieldMeta): void {
     field.visible = !field.visible;

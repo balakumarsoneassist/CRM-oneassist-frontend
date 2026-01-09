@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
+import { TrackNumberService } from '../services/track-number.service';
 
 interface Customer {
   id: number;
@@ -56,8 +57,7 @@ export class CustomerListComponent implements OnInit {
     { key: 'bank', label: 'Bank' },
     { key: 'loanamount', label: 'Loan Amount' },
     { key: 'converter', label: 'Converter' },
-    { key: 'isdirectmeet', label: 'Direct Meet' },
-    { key: 'appoinmentdate', label: 'Appt. Date' },
+    { key: 'following', label: 'Following' },
     { key: 'actions', label: 'Actions' },
   ];
 
@@ -66,8 +66,9 @@ export class CustomerListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private authService: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private trackNumberService: TrackNumberService
+  ) { }
 
   ngOnInit(): void {
     const isAdminRights = localStorage.getItem('isadminrights');
@@ -77,7 +78,7 @@ export class CustomerListComponent implements OnInit {
     // If not admin, remove the action column
     if (!this.isAdmin) {
       this.displayColumns = this.displayColumns.filter(
-        (col) => col.key !== 'actions'
+        (col) => col.key !== 'following'
       );
     }
 
@@ -124,6 +125,46 @@ export class CustomerListComponent implements OnInit {
         });
       },
     });
+  }
+
+  refreshData(): void {
+    this.loadCustomers();
+  }
+
+  trackByCustomerId(index: number, customer: Customer): number {
+    return customer.id;
+  }
+
+  getColumnValue(customer: any, key: string): any {
+    return customer[key];
+  }
+
+  followUp(customer: Customer): void {
+    // Navigate to contact follow up details
+    // We need to set the track number (lead ID) first if passing via service is required
+    // or just navigate if the component handles it otherwise.
+    // Based on other components, we might need to set a track number.
+
+    // Construct a track number or just pass lead ID
+    // Check if customer has a leadid, or use id as fallback
+    const leadId = customer.leadid || customer.id;
+
+    if (leadId) {
+      // Logic disabled as per user request (only button to be shown)
+      /*
+      // Format: TRACKNUMBER***LEADID
+      // We might not have a track number for a customer, so we might need to generate one or just pass ID
+      // Checking ContactFollowupDetailsComponent: it expects "trackNumber***leadId"
+      // const trackNum = `CUST-${customer.id}***${leadId}`;
+      // this.trackNumberService.setTrackNumber(trackNum);
+      this.router.navigate(['/dashboard/customer-followup'], {
+        state: { customer: customer }
+      });
+      */
+      console.log('Follow Up button clicked (Action disabled)');
+    } else {
+      console.warn('No ID found for customer follow up');
+    }
   }
 
   convertToContact(customer: Customer): void {
