@@ -15,7 +15,7 @@ interface FieldMeta {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './customer-followup.component.html',
-  styleUrls: ['./customer-followup.component.css']
+  styleUrls: ['./customer-followup.component.css'],
 })
 export class CustomerFollowupComponent implements OnInit {
   showDialog = false;
@@ -26,7 +26,7 @@ export class CustomerFollowupComponent implements OnInit {
   followupForm = {
     dateofvisit: '',
     nextvisit: '',
-    remarks: ''
+    remarks: '',
   };
 
   // Previous history data
@@ -45,7 +45,7 @@ export class CustomerFollowupComponent implements OnInit {
     { key: 'lastvisit', label: 'Last Visit', visible: true },
     { key: 'appoinment_date', label: 'Appointment Date', visible: true },
     { key: 'svtid', label: 'SVT ID', visible: false },
-    { key: 'remarks', label: 'Remarks', visible: true }
+    { key: 'remarks', label: 'Remarks', visible: true },
   ];
 
   customers: Record<string, any>[] = [];
@@ -54,85 +54,109 @@ export class CustomerFollowupComponent implements OnInit {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadCustomers();
   }
 
-  private loadCustomers(): void {
+  loadCustomers(): void {
     const empId = localStorage.getItem('usernameID') || '';
+    console.log(
+      '[DEBUG] loadCustomers - Current empId from localStorage:',
+      empId
+    );
+
     if (!empId) {
-      console.warn('Employee ID not found');
+      console.warn('[DEBUG] No empId found in localStorage (usernameID)');
       return;
     }
 
     // Use the specified API endpoint with employee ID
-    this.http.get<any>(`${environment.apiUrl}/svcustomerlist/${empId}`).subscribe({
-      next: (response) => {
-        console.log('API Response:', response);
+    this.http
+      .get<any>(`${environment.apiUrl}/svcustomerlist/${empId}`)
+      .subscribe({
+        next: (response) => {
+          console.log('API Response:', response);
 
-        // Handle different response formats
-        let data = response;
+          // Handle different response formats
+          let data = response;
 
-        // Check if response is wrapped in an object with data property
-        if (response && typeof response === 'object' && !Array.isArray(response)) {
-          if (response.data) {
-            data = response.data;
-          } else if (response.result) {
-            data = response.result;
-          } else if (response.customers) {
-            data = response.customers;
+          // Check if response is wrapped in an object with data property
+          if (
+            response &&
+            typeof response === 'object' &&
+            !Array.isArray(response)
+          ) {
+            if (response.data) {
+              data = response.data;
+            } else if (response.result) {
+              data = response.result;
+            } else if (response.customers) {
+              data = response.customers;
+            }
           }
-        }
 
-        // Ensure data is an array
-        if (!Array.isArray(data)) {
-          console.warn('API response is not an array:', data);
-          data = [];
-        }
+          // Ensure data is an array
+          if (!Array.isArray(data)) {
+            console.warn('API response is not an array:', data);
+            data = [];
+          }
 
-        this.customers = data.map((obj: any) => {
-          const normalized: Record<string, any> = {};
-          Object.keys(obj || {}).forEach(k => {
-            normalized[k.toLowerCase()] = obj[k];
+          this.customers = data.map((obj: any) => {
+            const normalized: Record<string, any> = {};
+            Object.keys(obj || {}).forEach((k) => {
+              normalized[k.toLowerCase()] = obj[k];
+            });
+
+            // Fallback for remarks if using the new aggregated field
+            if (!normalized['remarks'] && normalized['all_remarks']) {
+              normalized['remarks'] = normalized['all_remarks'];
+            }
+
+            // Date formatting for UI
+            if (normalized['lastvisit']) {
+              try {
+                normalized['lastvisit'] = new Date(
+                  normalized['lastvisit']
+                ).toLocaleString();
+              } catch (e) {
+                console.warn('Date formatting error:', e);
+              }
+            }
+            if (normalized['appoinment_date']) {
+              try {
+                normalized['appoinment_date'] = new Date(
+                  normalized['appoinment_date']
+                ).toLocaleString();
+              } catch (e) {
+                console.warn(
+                  'Error formatting appoinment_date:',
+                  normalized['appoinment_date']
+                );
+              }
+            }
+            return normalized;
           });
-          // Format dates for display
-          if (normalized['lastvisit']) {
-            try {
-              normalized['lastvisit'] = new Date(normalized['lastvisit']).toLocaleString();
-            } catch (e) {
-              console.warn('Error formatting lastvisit date:', normalized['lastvisit']);
-            }
-          }
-          if (normalized['appoinment_date']) {
-            try {
-              normalized['appoinment_date'] = new Date(normalized['appoinment_date']).toLocaleString();
-            } catch (e) {
-              console.warn('Error formatting appoinment_date:', normalized['appoinment_date']);
-            }
-          }
-          return normalized;
-        });
 
-        console.log('Processed customers:', this.customers);
+          console.log('Processed customers:', this.customers);
 
-        // Apply direct DOM manipulation fix for Angular change detection issues
-        setTimeout(() => {
-          this.applyDirectDOMUpdate();
-        }, 100);
-      },
-      error: (err) => {
-        console.error('Failed to load customer followup data', err);
-        // Fallback to sample data for development
-        this.customers = this.getSampleData();
+          // Apply direct DOM manipulation fix for Angular change detection issues
+          setTimeout(() => {
+            this.applyDirectDOMUpdate();
+          }, 100);
+        },
+        error: (err) => {
+          console.error('Failed to load customer followup data', err);
+          // Fallback to sample data for development
+          this.customers = this.getSampleData();
 
-        // Apply direct DOM manipulation fix even for sample data
-        setTimeout(() => {
-          this.applyDirectDOMUpdate();
-        }, 100);
-      }
-    });
+          // Apply direct DOM manipulation fix even for sample data
+          setTimeout(() => {
+            this.applyDirectDOMUpdate();
+          }, 100);
+        },
+      });
   }
 
   private applyDirectDOMUpdate(): void {
@@ -154,7 +178,9 @@ export class CustomerFollowupComponent implements OnInit {
   }
 
   private updateTableDirectly(): void {
-    const tableBody = document.querySelector('.customer-followup-component tbody');
+    const tableBody = document.querySelector(
+      '.customer-followup-component tbody'
+    );
     if (!tableBody) {
       console.warn('Table body not found for direct DOM update');
       return;
@@ -168,11 +194,13 @@ export class CustomerFollowupComponent implements OnInit {
       const row = document.createElement('tr');
 
       // Add visible columns
-      this.fields.filter(field => field.visible).forEach(field => {
-        const cell = document.createElement('td');
-        cell.textContent = customer[field.key] || '';
-        row.appendChild(cell);
-      });
+      this.fields
+        .filter((field) => field.visible)
+        .forEach((field) => {
+          const cell = document.createElement('td');
+          cell.textContent = customer[field.key] || '';
+          row.appendChild(cell);
+        });
 
       // Add followup button column
       const actionCell = document.createElement('td');
@@ -186,7 +214,10 @@ export class CustomerFollowupComponent implements OnInit {
       tableBody.appendChild(row);
     });
 
-    console.log('Direct DOM update applied - table rows:', this.customers.length);
+    console.log(
+      'Direct DOM update applied - table rows:',
+      this.customers.length
+    );
   }
 
   private loadSampleData(): Record<string, any>[] {
@@ -199,8 +230,8 @@ export class CustomerFollowupComponent implements OnInit {
         novisit: '2',
         lastvisit: new Date().toLocaleString(),
         svtid: 999,
-        remarks: 'Sample remarks for testing'
-      }
+        remarks: 'Sample remarks for testing',
+      },
     ];
   }
 
@@ -209,7 +240,7 @@ export class CustomerFollowupComponent implements OnInit {
   }
 
   get visibleColumns(): string[] {
-    return this.fields.filter(f => f.visible).map(f => f.key);
+    return this.fields.filter((f) => f.visible).map((f) => f.key);
   }
 
   openDialog(): void {
@@ -247,7 +278,7 @@ export class CustomerFollowupComponent implements OnInit {
     this.followupForm = {
       dateofvisit: currentDateTime,
       nextvisit: '',
-      remarks: ''
+      remarks: '',
     };
   }
 
@@ -266,70 +297,86 @@ export class CustomerFollowupComponent implements OnInit {
 
     console.log('Loading previous history for customer ID:', custId);
 
-    this.http.get<any>(`${environment.apiUrl}/getsvcustlist/${custId}`).subscribe({
-      next: (response) => {
-        console.log('Previous history API response:', response);
-        try {
-          // Handle different response formats
-          let data = response;
-          if (response && typeof response === 'object' && !Array.isArray(response)) {
-            if (response.data) {
-              data = response.data;
-            } else if (response.result) {
-              data = response.result;
-            } else if (response.history) {
-              data = response.history;
+    this.http
+      .get<any>(`${environment.apiUrl}/getsvcustlist/${custId}`)
+      .subscribe({
+        next: (response) => {
+          console.log('Previous history API response:', response);
+          try {
+            // Handle different response formats
+            let data = response;
+            if (
+              response &&
+              typeof response === 'object' &&
+              !Array.isArray(response)
+            ) {
+              if (response.data) {
+                data = response.data;
+              } else if (response.result) {
+                data = response.result;
+              } else if (response.history) {
+                data = response.history;
+              }
             }
-          }
 
-          // Ensure data is an array
-          if (!Array.isArray(data)) {
-            console.warn('History API response is not an array:', data);
-            data = [];
-          }
+            // Ensure data is an array
+            if (!Array.isArray(data)) {
+              console.warn('History API response is not an array:', data);
+              data = [];
+            }
 
-          this.previousHistory = data.map((obj: any) => {
-            const normalized: Record<string, any> = {};
-            Object.keys(obj || {}).forEach(k => {
-              normalized[k.toLowerCase()] = obj[k];
+            this.previousHistory = data.map((obj: any) => {
+              const normalized: Record<string, any> = {};
+              Object.keys(obj || {}).forEach((k) => {
+                normalized[k.toLowerCase()] = obj[k];
+              });
+
+              // Format dates for display
+              if (normalized['dateofvisit']) {
+                try {
+                  normalized['dateofvisit'] = new Date(
+                    normalized['dateofvisit']
+                  ).toLocaleString();
+                } catch (e) {
+                  console.warn(
+                    'Error formatting dateofvisit:',
+                    normalized['dateofvisit']
+                  );
+                }
+              }
+              if (normalized['nextvisit']) {
+                try {
+                  normalized['nextvisit'] = new Date(
+                    normalized['nextvisit']
+                  ).toLocaleString();
+                } catch (e) {
+                  console.warn(
+                    'Error formatting nextvisit:',
+                    normalized['nextvisit']
+                  );
+                }
+              }
+
+              return normalized;
             });
 
-            // Format dates for display
-            if (normalized['dateofvisit']) {
-              try {
-                normalized['dateofvisit'] = new Date(normalized['dateofvisit']).toLocaleString();
-              } catch (e) {
-                console.warn('Error formatting dateofvisit:', normalized['dateofvisit']);
-              }
-            }
-            if (normalized['nextvisit']) {
-              try {
-                normalized['nextvisit'] = new Date(normalized['nextvisit']).toLocaleString();
-              } catch (e) {
-                console.warn('Error formatting nextvisit:', normalized['nextvisit']);
-              }
-            }
-
-            return normalized;
-          });
-
-          console.log('Processed previous history:', this.previousHistory);
-        } catch (error) {
-          console.error('Error processing history data:', error);
-          this.previousHistory = [];
-        } finally {
+            console.log('Processed previous history:', this.previousHistory);
+          } catch (error) {
+            console.error('Error processing history data:', error);
+            this.previousHistory = [];
+          } finally {
+            this.loadingHistory = false;
+            this.cdr.detectChanges();
+          }
+        },
+        error: (err) => {
+          console.error('Failed to load previous history', err);
           this.loadingHistory = false;
+          // Show sample data if API fails to ensure user sees something
+          this.previousHistory = this.getSampleHistoryData();
           this.cdr.detectChanges();
-        }
-      },
-      error: (err) => {
-        console.error('Failed to load previous history', err);
-        this.loadingHistory = false;
-        // Show sample data if API fails to ensure user sees something
-        this.previousHistory = this.getSampleHistoryData();
-        this.cdr.detectChanges();
-      }
-    });
+        },
+      });
   }
 
   private getSampleHistoryData(): any[] {
@@ -339,15 +386,15 @@ export class CustomerFollowupComponent implements OnInit {
         dateofvisit: new Date('2025-01-15').toLocaleString(),
         nextvisit: new Date('2025-01-25').toLocaleString(),
         remarks: 'Initial visit - discussed loan requirements',
-        visitby: 'John Employee'
+        visitby: 'John Employee',
       },
       {
         id: 2,
         dateofvisit: new Date('2025-01-25').toLocaleString(),
         nextvisit: new Date('2025-02-05').toLocaleString(),
         remarks: 'Follow-up visit - provided documentation',
-        visitby: 'John Employee'
-      }
+        visitby: 'John Employee',
+      },
     ];
   }
 
@@ -363,8 +410,12 @@ export class CustomerFollowupComponent implements OnInit {
 
         // Direct DOM manipulation to force popup visibility
         setTimeout(() => {
-          const popup = document.querySelector('.followup-dialog') as HTMLElement;
-          const backdrop = document.querySelector('.dialog-backdrop') as HTMLElement;
+          const popup = document.querySelector(
+            '.followup-dialog'
+          ) as HTMLElement;
+          const backdrop = document.querySelector(
+            '.dialog-backdrop'
+          ) as HTMLElement;
 
           if (backdrop && popup) {
             backdrop.style.display = 'flex';
@@ -399,7 +450,8 @@ export class CustomerFollowupComponent implements OnInit {
       return;
     }
 
-    const custId = this.selectedCustomer['svcid'] || this.selectedCustomer['id'];
+    const custId =
+      this.selectedCustomer['svcid'] || this.selectedCustomer['id'];
     if (!custId) {
       alert('Customer ID not found. Cannot save visit details.');
       return;
@@ -412,37 +464,153 @@ export class CustomerFollowupComponent implements OnInit {
       nextvisit: this.followupForm.nextvisit || null,
       remarks: this.followupForm.remarks.trim(),
       record_type: this.selectedCustomer['record_type'] || 'customer',
-      createdby: localStorage.getItem('usernameID') // Send createdby to fix 500 error
+      createdby: localStorage.getItem('usernameID'), // Send createdby to fix 500 error
     };
 
     console.log('Saving followup details:', saveData);
 
     // Call the save API
-    this.http.post(`${environment.apiUrl}/savesalesvisittrack`, saveData).subscribe({
+    this.http
+      .post(`${environment.apiUrl}/savesalesvisittrack`, saveData)
+      .subscribe({
+        next: (response) => {
+          console.log('Save response:', response);
+          alert('Visit details saved successfully!');
+
+          // Close the popup after successful save
+          this.closeFollowupPopup();
+
+          // Refresh the main customer list to reflect any updates
+          this.loadCustomers();
+        },
+        error: (err) => {
+          console.error('Failed to save visit details:', err);
+          alert('Failed to save visit details. Please try again.');
+        },
+      });
+  }
+
+  convertToContact(): void {
+    // Validate that a customer is selected
+    if (!this.selectedCustomer || !this.selectedCustomer['name']) {
+      alert('No customer selected for conversion.');
+      return;
+    }
+
+    this.convertingToContact = true;
+
+    // Prepare lead data according to the specified mapping
+    const leadData = {
+      // CSV data mapping
+      firstname: this.selectedCustomer['name'] || '',
+      lastname: null,
+      mobilenumber: this.selectedCustomer['mobileno'] || '',
+      email: null,
+      presentaddress: this.selectedCustomer['location'] || '',
+
+      // Fixed values as specified
+      locationid: 5001,
+      status: 1,
+      organizationid: 1001,
+      createdon: new Date().toISOString(),
+      createdby: localStorage.getItem('usernameID') || '',
+      contacttype: 'Sales Contact',
+    };
+
+    console.log('Converting customer to contact:', leadData);
+
+    // Call the leadpersonal API to save the contact
+    this.http.post(`${environment.apiUrl}/leadpersonal`, leadData).subscribe({
       next: (response) => {
-        console.log('Save response:', response);
-        alert('Visit details saved successfully!');
+        console.log('Convert to contact response:', response);
 
-        // Close the popup after successful save
-        this.closeFollowupPopup();
-
-        // Refresh the main customer list to reflect any updates
-        this.loadCustomers();
+        // After successful contact creation, update the customer record
+        const customerId =
+          this.selectedCustomer['svcid'] || this.selectedCustomer['id'];
+        if (customerId) {
+          this.updateCustomerRecord(customerId);
+        } else {
+          // If no customer ID found, still show success and close popup
+          this.convertingToContact = false;
+          alert(
+            `Customer "${this.selectedCustomer['name']}" has been successfully converted to a contact!`
+          );
+          this.closeFollowupPopup();
+        }
       },
       error: (err) => {
-        console.error('Failed to save visit details:', err);
-        alert('Failed to save visit details. Please try again.');
-      }
+        console.error('Failed to convert customer to contact:', err);
+        this.convertingToContact = false;
+        alert('Failed to convert customer to contact. Please try again.');
+      },
     });
   }
 
+  private updateCustomerRecord(customerId: string): void {
+    console.log('Updating customer record with ID:', customerId);
 
+    // Prepare update data - you can customize what fields to update
+    const updateData = {
+      // Add any fields you want to update in the customer record
+      // For example, you might want to mark the customer as converted
+      lastmodified: new Date().toISOString(),
+      modifiedby: localStorage.getItem('usernameID') || '',
+      // Add other fields as needed
+    };
+
+    // Call the update customer API
+    this.http
+      .put(`${environment.apiUrl}/updatesvcustomer/${customerId}`, updateData)
+      .subscribe({
+        next: (response) => {
+          console.log('Customer record updated successfully:', response);
+
+          // Force UI update with multiple change detection cycles
+          this.ngZone.run(() => {
+            this.convertingToContact = false;
+            this.cdr.detectChanges();
+
+            setTimeout(() => {
+              this.cdr.detectChanges();
+              alert(
+                `Customer "${this.selectedCustomer['name']}" has been successfully converted to a contact!`
+              );
+
+              // Close the popup after successful conversion and update
+              this.closeFollowupPopup();
+            }, 100);
+          });
+        },
+        error: (err) => {
+          console.error('Failed to update customer record:', err);
+
+          // Force UI update for error case too
+          this.ngZone.run(() => {
+            this.convertingToContact = false;
+            this.cdr.detectChanges();
+
+            setTimeout(() => {
+              this.cdr.detectChanges();
+              alert(
+                `Customer "${this.selectedCustomer['name']}" has been converted to a contact, but failed to update customer record.`
+              );
+              this.closeFollowupPopup();
+            }, 100);
+          });
+        },
+      });
+  }
 
   toggleColumn(field: FieldMeta): void {
     field.visible = !field.visible;
   }
 
+  trackByFunc(index: number, item: any): string {
+    return item.id || item.svcid || index.toString();
+  }
+
   getLabel(key: string): string {
-    return this.fields.find(f => f.key === key)?.label || key;
+    const field = this.fields.find((f) => f.key === key);
+    return field ? field.label : key;
   }
 }

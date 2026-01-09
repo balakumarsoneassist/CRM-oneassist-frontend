@@ -83,6 +83,8 @@ export class TargetAchievementComponent implements OnInit {
     // Admin properties
     assignedEmployees: any[] = [];
     unassignedEmployees: any[] = [];
+    allEmployees: any[] = [];
+    isReassignModalOpen: boolean = false;
 
     checkUserRole() {
         const isAdminRights = localStorage.getItem('isadminrights');

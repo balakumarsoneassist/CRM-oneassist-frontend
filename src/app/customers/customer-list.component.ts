@@ -1,7 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 
 interface Customer {
   id: number;
@@ -12,6 +15,7 @@ interface Customer {
   bank: string;
   loanamount: string;
   converter: string;
+  leadid?: number;
   isdirectmeet?: boolean;
   appoinmentdate?: string;
 }
@@ -19,14 +23,29 @@ interface Customer {
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './customer-list.component.html',
-  styleUrls: ['./customer-list.component.css']
+  styleUrls: ['./customer-list.component.css'],
 })
 export class CustomerListComponent implements OnInit {
   customers: Customer[] = [];
   loading = false;
   error: string | null = null;
+  isAdmin = false;
+
+  // Reassignment properties
+  isReassignModalOpen = false;
+  isReasonModalOpen = false;
+  isEmployeeModalOpen = false;
+  selectedReassignCustomer: Customer | null = null;
+  reassignReason = '';
+  reassignCustomerList: Customer[] = [];
+  employees: any[] = [];
+
+  // Timeline properties
+  isTimelineModalOpen = false;
+  timelineData: any[] = [];
+  selectedTimelineCustomer: Customer | null = null;
 
   // Define visible columns (excluding id)
   displayColumns = [
@@ -38,12 +57,30 @@ export class CustomerListComponent implements OnInit {
     { key: 'loanamount', label: 'Loan Amount' },
     { key: 'converter', label: 'Converter' },
     { key: 'isdirectmeet', label: 'Direct Meet' },
-    { key: 'appoinmentdate', label: 'Appt. Date' }
+    { key: 'appoinmentdate', label: 'Appt. Date' },
+    { key: 'actions', label: 'Actions' },
   ];
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private ngZone: NgZone) { }
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
+    const isAdminRights = localStorage.getItem('isadminrights');
+    this.isAdmin = isAdminRights === 'true';
+
+    // If admin, keep all columns including actions
+    // If not admin, remove the action column
+    if (!this.isAdmin) {
+      this.displayColumns = this.displayColumns.filter(
+        (col) => col.key !== 'actions'
+      );
+    }
+
     this.loadCustomers();
   }
 
@@ -76,82 +113,166 @@ export class CustomerListComponent implements OnInit {
         this.ngZone.run(() => {
           this.loading = false;
           this.cdr.detectChanges();
-
-          setTimeout(() => {
-            this.cdr.detectChanges();
-
-            // Force DOM update directly as fallback
-            setTimeout(() => {
-              this.updateDOMDirectly();
-            }, 50);
-          }, 100);
         });
       },
       error: (err) => {
-        console.error('Failed to load customer list:', err);
-
-        // Force UI update for error state too
+        console.error('Error loading customers:', err);
+        this.error = 'Failed to load customers';
         this.ngZone.run(() => {
-          this.error = 'Failed to load customer data. Please try again.';
           this.loading = false;
           this.cdr.detectChanges();
         });
-      }
+      },
     });
   }
 
-  // Direct DOM manipulation method (following established pattern from other components)
-  updateDOMDirectly(): void {
-    const loadingContainer = document.querySelector('.loading-container') as HTMLElement;
-    const tableWrapper = document.querySelector('.table-wrapper') as HTMLElement;
-    const errorContainer = document.querySelector('.error-container') as HTMLElement;
+  convertToContact(customer: Customer): void {
+    if (!confirm(`Convert ${customer.name} to contact?`)) return;
 
-    console.log('Direct DOM update - loading:', this.loading, 'customers:', this.customers.length, 'error:', this.error);
+    this.loading = true;
+    this.http
+      .post<any>(`${environment.apiUrl}/api/customers/convert-to-contact`, {
+        customerId: customer.id,
+      })
+      .subscribe({
+        next: (response) => {
+          alert('Customer converted to contact successfully');
+          this.loading = false;
+          this.loadCustomers();
+        },
+        error: (err) => {
+          console.error('Error converting customer to contact:', err);
+          const errorMessage =
+            err.error?.details || err.error?.error || 'Internal server error';
 
-    // Hide loading state
-    if (loadingContainer) {
-      loadingContainer.style.display = this.loading ? 'flex' : 'none';
-    }
-
-    // Show/hide error state
-    if (errorContainer) {
-      errorContainer.style.display = (this.error && !this.loading) ? 'block' : 'none';
-    }
-
-    // Show/hide table
-    if (tableWrapper) {
-      tableWrapper.style.display = (!this.loading && !this.error) ? 'block' : 'none';
-    }
-
-    // Update record count if table is visible
-    const recordCount = document.querySelector('.record-count') as HTMLElement;
-    if (recordCount && !this.loading && !this.error) {
-      recordCount.textContent = `Total Customers: ${this.customers.length}`;
-    }
+          if (errorMessage.toLowerCase().includes('unique')) {
+            alert('the customer has been following up');
+          } else {
+            alert(`Failed to convert to contact: ${errorMessage}`);
+          }
+          this.loading = false;
+        },
+      });
   }
 
-  refreshData(): void {
-    this.loadCustomers();
+  openReassignFlow(): void {
+    if (!this.isAdmin) return;
+    this.isReassignModalOpen = true;
+    this.reassignCustomerList = [...this.customers]; // Initial copy
+    this.fetchEmployees();
   }
 
-  getColumnValue(customer: Customer, columnKey: string): any {
-    const value = customer[columnKey as keyof Customer];
-
-    if (columnKey === 'isdirectmeet') {
-      return value === true ? 'Yes' : 'No';
-    }
-
-    if (columnKey === 'appoinmentdate' && value) {
-      if (typeof value === 'string') {
-        const date = new Date(value);
-        return isNaN(date.getTime()) ? value : date.toLocaleString();
-      }
-    }
-
-    return value;
+  closeReassignModal(): void {
+    this.isReassignModalOpen = false;
   }
 
-  trackByCustomerId(index: number, customer: Customer): number {
-    return customer.id;
+  openReasonModal(customer: Customer): void {
+    this.selectedReassignCustomer = customer;
+    this.reassignReason = ''; // Reset reason
+    this.isReasonModalOpen = true;
+  }
+
+  closeReasonModal(): void {
+    this.isReasonModalOpen = false;
+    this.reassignReason = '';
+  }
+
+  submitReason(): void {
+    if (!this.reassignReason || this.reassignReason.trim() === '') {
+      alert('Please enter a reason for reassignment.');
+      return;
+    }
+    this.isReasonModalOpen = false;
+    this.isEmployeeModalOpen = true; // Proceed to employee selection
+  }
+
+  closeEmployeeModal(): void {
+    this.isEmployeeModalOpen = false;
+    this.selectedReassignCustomer = null;
+  }
+
+  fetchEmployees(): void {
+    if (this.employees.length > 0) return; // Cached
+    this.http
+      .get<any>(`${environment.apiUrl}/api/target-assignment-status`)
+      .subscribe({
+        next: (res) => {
+          const assigned = res.assigned || [];
+          const unassigned = res.unassigned || [];
+          this.employees = [...assigned, ...unassigned];
+          this.employees = this.employees.filter(
+            (emp, index, self) =>
+              index === self.findIndex((t) => t.id === emp.id)
+          );
+        },
+        error: (err) => console.error('Failed to fetch employees', err),
+      });
+  }
+
+  confirmReassign(employee: any): void {
+    if (!this.selectedReassignCustomer || !employee) return;
+
+    // Optional: Include reason in confirmation message
+    if (
+      !confirm(
+        `Reassigning ${this.selectedReassignCustomer.name} to ${employee.name}.\nReason: ${this.reassignReason}\n\nProceed?`
+      )
+    )
+      return;
+
+    this.loading = true;
+    const payload = {
+      customerId: this.selectedReassignCustomer.id,
+      empid: employee.id,
+      orgid: localStorage.getItem('organizationid'),
+      reason: this.reassignReason, // Sending reason to backend if needed
+    };
+
+    this.http
+      .post<any>(
+        `${environment.apiUrl}/api/customers/reassign-to-employee`,
+        payload
+      )
+      .subscribe({
+        next: (res) => {
+          alert(`Successfully reassigned to ${employee.name}`);
+          this.loading = false;
+          this.closeEmployeeModal();
+          this.loadCustomers();
+        },
+        error: (err) => {
+          console.error('Reassignment failed', err);
+          alert('Failed to reassign customer.');
+          this.loading = false;
+        },
+      });
+  }
+
+  // Timeline Logic
+  openTimeline(customer: Customer): void {
+    if (!this.isAdmin) return;
+    this.selectedTimelineCustomer = customer;
+    this.isTimelineModalOpen = true;
+    this.timelineData = []; // Clear previous
+
+    this.http
+      .get<any>(`${environment.apiUrl}/api/customers/${customer.id}/timeline`)
+      .subscribe({
+        next: (res) => {
+          console.log('Timeline API Response:', res);
+          if (res.success) {
+            this.ngZone.run(() => {
+              this.timelineData = res.data;
+              this.cdr.detectChanges();
+            });
+          }
+        },
+        error: (err) => console.error('Failed to fetch timeline', err),
+      });
+  }
+
+  closeTimelineModal(): void {
+    this.isTimelineModalOpen = false;
+    this.selectedTimelineCustomer = null;
   }
 }
