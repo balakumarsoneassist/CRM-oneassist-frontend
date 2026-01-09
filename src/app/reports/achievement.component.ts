@@ -36,8 +36,7 @@ export class AchievementComponent implements OnInit, OnDestroy {
   loginsTarget: number = 0;
   sanctionsCount: number = 0;
   sanctionsTarget: number = 0;
-  disbursementVolume: number = 0;
-  disbursementVolumeTarget: number = 0;
+
   attendedCalls: number = 0;
   attendedCallsTarget: number = 0;
   converted_leads: number = 0;
@@ -206,8 +205,7 @@ export class AchievementComponent implements OnInit, OnDestroy {
     this.loginsTarget = Number(data.logins_target) || 0;
     this.sanctionsCount = Number(data.sanctions_actual) || 0;
     this.sanctionsTarget = Number(data.sanctions_target) || 0;
-    this.disbursementVolume = Number(data.disbursement_actual) || 0;
-    this.disbursementVolumeTarget = Number(data.disbursement_target) || 0;
+
     this.attendedCalls = Number(data.attended_calls) || 0;
     this.attendedCallsTarget = Number(data.attended_calls_target) || 0;
     this.converted_leads = Number(data.converted_actual) || 0;
@@ -221,8 +219,7 @@ export class AchievementComponent implements OnInit, OnDestroy {
     this.loginsTarget = totals.logins_target || 0;
     this.sanctionsCount = totals.sanctions_actual || 0;
     this.sanctionsTarget = totals.sanctions_target || 0;
-    this.disbursementVolume = totals.disbursement_actual || 0;
-    this.disbursementVolumeTarget = totals.disbursement_target || 0;
+
     this.attendedCalls = totals.attended_calls || 0;
     this.attendedCallsTarget = totals.attended_calls_target || 0;
     this.converted_leads = totals.converted_actual || 0;
@@ -244,8 +241,7 @@ export class AchievementComponent implements OnInit, OnDestroy {
     this.sanctionsCount = Number(emp.sanctions_actual) || 0;
     this.sanctionsTarget = Number(emp.sanctions_target) || 0;
 
-    this.disbursementVolume = Number(emp.disbursement_actual) || 0;
-    this.disbursementVolumeTarget = Number(emp.disbursement_target) || 0;
+
 
     this.attendedCalls = Number(emp.attended_calls) || 0;
     this.attendedCallsTarget = Number(emp.attended_calls_target) || 0;

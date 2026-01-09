@@ -166,33 +166,7 @@
 
             <!-- Row 2: Detailed Performance -->
             <div class="stats-row-2">
-                <!-- Card 4: Disbursement Volume -->
-                <div class="detail-card">
-                    <div class="detail-header">
-                        <div class="header-left">
-                            <span class="detail-icon">💼</span>
-                            <span class="detail-title">Total Disbursement Volume</span>
-                        </div>
-                        <div class="header-right">
-                            <span class="detail-value">
-                                {{ disbursementVolume | currency:'INR':'symbol':'1.0-0' }} /
-                                {{ disbursementVolumeTarget | currency:'INR':'symbol':'1.0-0' }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="detail-body">
-                        <div class="progress-container-lg">
-                            <div class="progress-bar-gradient"
-                                [style.width.%]="disbursementVolumeTarget > 0 ? (disbursementVolume / disbursementVolumeTarget) * 100 : 0">
-                            </div>
-                        </div>
-                        <div class="progress-meta">
-                            <span>Reached {{ disbursementVolumeTarget > 0 ? ((disbursementVolume /
-                                disbursementVolumeTarget)
-                                * 100 | number:'1.0-0') : 0 }}% of Target Volume</span>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Card 5: Attended Calls -->
                 <div class="detail-card">
