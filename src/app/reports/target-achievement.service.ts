@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 export class TargetAchievementService {
   private apiUrl = environment.apiUrl; // Base API URL
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -45,7 +45,10 @@ export class TargetAchievementService {
     // Add timestamp to force new network request
     const timestamp = new Date().getTime();
     params = params.set('t', timestamp.toString());
-    return this.http.get(`${this.apiUrl}/api/target-metrics`, { headers, params });
+    return this.http.get(`${this.apiUrl}/api/target-metrics`, {
+      headers,
+      params,
+    });
   }
 
   updateTargetMetrics(data: any): Observable<any> {
@@ -63,8 +66,6 @@ export class TargetAchievementService {
     return this.http.put(url, data, { headers });
   }
 
-
-
   getEmployeeById(id: string): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.get(`${this.apiUrl}/employees/${id}`, { headers });
@@ -77,7 +78,10 @@ export class TargetAchievementService {
     });
   }
 
-  getAllAchievementMetrics(page: number = 1, limit: number = 10): Observable<any> {
+  getAllAchievementMetrics(
+    page: number = 1,
+    limit: number = 10
+  ): Observable<any> {
     const headers = this.getAuthHeaders();
     // Add timestamp to force new network request
     const timestamp = new Date().getTime();
@@ -90,6 +94,10 @@ export class TargetAchievementService {
   bulkAssignCustomers(empid: string): Observable<any> {
     const headers = this.getAuthHeaders();
     const orgId = localStorage.getItem('organizationid');
-    return this.http.post(`${this.apiUrl}/api/customers/bulk-assign`, { empid, orgId }, { headers });
+    return this.http.post(
+      `${this.apiUrl}/api/customers/bulk-assign`,
+      { empid, orgId },
+      { headers }
+    );
   }
 }

@@ -23,7 +23,7 @@ interface Customer {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './customer-list.component.html',
-  styleUrls: ['./customer-list.component.css']
+  styleUrls: ['./customer-list.component.css'],
 })
 export class CustomerListComponent implements OnInit {
   customers: Customer[] = [];
@@ -40,7 +40,7 @@ export class CustomerListComponent implements OnInit {
     { key: 'bank', label: 'Bank' },
     { key: 'loanamount', label: 'Loan Amount' },
     { key: 'converter', label: 'Converter' },
-    { key: 'actions', label: 'Actions' }
+    { key: 'actions', label: 'Actions' },
   ];
 
   constructor(
@@ -49,7 +49,7 @@ export class CustomerListComponent implements OnInit {
     private ngZone: NgZone,
     private authService: AuthService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     const isAdminRights = localStorage.getItem('isadminrights');
@@ -57,7 +57,9 @@ export class CustomerListComponent implements OnInit {
 
     // If admin, remove the action column since it is empty
     if (this.isAdmin) {
-      this.displayColumns = this.displayColumns.filter(col => col.key !== 'actions');
+      this.displayColumns = this.displayColumns.filter(
+        (col) => col.key !== 'actions'
+      );
     }
 
     this.loadCustomers();
@@ -112,17 +114,30 @@ export class CustomerListComponent implements OnInit {
           this.loading = false;
           this.cdr.detectChanges();
         });
-      }
+      },
     });
   }
 
   // Direct DOM manipulation method (following established pattern from other components)
   updateDOMDirectly(): void {
-    const loadingContainer = document.querySelector('.loading-container') as HTMLElement;
-    const tableWrapper = document.querySelector('.table-wrapper') as HTMLElement;
-    const errorContainer = document.querySelector('.error-container') as HTMLElement;
+    const loadingContainer = document.querySelector(
+      '.loading-container'
+    ) as HTMLElement;
+    const tableWrapper = document.querySelector(
+      '.table-wrapper'
+    ) as HTMLElement;
+    const errorContainer = document.querySelector(
+      '.error-container'
+    ) as HTMLElement;
 
-    console.log('Direct DOM update - loading:', this.loading, 'customers:', this.customers.length, 'error:', this.error);
+    console.log(
+      'Direct DOM update - loading:',
+      this.loading,
+      'customers:',
+      this.customers.length,
+      'error:',
+      this.error
+    );
 
     // Hide loading state
     if (loadingContainer) {
@@ -131,12 +146,14 @@ export class CustomerListComponent implements OnInit {
 
     // Show/hide error state
     if (errorContainer) {
-      errorContainer.style.display = (this.error && !this.loading) ? 'block' : 'none';
+      errorContainer.style.display =
+        this.error && !this.loading ? 'block' : 'none';
     }
 
     // Show/hide table
     if (tableWrapper) {
-      tableWrapper.style.display = (!this.loading && !this.error) ? 'block' : 'none';
+      tableWrapper.style.display =
+        !this.loading && !this.error ? 'block' : 'none';
     }
 
     // Update record count if table is visible
@@ -158,8 +175,6 @@ export class CustomerListComponent implements OnInit {
     return customer.id;
   }
 
-
-
   followUp(customer: Customer): void {
     if (!customer) return;
 
@@ -171,25 +186,34 @@ export class CustomerListComponent implements OnInit {
       notes: `Generated from Customer List - Product: ${customer.product}, Bank: ${customer.bank}`,
       dateofvisit: new Date().toISOString().slice(0, 16), // Current time for initial track
       remarks: 'Started follow up from customer list',
-      contactflag: false
+      contactflag: false,
     };
 
-    this.http.post(`${environment.apiUrl}/savesalesvisit`, salesVisitData).subscribe({
-      next: (response) => {
-        console.log('Successfully reflected in sales visit module:', response);
-        alert('the customer has been following up');
-      },
-      error: (err) => {
-        console.error('Error reflecting customer in sales visit module:', err);
-        const errorMessage = err.error?.details || err.error?.error || 'Internal server error';
-
-        if (errorMessage.toLowerCase().includes('unique')) {
+    this.http
+      .post(`${environment.apiUrl}/savesalesvisit`, salesVisitData)
+      .subscribe({
+        next: (response) => {
+          console.log(
+            'Successfully reflected in sales visit module:',
+            response
+          );
           alert('the customer has been following up');
-        } else {
-          alert(`Failed to process follow up: ${errorMessage}`);
-        }
-      }
-    });
+        },
+        error: (err) => {
+          console.error(
+            'Error reflecting customer in sales visit module:',
+            err
+          );
+          const errorMessage =
+            err.error?.details || err.error?.error || 'Internal server error';
+
+          if (errorMessage.toLowerCase().includes('unique')) {
+            alert('the customer has been following up');
+          } else {
+            alert(`Failed to process follow up: ${errorMessage}`);
+          }
+        },
+      });
   }
   // Reassignment Logic State
   isReassignModalOpen = false;
@@ -240,46 +264,59 @@ export class CustomerListComponent implements OnInit {
 
   fetchEmployees(): void {
     if (this.employees.length > 0) return; // Cached
-    this.http.get<any>(`${environment.apiUrl}/api/target-assignment-status`).subscribe({
-      next: (res) => {
-        const assigned = res.assigned || [];
-        const unassigned = res.unassigned || [];
-        this.employees = [...assigned, ...unassigned];
-        this.employees = this.employees.filter((emp, index, self) =>
-          index === self.findIndex((t) => t.id === emp.id)
-        );
-      },
-      error: (err) => console.error('Failed to fetch employees', err)
-    });
+    this.http
+      .get<any>(`${environment.apiUrl}/api/target-assignment-status`)
+      .subscribe({
+        next: (res) => {
+          const assigned = res.assigned || [];
+          const unassigned = res.unassigned || [];
+          this.employees = [...assigned, ...unassigned];
+          this.employees = this.employees.filter(
+            (emp, index, self) =>
+              index === self.findIndex((t) => t.id === emp.id)
+          );
+        },
+        error: (err) => console.error('Failed to fetch employees', err),
+      });
   }
 
   confirmReassign(employee: any): void {
     if (!this.selectedReassignCustomer || !employee) return;
 
     // Optional: Include reason in confirmation message
-    if (!confirm(`Reassigning ${this.selectedReassignCustomer.name} to ${employee.name}.\nReason: ${this.reassignReason}\n\nProceed?`)) return;
+    if (
+      !confirm(
+        `Reassigning ${this.selectedReassignCustomer.name} to ${employee.name}.\nReason: ${this.reassignReason}\n\nProceed?`
+      )
+    )
+      return;
 
     this.loading = true;
     const payload = {
       customerId: this.selectedReassignCustomer.id,
       empid: employee.id,
       orgid: localStorage.getItem('organizationid'),
-      reason: this.reassignReason // Sending reason to backend if needed
+      reason: this.reassignReason, // Sending reason to backend if needed
     };
 
-    this.http.post<any>(`${environment.apiUrl}/api/customers/reassign-to-employee`, payload).subscribe({
-      next: (res) => {
-        alert(`Successfully reassigned to ${employee.name}`);
-        this.loading = false;
-        this.closeEmployeeModal();
-        this.loadCustomers();
-      },
-      error: (err) => {
-        console.error('Reassignment failed', err);
-        alert('Failed to reassign customer.');
-        this.loading = false;
-      }
-    });
+    this.http
+      .post<any>(
+        `${environment.apiUrl}/api/customers/reassign-to-employee`,
+        payload
+      )
+      .subscribe({
+        next: (res) => {
+          alert(`Successfully reassigned to ${employee.name}`);
+          this.loading = false;
+          this.closeEmployeeModal();
+          this.loadCustomers();
+        },
+        error: (err) => {
+          console.error('Reassignment failed', err);
+          alert('Failed to reassign customer.');
+          this.loading = false;
+        },
+      });
   }
 
   // Timeline Logic
@@ -293,18 +330,20 @@ export class CustomerListComponent implements OnInit {
     this.isTimelineModalOpen = true;
     this.timelineData = []; // Clear previous
 
-    this.http.get<any>(`${environment.apiUrl}/api/customers/${customer.id}/timeline`).subscribe({
-      next: (res) => {
-        console.log('Timeline API Response:', res);
-        if (res.success) {
-          this.ngZone.run(() => {
-            this.timelineData = res.data;
-            this.cdr.detectChanges();
-          });
-        }
-      },
-      error: (err) => console.error('Failed to fetch timeline', err)
-    });
+    this.http
+      .get<any>(`${environment.apiUrl}/api/customers/${customer.id}/timeline`)
+      .subscribe({
+        next: (res) => {
+          console.log('Timeline API Response:', res);
+          if (res.success) {
+            this.ngZone.run(() => {
+              this.timelineData = res.data;
+              this.cdr.detectChanges();
+            });
+          }
+        },
+        error: (err) => console.error('Failed to fetch timeline', err),
+      });
   }
 
   closeTimelineModal(): void {
