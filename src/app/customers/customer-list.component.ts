@@ -267,7 +267,7 @@ export class CustomerListComponent implements OnInit {
       reason: this.reassignReason // Sending reason to backend if needed
     };
 
-    this.http.post<any>(`${environment.apiUrl}/customers/reassign-to-employee`, payload).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/api/customers/reassign-to-employee`, payload).subscribe({
       next: (res) => {
         alert(`Successfully reassigned to ${employee.name}`);
         this.loading = false;
@@ -293,7 +293,7 @@ export class CustomerListComponent implements OnInit {
     this.isTimelineModalOpen = true;
     this.timelineData = []; // Clear previous
 
-    this.http.get<any>(`${environment.apiUrl}/customers/${customer.id}/timeline`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/api/customers/${customer.id}/timeline`).subscribe({
       next: (res) => {
         console.log('Timeline API Response:', res);
         if (res.success) {
