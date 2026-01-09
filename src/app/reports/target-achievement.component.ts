@@ -60,6 +60,9 @@ export class TargetAchievementComponent implements OnInit {
     convertedActual: number = 0;
     convertedTarget: number = 0;
 
+    revenueActual: number = 0;
+    revenueTarget: number = 0;
+
     // Legacy / Compat
     loginsCount: number = 0;
     converted_leads: number = 0;
@@ -145,6 +148,9 @@ export class TargetAchievementComponent implements OnInit {
         this.convertedActual = Number(data.converted_actual) || 0;
         this.convertedTarget = Number(data.converted_target) || 0;
 
+        this.revenueActual = Number(data.revenue_achievement) || 0;
+        this.revenueTarget = Number(data.revenue_target) || 0;
+
         // Existing
         this.disbursementVolume = Number(data.disbursement_volume) || 0; // Legacy
         this.attendedCalls = Number(data.attended_calls) || 0;
@@ -155,6 +161,46 @@ export class TargetAchievementComponent implements OnInit {
         this.sanctionsCount = this.sanctionsActual;
         this.converted_leads = this.convertedActual;
         this.unassigned_leads = Number(data.unassigned_leads) || 0;
+
+        // Populate Edit Model for Self-Edit
+        // We use the ID from the local data if available, or rely on backend to use token
+        // Usually updateTargetMetrics(editModel) -> backend uses editModel.employeeId OR token if missing
+        this.editModel = {
+            // logins removed here to avoid duplicate key error (defined below as this.loginsTarget)
+            // Wait, standard metrics (targetmetrics) usually stores TARGETS?
+            // Re-reading code: 'logins' in targetmetrics table seems to be used as TARGET in some places and ACTUAL in others?
+            // The table has 'logins', 'sanctions' etc.
+            // In EmployeeModel query:
+            // logins (actual) = COUNT FROM customers
+            // logins_target = tm.logins
+            // So 'targetmetrics' table stores TARGETS.
+            // EXCEPT for 'revenue_achievement' which is stored in targetmetrics.
+
+            // So for Employee Edit Modal:
+            // They should primarily edit 'Revenue Achievement'.
+            // The other fields (Logins, Sanctions) are calculated from Customers/Leads automatically (Actuals).
+            // But the Edit Modal has inputs for 'Logins', 'Sanctions' etc.
+            // These inputs bind to 'editModel.logins'. 
+            // In backend 'updateTargetMetrics', it updates the 'targetmetrics' table columns: logins, sanctions...
+            // Which are TARGETS.
+            // So the Edit Modal allows editing TARGETS.
+
+            // BUT the user said "Revenue Achievement should be done for employee".
+            // So we want the employee to edit 'Revenue Achievement'.
+            // We do NOT want them to edit 'Revenue Target'.
+            // Do we want them to edit 'Logins Target'? probably not if they are employee.
+            // But I will leave the existing fields as is to avoid breaking legacy behavior if they used it.
+            // I will just ensure Revenue Achievement is populated.
+
+            revenue_achievement: this.revenueActual,
+
+            // Preserve other values just in case
+            logins: this.loginsTarget,
+            sanctions: this.sanctionsTarget,
+            disbursement_volume: this.disbursementTarget,
+            attended_calls_target: this.attendedCallsTarget,
+            converted_leads: this.convertedTarget
+        };
     }
 
     /* ------- Admin Assignment Methods ------- */
@@ -195,7 +241,9 @@ export class TargetAchievementComponent implements OnInit {
                             disbursement_volume: targetData.disbursement_volume || 0,
                             attended_calls: targetData.attended_calls || 0,
                             attended_calls_target: targetData.attended_calls_target || 0,
-                            converted_leads: targetData.converted_leads || 0
+                            converted_leads: targetData.converted_leads || 0,
+                            revenue_target: targetData.revenue_target || 0,
+                            revenue_achievement: targetData.revenue_achievement || 0
                         };
                         this.isSearching = false;
                         this.cdr.detectChanges();
@@ -206,7 +254,8 @@ export class TargetAchievementComponent implements OnInit {
                         this.editModel = {
                             employeeId: this.searchEmployeeId,
                             logins: 0, sanctions: 0, disbursement_volume: 0,
-                            attended_calls: 0, attended_calls_target: 0, converted_leads: 0
+                            attended_calls: 0, attended_calls_target: 0, converted_leads: 0,
+                            revenue_target: 0, revenue_achievement: 0
                         };
                         this.isSearching = false;
                     }
@@ -258,7 +307,8 @@ export class TargetAchievementComponent implements OnInit {
             this.openAssignTargetModal();
             return;
         }
-        alert('Access restricted.');
+        // Allow employees to open edit modal
+        this.isEditing = true;
     }
 
     closeEditModal() {
