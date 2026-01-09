@@ -217,6 +217,10 @@ export class CustomerListComponent implements OnInit {
     this.isReasonModalOpen = false;
     this.reassignReason = '';
   }
+  openFollowUpPopup(event: Event) {
+  event.stopPropagation();
+  alert('The customer has been reconnected to discuss newly available services and provide updated assistance.');
+}
 
   submitReason(): void {
     if (!this.reassignReason || this.reassignReason.trim() === '') {

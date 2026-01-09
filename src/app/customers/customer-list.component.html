@@ -52,10 +52,12 @@
 
               <div class="actions-cell" *ngIf="col.key === 'actions'">
                 <!-- Employee: Follow Up button (stop propagation to prevent row click) -->
-                <button *ngIf="!isAdmin" class="followup-btn" (click)="followUp(customer); $event.stopPropagation()"
-                  title="Follow up for other loans">
-                  📞 Follow Up
-                </button>
+                <button *ngIf="!isAdmin"
+                     class="followup-btn"
+                     (click)="openFollowUpPopup($event)">
+                     📞 Follow Up
+                 </button>
+
               </div>
             </td>
           </tr>
