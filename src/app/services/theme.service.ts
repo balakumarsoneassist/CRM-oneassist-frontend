@@ -58,7 +58,7 @@ export class ThemeService {
       success: '#10b981',
       warning: '#f59e0b',
       error: '#ef4444',
-      gradient: 'linear-gradient(135deg, #1e40af 0%, #3730a3 100%)'
+      gradient: 'linear-gradient(135deg, #111827 0%, #111827 100%)'
     },
     {
       name: 'green',
