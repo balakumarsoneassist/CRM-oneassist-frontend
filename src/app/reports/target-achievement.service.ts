@@ -86,4 +86,10 @@ export class TargetAchievementService {
       { headers }
     );
   }
+
+  bulkAssignCustomers(empid: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    const orgId = localStorage.getItem('organizationid');
+    return this.http.post(`${this.apiUrl}/customers/bulk-assign`, { empid, orgId }, { headers });
+  }
 }

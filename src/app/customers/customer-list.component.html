@@ -1,9 +1,15 @@
 <div class="customer-list-container">
   <div class="header-section">
     <h2>Customer List</h2>
-    <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
-      {{ loading ? 'Loading...' : 'Refresh' }}
-    </button>
+    <div class="actions">
+      <!-- Admin Reassign Button -->
+      <button *ngIf="isAdmin" class="reassign-btn" (click)="openReassignFlow()">
+        🔄 Reassign Customers
+      </button>
+      <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
+        {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
   </div>
 
   <!-- Loading State -->
@@ -26,7 +32,7 @@
     <div class="table-header">
       <span class="record-count">Total Customers: {{ customers.length }}</span>
     </div>
-    
+
     <div class="table-container">
       <table class="customer-table">
         <thead>
@@ -35,9 +41,22 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let customer of customers; trackBy: trackByCustomerId" class="customer-row">
+          <tr *ngFor="let customer of customers; trackBy: trackByCustomerId" class="customer-row"
+            [class.clickable-row]="isAdmin" (click)="openTimeline(customer)">
             <td *ngFor="let col of displayColumns" [class]="'col-' + col.key">
-              <span class="cell-content">{{ getColumnValue(customer, col.key) || '-' }}</span>
+
+              <!-- Standard cell content for all columns -->
+              <span class="cell-content" *ngIf="col.key !== 'actions'">
+                {{ getColumnValue(customer, col.key) || '-' }}
+              </span>
+
+              <div class="actions-cell" *ngIf="col.key === 'actions'">
+                <!-- Employee: Follow Up button (stop propagation to prevent row click) -->
+                <button *ngIf="!isAdmin" class="followup-btn" (click)="followUp(customer); $event.stopPropagation()"
+                  title="Follow up for other loans">
+                  📞 Follow Up
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -50,6 +69,118 @@
       <h3>No Customers Found</h3>
       <p>There are currently no customers in the system.</p>
       <button class="refresh-btn" (click)="refreshData()">Refresh Data</button>
+    </div>
+  </div>
+
+  <!-- MODAL 1: Customer Reassignment List -->
+  <div class="modal-overlay" *ngIf="isReassignModalOpen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Reassign Customers</h3>
+        <button class="close-btn" (click)="closeReassignModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Select a customer to reassign to another employee.</p>
+        <ul class="modal-customer-list">
+          <li *ngFor="let customer of reassignCustomerList" class="modal-customer-item">
+            <div class="customer-info">
+              <h4>{{ customer.name }}</h4>
+              <p>{{ customer.mobilenumber }} | {{ customer.product }} | {{ customer.bank }}</p>
+              <p style="font-size: 0.8em; color: #888;">Current Converter: {{ customer.converter || 'None' }}</p>
+            </div>
+            <button class="reassign-item-btn" (click)="openReasonModal(customer)">Reassign</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 1.5: Reason Input Modal -->
+  <div class="modal-overlay" *ngIf="isReasonModalOpen">
+    <div class="employee-modal-content">
+      <div class="modal-header">
+        <h3>Reason for Reassignment</h3>
+        <button class="close-btn" (click)="closeReasonModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Why is <strong>{{ selectedReassignCustomer?.name }}</strong> being reassigned?</p>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <textarea [(ngModel)]="reassignReason" placeholder="Enter specific reason here..." rows="4"
+            style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit;">
+          </textarea>
+        </div>
+        <div style="text-align: right;">
+          <button class="cancel-btn" (click)="closeReasonModal()"
+            style="margin-right: 10px; background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Cancel</button>
+          <button class="assign-btn" (click)="submitReason()" [disabled]="!reassignReason">Next: Select
+            Employee</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Employee Selection -->
+  <div class="modal-overlay" *ngIf="isEmployeeModalOpen">
+    <div class="employee-modal-content">
+      <div class="modal-header">
+        <h3>Select Employee</h3>
+        <button class="close-btn" (click)="closeEmployeeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Assigning <strong>{{ selectedReassignCustomer?.name }}</strong> to:</p>
+        <ul class="employee-list">
+          <li *ngFor="let emp of employees" class="employee-item">
+            <div class="employee-info">
+              <h4>{{ emp.name }}</h4>
+              <p>{{ emp.role || 'Employee' }}</p>
+            </div>
+            <button class="assign-btn" (click)="confirmReassign(emp)">Select</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 3: Timeline Modal -->
+<div class="modal-overlay" *ngIf="isTimelineModalOpen">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3>Customer Timeline: {{ selectedTimelineCustomer?.name }}</h3>
+      <button class="close-btn" (click)="closeTimelineModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="timeline-container" *ngIf="timelineData.length > 0; else noTimeline">
+        <div class="timeline-item" *ngFor="let event of timelineData">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">
+                {{ event.action_type === 'REASSIGN' ? '🔄 Reassigned' : event.action_type }}
+              </span>
+              <span class="timeline-date">{{ event.performed_at | date:'medium' }}</span>
+            </div>
+
+            <div *ngIf="event.action_type === 'REASSIGN'">
+              <p>
+                From: <strong>{{ event.previous_emp_name || 'Unassigned' }}</strong>
+                To: <strong>{{ event.new_emp_name }}</strong>
+              </p>
+              <div class="timeline-reason" *ngIf="event.reason">
+                "{{ event.reason }}"
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noTimeline>
+        <div class="timeline-empty">
+          <p>No history found for this customer.</p>
+        </div>
+      </ng-template>
+
     </div>
   </div>
 </div>

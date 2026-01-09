@@ -37,7 +37,8 @@
         <!-- Customer Info -->
         <div class="customer-info">
           <h4>Customer: {{ selectedCustomer['name'] || 'Unknown' }}</h4>
-          <p>Mobile: {{ selectedCustomer['mobileno'] || 'N/A' }} | Location: {{ selectedCustomer['location'] || 'N/A' }}</p>
+          <p>Mobile: {{ selectedCustomer['mobileno'] || 'N/A' }} | Location: {{ selectedCustomer['location'] || 'N/A' }}
+          </p>
         </div>
 
         <!-- Visit Details Form -->
@@ -46,31 +47,17 @@
           <div class="form-grid">
             <div class="form-group">
               <label for="dateofvisit">Date of Visit:</label>
-              <input 
-                type="datetime-local" 
-                id="dateofvisit" 
-                [(ngModel)]="followupForm.dateofvisit" 
-                class="form-control"
-              />
+              <input type="datetime-local" id="dateofvisit" [(ngModel)]="followupForm.dateofvisit"
+                class="form-control" />
             </div>
             <div class="form-group">
               <label for="nextvisit">Next Visit:</label>
-              <input 
-                type="datetime-local" 
-                id="nextvisit" 
-                [(ngModel)]="followupForm.nextvisit" 
-                class="form-control"
-              />
+              <input type="datetime-local" id="nextvisit" [(ngModel)]="followupForm.nextvisit" class="form-control" />
             </div>
             <div class="form-group full-width">
               <label for="remarks">Remarks:</label>
-              <textarea 
-                id="remarks" 
-                [(ngModel)]="followupForm.remarks" 
-                class="form-control" 
-                rows="3" 
-                placeholder="Enter visit remarks..."
-              ></textarea>
+              <textarea id="remarks" [(ngModel)]="followupForm.remarks" class="form-control" rows="3"
+                placeholder="Enter visit remarks..."></textarea>
             </div>
           </div>
           <div class="form-actions">
@@ -117,19 +104,35 @@
 
   <!-- Data table -->
   <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Action</th>
-          <th *ngFor="let col of visibleColumns">{{ getLabel(col) }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let customer of customers">
-          <td><button class="followup-btn" (click)="followupCustomer(customer)" aria-label="Follow Up">📞</button></td>
-          <td *ngFor="let col of visibleColumns">{{ customer[col] }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-header">
+      <span class="record-count">Total Records: {{ customers.length }}</span>
+    </div>
+    <div class="table-container">
+      <table class="customer-table report-table">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th *ngFor="let col of visibleColumns">{{ getLabel(col) }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let customer of customers; trackBy: trackByFunc" class="customer-row">
+            <td>
+              <button class="followup-btn" (click)="followupCustomer(customer)">
+                Follow Up
+              </button>
+            </td>
+            <td *ngFor="let col of visibleColumns" [class]="'col-' + col">
+              {{ customer[col] || '-' }}
+            </td>
+          </tr>
+          <tr *ngIf="customers.length === 0">
+            <td colspan="8" class="no-data-message" style="text-align: center; padding: 40px;">
+              No customers found for follow up.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

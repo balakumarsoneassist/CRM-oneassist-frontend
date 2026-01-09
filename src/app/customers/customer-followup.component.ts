@@ -21,21 +21,21 @@ export class CustomerFollowupComponent implements OnInit {
   showDialog = false;
   showFollowupPopup = false;
   selectedCustomer: Record<string, any> = {};
-  
+
   // Form data for followup details
   followupForm = {
     dateofvisit: '',
     nextvisit: '',
     remarks: ''
   };
-  
+
   // Previous history data
   previousHistory: any[] = [];
   loadingHistory = false;
-  
+
   // Convert to contact functionality
   convertingToContact = false;
-  
+
   fields: FieldMeta[] = [
     { key: 'svcid', label: 'SVC ID', visible: false },
     { key: 'name', label: 'Name', visible: true },
@@ -53,133 +53,71 @@ export class CustomerFollowupComponent implements OnInit {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCustomers();
   }
 
-  private loadCustomers(): void {
+  loadCustomers(): void {
     const empId = localStorage.getItem('usernameID') || '';
+    console.log('[DEBUG] loadCustomers - Current empId from localStorage:', empId);
+
     if (!empId) {
-      console.warn('Employee ID not found');
+      console.warn('[DEBUG] No empId found in localStorage (usernameID)');
       return;
     }
-    
-    // Use the specified API endpoint with employee ID
+
     this.http.get<any>(`${environment.apiUrl}/svcustomerlist/${empId}`).subscribe({
       next: (response) => {
-        console.log('API Response:', response);
-        
-        // Handle different response formats
-        let data = response;
-        
-        // Check if response is wrapped in an object with data property
-        if (response && typeof response === 'object' && !Array.isArray(response)) {
-          if (response.data) {
-            data = response.data;
-          } else if (response.result) {
-            data = response.result;
-          } else if (response.customers) {
-            data = response.customers;
-          }
+        console.log('[DEBUG] API Response received:', response);
+
+        // Data extraction logic
+        let rawData = [];
+        if (response && response.success && response.data) {
+          rawData = response.data;
+        } else if (Array.isArray(response)) {
+          rawData = response;
+        } else if (response && response.data) {
+          rawData = response.data;
         }
-        
-        // Ensure data is an array
-        if (!Array.isArray(data)) {
-          console.warn('API response is not an array:', data);
-          data = [];
-        }
-        
-        this.customers = data.map((obj: any) => {
+
+        this.customers = rawData.map((obj: any) => {
           const normalized: Record<string, any> = {};
           Object.keys(obj || {}).forEach(k => {
             normalized[k.toLowerCase()] = obj[k];
           });
-          // Format dates for display
+
+          // Fallback for remarks if using the new aggregated field
+          if (!normalized['remarks'] && normalized['all_remarks']) {
+            normalized['remarks'] = normalized['all_remarks'];
+          }
+
+          // Date formatting for UI
           if (normalized['lastvisit']) {
             try {
               normalized['lastvisit'] = new Date(normalized['lastvisit']).toLocaleString();
             } catch (e) {
-              console.warn('Error formatting lastvisit date:', normalized['lastvisit']);
+              console.warn('Date formatting error:', e);
             }
           }
           return normalized;
         });
-        
-        console.log('Processed customers:', this.customers);
-        
-        // Apply direct DOM manipulation fix for Angular change detection issues
-        setTimeout(() => {
-          this.applyDirectDOMUpdate();
-        }, 100);
+
+        console.log(`[DEBUG] Processed ${this.customers.length} customers for UI`);
+
+        // Force DOM Update
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load customer followup data', err);
-        // Fallback to sample data for development
-        this.customers = this.getSampleData();
-        
-        // Apply direct DOM manipulation fix even for sample data
-        setTimeout(() => {
-          this.applyDirectDOMUpdate();
-        }, 100);
+        console.error('[DEBUG] API Error:', err);
+        this.customers = [];
+        this.cdr.detectChanges();
       }
     });
   }
 
-  private applyDirectDOMUpdate(): void {
-    // Multiple change detection attempts
-    this.cdr.detectChanges();
-    
-    setTimeout(() => {
-      this.cdr.detectChanges();
-      
-      this.ngZone.run(() => {
-        this.cdr.detectChanges();
-        
-        // Force DOM update by directly manipulating the table
-        setTimeout(() => {
-          this.updateTableDirectly();
-        }, 50);
-      });
-    }, 50);
-  }
 
-  private updateTableDirectly(): void {
-    const tableBody = document.querySelector('.customer-followup-component tbody');
-    if (!tableBody) {
-      console.warn('Table body not found for direct DOM update');
-      return;
-    }
-
-    // Clear existing content
-    tableBody.innerHTML = '';
-
-    // Generate table rows directly
-    this.customers.forEach((customer, index) => {
-      const row = document.createElement('tr');
-      
-      // Add visible columns
-      this.fields.filter(field => field.visible).forEach(field => {
-        const cell = document.createElement('td');
-        cell.textContent = customer[field.key] || '';
-        row.appendChild(cell);
-      });
-
-      // Add followup button column
-      const actionCell = document.createElement('td');
-      const followupBtn = document.createElement('button');
-      followupBtn.className = 'followup-btn';
-      followupBtn.innerHTML = '📞 Followup';
-      followupBtn.onclick = () => this.followupCustomer(customer);
-      actionCell.appendChild(followupBtn);
-      row.appendChild(actionCell);
-
-      tableBody.appendChild(row);
-    });
-
-    console.log('Direct DOM update applied - table rows:', this.customers.length);
-  }
 
   private loadSampleData(): Record<string, any>[] {
     return [
@@ -214,51 +152,46 @@ export class CustomerFollowupComponent implements OnInit {
 
   followupCustomer(customer: Record<string, any>): void {
     console.log('Opening followup popup for customer:', customer);
-    
+
     // Set selected customer and initialize form
     this.selectedCustomer = customer;
     this.resetFollowupForm();
-    
+
     // Open the popup
     this.showFollowupPopup = true;
-    
-    // Apply direct DOM manipulation to force popup display
-    setTimeout(() => {
-      this.forcePopupDisplay();
-    }, 50);
-    
+
     // Load previous history
     this.loadPreviousHistory(customer['svcid'] || customer['id']);
   }
-  
+
   private resetFollowupForm(): void {
     // Initialize form with current date/time for dateofvisit
     const now = new Date();
     const currentDateTime = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
-    
+
     this.followupForm = {
       dateofvisit: currentDateTime,
       nextvisit: '',
       remarks: ''
     };
   }
-  
+
   private loadPreviousHistory(custId: any): void {
     if (!custId) {
       console.warn('Customer ID not found for loading history');
       this.previousHistory = [];
       return;
     }
-    
+
     this.loadingHistory = true;
     this.previousHistory = [];
-    
+
     console.log('Loading previous history for customer ID:', custId);
-    
+
     this.http.get<any>(`${environment.apiUrl}/getsvcustlist/${custId}`).subscribe({
       next: (response) => {
         console.log('Previous history API response:', response);
-        
+
         // Handle different response formats
         let data = response;
         if (response && typeof response === 'object' && !Array.isArray(response)) {
@@ -270,19 +203,19 @@ export class CustomerFollowupComponent implements OnInit {
             data = response.history;
           }
         }
-        
+
         // Ensure data is an array
         if (!Array.isArray(data)) {
           console.warn('History API response is not an array:', data);
           data = [];
         }
-        
+
         this.previousHistory = data.map((obj: any) => {
           const normalized: Record<string, any> = {};
           Object.keys(obj || {}).forEach(k => {
             normalized[k.toLowerCase()] = obj[k];
           });
-          
+
           // Format dates for display
           if (normalized['dateofvisit']) {
             try {
@@ -298,10 +231,10 @@ export class CustomerFollowupComponent implements OnInit {
               console.warn('Error formatting nextvisit:', normalized['nextvisit']);
             }
           }
-          
+
           return normalized;
         });
-        
+
         this.loadingHistory = false;
         console.log('Processed previous history:', this.previousHistory);
       },
@@ -313,7 +246,7 @@ export class CustomerFollowupComponent implements OnInit {
       }
     });
   }
-  
+
   private getSampleHistoryData(): any[] {
     return [
       {
@@ -332,61 +265,31 @@ export class CustomerFollowupComponent implements OnInit {
       }
     ];
   }
-  
-  private forcePopupDisplay(): void {
-    // Multiple change detection attempts for popup display
-    this.cdr.detectChanges();
-    
-    setTimeout(() => {
-      this.cdr.detectChanges();
-      
-      this.ngZone.run(() => {
-        this.cdr.detectChanges();
-        
-        // Direct DOM manipulation to force popup visibility
-        setTimeout(() => {
-          const popup = document.querySelector('.followup-dialog') as HTMLElement;
-          const backdrop = document.querySelector('.dialog-backdrop') as HTMLElement;
-          
-          if (backdrop && popup) {
-            backdrop.style.display = 'flex';
-            backdrop.style.visibility = 'visible';
-            backdrop.style.opacity = '1';
-            popup.style.display = 'block';
-            popup.style.visibility = 'visible';
-            console.log('Popup forced to display via DOM manipulation');
-          } else {
-            console.warn('Popup elements not found for DOM manipulation');
-          }
-        }, 20);
-      });
-    }, 20);
-  }
-  
+
   closeFollowupPopup(): void {
     this.showFollowupPopup = false;
     this.selectedCustomer = {};
     this.previousHistory = [];
   }
-  
+
   saveFollowupDetails(): void {
     // Validate form data
     if (!this.followupForm.dateofvisit) {
       alert('Please select a date of visit.');
       return;
     }
-    
+
     if (!this.followupForm.remarks.trim()) {
       alert('Please enter remarks for the visit.');
       return;
     }
-    
+
     const custId = this.selectedCustomer['svcid'] || this.selectedCustomer['id'];
     if (!custId) {
       alert('Customer ID not found. Cannot save visit details.');
       return;
     }
-    
+
     // Prepare data for API call
     const saveData = {
       custid: custId,
@@ -394,18 +297,18 @@ export class CustomerFollowupComponent implements OnInit {
       nextvisit: this.followupForm.nextvisit || null,
       remarks: this.followupForm.remarks.trim()
     };
-    
+
     console.log('Saving followup details:', saveData);
-    
+
     // Call the save API
     this.http.post(`${environment.apiUrl}/savesalesvisittrack`, saveData).subscribe({
       next: (response) => {
         console.log('Save response:', response);
         alert('Visit details saved successfully!');
-        
+
         // Close the popup after successful save
         this.closeFollowupPopup();
-        
+
         // Refresh the main customer list to reflect any updates
         this.loadCustomers();
       },
@@ -433,7 +336,7 @@ export class CustomerFollowupComponent implements OnInit {
       mobilenumber: this.selectedCustomer['mobileno'] || '',
       email: null,
       presentaddress: this.selectedCustomer['location'] || '',
-      
+
       // Fixed values as specified
       locationid: 5001,
       status: 1,
@@ -449,7 +352,7 @@ export class CustomerFollowupComponent implements OnInit {
     this.http.post(`${environment.apiUrl}/leadpersonal`, leadData).subscribe({
       next: (response) => {
         console.log('Convert to contact response:', response);
-        
+
         // After successful contact creation, update the customer record
         const customerId = this.selectedCustomer['svcid'] || this.selectedCustomer['id'];
         if (customerId) {
@@ -471,7 +374,7 @@ export class CustomerFollowupComponent implements OnInit {
 
   private updateCustomerRecord(customerId: string): void {
     console.log('Updating customer record with ID:', customerId);
-    
+
     // Prepare update data - you can customize what fields to update
     const updateData = {
       // Add any fields you want to update in the customer record
@@ -485,16 +388,16 @@ export class CustomerFollowupComponent implements OnInit {
     this.http.put(`${environment.apiUrl}/updatesvcustomer/${customerId}`, updateData).subscribe({
       next: (response) => {
         console.log('Customer record updated successfully:', response);
-        
+
         // Force UI update with multiple change detection cycles
         this.ngZone.run(() => {
           this.convertingToContact = false;
           this.cdr.detectChanges();
-          
+
           setTimeout(() => {
             this.cdr.detectChanges();
             alert(`Customer "${this.selectedCustomer['name']}" has been successfully converted to a contact!`);
-            
+
             // Close the popup after successful conversion and update
             this.closeFollowupPopup();
           }, 100);
@@ -502,12 +405,12 @@ export class CustomerFollowupComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to update customer record:', err);
-        
+
         // Force UI update for error case too
         this.ngZone.run(() => {
           this.convertingToContact = false;
           this.cdr.detectChanges();
-          
+
           setTimeout(() => {
             this.cdr.detectChanges();
             alert(`Customer "${this.selectedCustomer['name']}" has been converted to a contact, but failed to update customer record.`);
@@ -522,7 +425,12 @@ export class CustomerFollowupComponent implements OnInit {
     field.visible = !field.visible;
   }
 
+  trackByFunc(index: number, item: any): string {
+    return item.id || item.svcid || index.toString();
+  }
+
   getLabel(key: string): string {
-    return this.fields.find(f => f.key === key)?.label || key;
+    const field = this.fields.find(f => f.key === key);
+    return field ? field.label : key;
   }
 }
