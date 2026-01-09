@@ -817,8 +817,8 @@
 
 .emp-stats-brief {
     display: grid;
-    /* Compact Columns: Logins(60) Sanctions(60) Conv(70) Disb(95) Calls(70) */
-    grid-template-columns: 60px 60px 70px 95px 70px;
+    /* Compact Columns: Logins(60) Sanctions(60) Conv(70) Disb(95) Calls(70) Revenue(120) */
+    grid-template-columns: 60px 60px 70px 95px 70px 120px;
     gap: 5px;
     /* Tighter gap */
     align-items: center;

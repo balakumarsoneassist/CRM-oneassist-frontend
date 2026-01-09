@@ -42,6 +42,8 @@ export class AchievementComponent implements OnInit, OnDestroy {
   attendedCallsTarget: number = 0;
   converted_leads: number = 0;
   convertedLeadsTarget: number = 0;
+  revenueActual: number = 0;
+  revenueTarget: number = 0;
 
   // Admin View Data
   allMetrics: any[] = [];
@@ -210,6 +212,8 @@ export class AchievementComponent implements OnInit, OnDestroy {
     this.attendedCallsTarget = Number(data.attended_calls_target) || 0;
     this.converted_leads = Number(data.converted_actual) || 0;
     this.convertedLeadsTarget = Number(data.converted_target) || 0;
+    this.revenueActual = Number(data.revenue_achievement) || 0;
+    this.revenueTarget = Number(data.revenue_target) || 0;
   }
 
   updateAggregateMetricsFromServer(totals: any) {
@@ -223,6 +227,8 @@ export class AchievementComponent implements OnInit, OnDestroy {
     this.attendedCallsTarget = totals.attended_calls_target || 0;
     this.converted_leads = totals.converted_actual || 0;
     this.convertedLeadsTarget = totals.converted_target || 0;
+    this.revenueActual = totals.revenue_achievement || 0;
+    this.revenueTarget = totals.revenue_target || 0;
   }
 
   calculateAggregateMetrics() { }
@@ -246,5 +252,65 @@ export class AchievementComponent implements OnInit, OnDestroy {
 
     this.converted_leads = Number(emp.converted_actual) || 0;
     this.convertedLeadsTarget = Number(emp.converted_target) || 0;
+
+    this.revenueActual = Number(emp.revenue_achievement) || 0;
+    this.revenueTarget = Number(emp.revenue_target) || 0;
+  }
+
+  // Revenue Breakdown Modal Logic
+  showRevenueModal = false;
+  revenueDetails: any[] = [];
+  modalLoading = false;
+
+  openRevenueModal() {
+    // If Admin is viewing dashboard (no specific employee selected), we might disable or show aggregate?
+    // Current requirement implies clicking the card shows details.
+    // If admin has selected a user, show that user's details.
+    // If admin is viewing general dashboard (aggregate), showing breakdown might be too much data or needs aggregate breakdown.
+    // Assuming for now:
+    // - If normal user: show their own.
+    // - If admin selected user: show selected user.
+    // - If admin viewing all: show nothing or alert "Select a user first".
+
+    let targetId = '';
+    if (this.selectedEmployee && this.selectedEmployee.id) {
+      targetId = this.selectedEmployee.id;
+    } else if (!this.isAdmin) {
+      // Normal user, get own ID from token or service if possible.
+      // Usually target-metrics endpoint uses token if no ID param.
+      // But for revenue breakdown we need ID or pass nothing and let backend use token.
+      targetId = 'self'; // Special flag or let backend handle
+    } else {
+      // Admin view -> aggregate. Alert or handle?
+      // For now, let's only allow if a specific user context is clear or if it's the logged-in user.
+      return;
+    }
+
+    this.showRevenueModal = true;
+    this.modalLoading = true;
+
+    // If targetId is 'self', we pass undefined to service wrapper which usually handles it?
+    // Service expects string.
+    const finalId = targetId === 'self' ? (localStorage.getItem('usernameID') || '') : targetId;
+
+    this.service.getRevenueBreakdown(finalId).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          this.revenueDetails = res.data;
+        }
+        this.modalLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to fetch revenue breakdown', err);
+        this.modalLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeRevenueModal() {
+    this.showRevenueModal = false;
+    this.revenueDetails = [];
   }
 }

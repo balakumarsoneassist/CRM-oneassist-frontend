@@ -6,7 +6,9 @@
         <button class="assign-btn" *ngIf="isAdmin" (click)="openAssignTargetModal()">
           👤 Assign Target
         </button>
-        <span class="view-only-badge" *ngIf="!isAdmin"> 📖 View Only </span>
+        <button class="edit-btn" *ngIf="!isAdmin" (click)="openEditModal()">
+          ✏️ Update Results
+        </button>
       </div>
     </div>
 
@@ -67,6 +69,11 @@
               <label>Attended Calls (Target)</label>
               <input type="number" [(ngModel)]="editModel.attended_calls_target" />
             </div>
+
+            <div class="form-group">
+              <label>Revenue Target (₹)</label>
+              <input type="number" [(ngModel)]="editModel.revenue_target" />
+            </div>
           </div>
 
           <div class="modal-actions">
@@ -91,11 +98,7 @@
     <!-- Edit Modal Overlay (Legacy/Self) -->
     <div class="modal-overlay" *ngIf="isEditing">
       <div class="modal-content">
-        <h3>Update My Metrics</h3>
-        <p class="modal-info" *ngIf="!isAdmin">
-          You do not have permission to edit targets. Please contact an
-          administrator.
-        </p>
+        <h3>Update My Results</h3>
 
         <div class="form-group">
           <label>Logins / Files</label>
@@ -126,6 +129,8 @@
           <label>Converted Leads</label>
           <input type="number" [(ngModel)]="editModel.converted_leads" />
         </div>
+
+
 
         <div class="modal-actions">
           <button class="cancel-btn" (click)="closeEditModal()">Cancel</button>
@@ -251,6 +256,35 @@
             </div>
           </div>
         </div>
+
+        <!-- Card: Revenue -->
+        <div class="detail-card">
+          <div class="detail-header">
+            <div class="header-left">
+              <span class="detail-icon">💸</span>
+              <span class="detail-title">Revenue</span>
+            </div>
+            <div class="header-right">
+              <span class="detail-value">{{
+                revenueActual | currency : "INR" : "symbol" : "1.0-0"
+                }}
+                /
+                {{
+                revenueTarget | currency : "INR" : "symbol" : "1.0-0"
+                }}</span>
+            </div>
+          </div>
+          <div class="detail-body">
+            <div class="progress-container-lg">
+              <div class="progress-bar-gradient" [style.width.%]="
+                  (revenueActual / (revenueTarget || 1)) * 100
+                "></div>
+            </div>
+            <div class="progress-meta">
+              <span>Current vs Target</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -283,8 +317,9 @@
                   emp.disbursement_volume || 0
                   | currency : "INR" : "symbol" : "1.0-0"
                   }}</span>
-                <span title="Call Target">📞 {{ emp.attended_calls || 0 }} /
-                  {{ emp.attended_calls_target || 0 }}</span>
+                <span title="Call Target">📞 {{ emp.attended_calls_target || 0 }}</span>
+                <span title="Revenue">💸
+                  {{ emp.revenue_target || 0 | currency : "INR" : "symbol" : "1.0-0" }}</span>
               </div>
               <button class="icon-btn" (click)="editTargetForEmployee(emp.id)" title="Edit Target">
                 ✏️
@@ -318,4 +353,4 @@
       </table>
     </div>
   </div>
-</div>  
+</div>

@@ -70,6 +70,9 @@
                                     }}</span></th>
                             <th (click)="onSort('attended_calls')">Calls <span *ngIf="sortBy === 'attended_calls'">{{
                                     sortOrder === 'asc' ? '↑' : '↓' }}</span></th>
+                            <th (click)="onSort('revenue_achievement')">Revenue <span
+                                    *ngIf="sortBy === 'revenue_achievement'">{{
+                                    sortOrder === 'asc' ? '↑' : '↓' }}</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -103,6 +106,11 @@
                                     * 100 | number:'1.0-0') : 0 }}%)
                                 </span>
                             </td>
+                            <td>
+                                <span style="font-weight:600;">{{ emp.revenue_achievement |
+                                    currency:'INR':'symbol':'1.0-0' }}</span> /
+                                {{ emp.revenue_target | currency:'INR':'symbol':'1.0-0' }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -123,104 +131,209 @@
         </div>
     </div>
 
-    <!-- Dashboard Cards (Master-Detail View) -->
-    <div class="premium-dashboard" *ngIf="!loading && selectedEmployee">
-        <!-- Admin Header for Dashboard -->
-        <div class="admin-dashboard-header" *ngIf="isAdmin" style="margin-bottom: 20px;">
-            <span class="org-badge"
-                style="background:#dbeafe; color:#1e40af; padding:6px 16px; border-radius:20px; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:8px;">
-                👤 {{ selectedEmployee.name }}'s Performance
-            </span>
-        </div>
-
-        <!-- Row 1: High-Level Stats -->
-        <div class="stats-row-1">
-            <!-- Card 1: Logins -->
-            <div class="stat-card blue-accent">
-                <div class="card-icon-wrapper" style="color:#3b82f6;">
-                    <span class="card-icon">📁</span>
-                </div>
-                <div class="card-info">
-                    <span class="card-label">Logins Achieved</span>
-                    <h3 class="card-value">{{ loginsCount }} / {{ loginsTarget }}</h3>
-                </div>
-            </div>
-
-            <!-- Card 2: Sanctions -->
-            <div class="stat-card green-accent">
-                <div class="card-icon-wrapper" style="color:#10b981;">
-                    <span class="card-icon">✅</span>
-                </div>
-                <div class="card-info">
-                    <span class="card-label">Sanctions Cleared</span>
-                    <h3 class="card-value">{{ sanctionsCount }} / {{ sanctionsTarget }}</h3>
-                </div>
-            </div>
-
-            <!-- Card 3: Converted Leads -->
-            <div class="stat-card purple-accent">
-                <div class="card-icon-wrapper" style="color:#8b5cf6;">
-                    <span class="card-icon">🌪️</span>
-                </div>
-                <div class="card-info">
-                    <span class="card-label">Leads Converted</span>
-                    <h3 class="card-value">{{ converted_leads }} / {{ convertedLeadsTarget }}</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- Row 2: Detailed Performance -->
-        <div class="stats-row-2">
-            <!-- Card 4: Disbursement Volume -->
-            <div class="detail-card">
-                <div class="detail-header">
-                    <div class="header-left">
-                        <span class="detail-icon">💼</span>
-                        <span class="detail-title">Total Disbursement Volume</span>
+    <!-- Dashboard Template (Reusable) -->
+    <ng-template #dashboardDetails>
+        <div class="premium-dashboard" style="margin-top: 0;">
+            <!-- Row 1: High-Level Stats -->
+            <div class="stats-row-1">
+                <!-- Card 1: Logins -->
+                <div class="stat-card blue-accent">
+                    <div class="card-icon-wrapper" style="color:#3b82f6;">
+                        <span class="card-icon">📁</span>
                     </div>
-                    <div class="header-right">
-                        <span class="detail-value">
-                            {{ disbursementVolume | currency:'INR':'symbol':'1.0-0' }} /
-                            {{ disbursementVolumeTarget | currency:'INR':'symbol':'1.0-0' }}
-                        </span>
+                    <div class="card-info">
+                        <span class="card-label">Logins Achieved</span>
+                        <h3 class="card-value">{{ loginsCount }} / {{ loginsTarget }}</h3>
                     </div>
                 </div>
-                <div class="detail-body">
-                    <div class="progress-container-lg">
-                        <div class="progress-bar-gradient"
-                            [style.width.%]="disbursementVolumeTarget > 0 ? (disbursementVolume / disbursementVolumeTarget) * 100 : 0">
+
+                <!-- Card 2: Sanctions -->
+                <div class="stat-card green-accent">
+                    <div class="card-icon-wrapper" style="color:#10b981;">
+                        <span class="card-icon">✅</span>
+                    </div>
+                    <div class="card-info">
+                        <span class="card-label">Sanctions Cleared</span>
+                        <h3 class="card-value">{{ sanctionsCount }} / {{ sanctionsTarget }}</h3>
+                    </div>
+                </div>
+
+                <!-- Card 3: Converted Leads -->
+                <div class="stat-card purple-accent">
+                    <div class="card-icon-wrapper" style="color:#8b5cf6;">
+                        <span class="card-icon">🌪️</span>
+                    </div>
+                    <div class="card-info">
+                        <span class="card-label">Leads Converted</span>
+                        <h3 class="card-value">{{ converted_leads }} / {{ convertedLeadsTarget }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Detailed Performance -->
+            <div class="stats-row-2">
+                <!-- Card 4: Disbursement Volume -->
+                <div class="detail-card">
+                    <div class="detail-header">
+                        <div class="header-left">
+                            <span class="detail-icon">💼</span>
+                            <span class="detail-title">Total Disbursement Volume</span>
+                        </div>
+                        <div class="header-right">
+                            <span class="detail-value">
+                                {{ disbursementVolume | currency:'INR':'symbol':'1.0-0' }} /
+                                {{ disbursementVolumeTarget | currency:'INR':'symbol':'1.0-0' }}
+                            </span>
                         </div>
                     </div>
-                    <div class="progress-meta">
-                        <span>Reached {{ disbursementVolumeTarget > 0 ? ((disbursementVolume / disbursementVolumeTarget)
-                            * 100 | number:'1.0-0') : 0 }}% of Target Volume</span>
+                    <div class="detail-body">
+                        <div class="progress-container-lg">
+                            <div class="progress-bar-gradient"
+                                [style.width.%]="disbursementVolumeTarget > 0 ? (disbursementVolume / disbursementVolumeTarget) * 100 : 0">
+                            </div>
+                        </div>
+                        <div class="progress-meta">
+                            <span>Reached {{ disbursementVolumeTarget > 0 ? ((disbursementVolume /
+                                disbursementVolumeTarget)
+                                * 100 | number:'1.0-0') : 0 }}% of Target Volume</span>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Card 5: Attended Calls -->
+                <div class="detail-card">
+                    <div class="detail-header">
+                        <div class="header-left">
+                            <span class="detail-icon">📞</span>
+                            <span class="detail-title">Calls Performance</span>
+                        </div>
+                        <div class="header-right">
+                            <span class="detail-value">{{ attendedCalls }} / {{ attendedCallsTarget }}</span>
+                        </div>
+                    </div>
+                    <div class="detail-body">
+                        <div class="progress-container-lg">
+                            <div class="progress-bar-gradient"
+                                [style.width.%]="attendedCallsTarget > 0 ? (attendedCalls / attendedCallsTarget) * 100 : 0"
+                                style="background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div>
+                        </div>
+                        <div class="progress-meta">
+                            <span>Reached {{ attendedCallsTarget > 0 ? ((attendedCalls / attendedCallsTarget) * 100 |
+                                number:'1.0-0') : 0 }}% of Target</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Revenue -->
+                <div class="detail-card cursor-pointer hover:shadow-lg transition-all" (click)="openRevenueModal()">
+                    <div class="detail-header">
+                        <div class="header-left">
+                            <span class="detail-icon">💸</span>
+                            <div style="display: flex; flex-direction: column;">
+                                <span class="detail-title">Revenue Achieved</span>
+                                <span class="view-more-link">View More <span style="font-size: 10px;">➔</span></span>
+                            </div>
+                        </div>
+                        <div class="header-right">
+                            <span class="detail-value">{{
+                                revenueActual | currency : "INR" : "symbol" : "1.0-0"
+                                }}
+                                /
+                                {{
+                                revenueTarget | currency : "INR" : "symbol" : "1.0-0"
+                                }}</span>
+                        </div>
+                    </div>
+                    <div class="detail-body">
+                        <div class="progress-container-lg">
+                            <div class="progress-bar-gradient" [style.width.%]="
+                      (revenueActual / (revenueTarget || 1)) * 100
+                    "></div>
+                        </div>
+                        <div class="progress-meta">
+                            <span>Current vs Target</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- ADMIN: Employee Details Modal -->
+    <div class="modal-overlay" *ngIf="isAdmin && selectedEmployee" style="z-index: 999;">
+        <div class="modal-content-lg" style="background: #f8f9fa;">
+            <div class="modal-header">
+                <h3>
+                    <span class="org-badge"
+                        style="background:#dbeafe; color:#1e40af; padding:4px 12px; border-radius:20px; font-size:14px; margin-right: 10px;">
+                        👤 {{ selectedEmployee.name }}
+                    </span>
+                    Performance Dashboard
+                </h3>
+                <button class="close-btn" (click)="selectedEmployee = null">×</button>
+            </div>
+            <div class="modal-body">
+                <ng-container *ngTemplateOutlet="dashboardDetails"></ng-container>
+            </div>
+        </div>
+    </div>
+
+    <!-- NON-ADMIN: Inline Dashboard -->
+    <div *ngIf="!loading && !isAdmin && selectedEmployee" style="margin-top: 30px;">
+        <div class="admin-dashboard-header" style="margin-bottom: 20px;">
+            <span class="org-badge"
+                style="background:#dbeafe; color:#1e40af; padding:6px 16px; border-radius:20px; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:8px;">
+                👤 My Performance
+            </span>
+        </div>
+        <ng-container *ngTemplateOutlet="dashboardDetails"></ng-container>
+    </div>
+</div>
+
+<!-- Revenue Breakdown Modal -->
+<div class="modal-overlay" *ngIf="showRevenueModal">
+    <div class="modal-content-lg">
+        <div class="modal-header">
+            <h3>Revenue Breakdown</h3>
+            <button class="close-btn" (click)="closeRevenueModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div *ngIf="modalLoading" class="loading-spinner">Loading details...</div>
+
+            <div *ngIf="!modalLoading && revenueDetails.length === 0" class="empty-state">
+                No revenue records found for this period.
             </div>
 
-            <!-- Card 5: Attended Calls -->
-            <div class="detail-card">
-                <div class="detail-header">
-                    <div class="header-left">
-                        <span class="detail-icon">📞</span>
-                        <span class="detail-title">Calls Performance</span>
-                    </div>
-                    <div class="header-right">
-                        <span class="detail-value">{{ attendedCalls }} / {{ attendedCallsTarget }}</span>
-                    </div>
-                </div>
-                <div class="detail-body">
-                    <div class="progress-container-lg">
-                        <div class="progress-bar-gradient"
-                            [style.width.%]="attendedCallsTarget > 0 ? (attendedCalls / attendedCallsTarget) * 100 : 0"
-                            style="background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div>
-                    </div>
-                    <div class="progress-meta">
-                        <span>Reached {{ attendedCallsTarget > 0 ? ((attendedCalls / attendedCallsTarget) * 100 |
-                            number:'1.0-0') : 0 }}% of Target</span>
-                    </div>
-                </div>
-            </div>
+            <table class="data-table" *ngIf="!modalLoading && revenueDetails.length > 0">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Source</th>
+                        <th>Disbursement</th>
+                        <th>Rate (%)</th>
+                        <th>Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of revenueDetails">
+                        <td>{{ item.customer_name }}</td>
+                        <td>{{ item.product }}</td>
+                        <td>
+                            <span class="chip"
+                                [class.chip-blue]="['self','website','normal contact','company contact'].includes(item.contacttype?.toLowerCase())"
+                                [class.chip-green]="!['self','website','normal contact','company contact'].includes(item.contacttype?.toLowerCase())">
+                                {{ item.contacttype }}
+                            </span>
+                        </td>
+                        <td>{{ item.disbursement_amount | currency:'INR':'symbol':'1.0-0' }}</td>
+                        <td>{{ item.percentage }}%</td>
+                        <td style="font-weight: 600; color: #10b981;">
+                            {{ item.revenue_amount | currency:'INR':'symbol':'1.0-0' }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
