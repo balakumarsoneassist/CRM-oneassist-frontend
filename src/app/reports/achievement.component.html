@@ -2,10 +2,36 @@
     <div class="header-section">
         <!-- Top row: Title + Refresh -->
         <div class="header-top">
-            <h2>Achievements & Performance</h2>
+            <h2>Monthly Achievements</h2>
             <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
                 {{ loading ? "Loading..." : "Refresh" }}
             </button>
+        </div>
+
+        <!-- Filter Row -->
+        <div class="filter-row" *ngIf="isAdmin">
+            <!-- Professional Search Bar -->
+            <div class="search-wrapper">
+                <span class="search-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="text" placeholder="Search by Employee Name..." [(ngModel)]="searchQuery"
+                    (input)="onSearchChange()" class="filter-input-pro" />
+            </div>
+
+
+            <div class="page-size-selector">
+                <label>Rows:</label>
+                <select (change)="onPageSizeChange($event)">
+                    <option *ngFor="let size of itemsPerPageOptions" [value]="size" [selected]="size === itemsPerPage">
+                        {{ size }}
+                    </option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -28,13 +54,22 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Employee</th>
-                            <th>Designation</th>
-                            <th>Login/Files</th>
-                            <th>Sanctions </th>
-                            <th>Converted Leads</th>
-                            <th>Disbursement </th>
-                            <th>Calls </th>
+                            <th (click)="onSort('name')" class="sortable">Employee <span *ngIf="sortBy === 'name'">{{
+                                    sortOrder === 'asc' ? '↑' : '↓' }}</span></th>
+                            <th (click)="onSort('designation')" class="sortable">Designation <span
+                                    *ngIf="sortBy === 'designation'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span></th>
+                            <th (click)="onSort('logins')">Login/Files <span *ngIf="sortBy === 'logins'">{{ sortOrder
+                                    === 'asc' ? '↑' : '↓' }}</span></th>
+                            <th (click)="onSort('sanctions')">Sanctions <span *ngIf="sortBy === 'sanctions'">{{
+                                    sortOrder === 'asc' ? '↑' : '↓' }}</span></th>
+                            <th (click)="onSort('converted_leads')">Converted Leads <span
+                                    *ngIf="sortBy === 'converted_leads'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                            </th>
+                            <th (click)="onSort('disbursement_volume')">Disbursement <span
+                                    *ngIf="sortBy === 'disbursement_volume'">{{ sortOrder === 'asc' ? '↑' : '↓'
+                                    }}</span></th>
+                            <th (click)="onSort('attended_calls')">Calls <span *ngIf="sortBy === 'attended_calls'">{{
+                                    sortOrder === 'asc' ? '↑' : '↓' }}</span></th>
                         </tr>
                     </thead>
                     <tbody>

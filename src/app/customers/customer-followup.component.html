@@ -1,135 +1,156 @@
-<div class="report-container customer-followup-component">
-  <h2>Customer Followup</h2>
-
-  <!-- Column visibility toggles -->
-  <button class="toggle-btn" (click)="openDialog()">Show / Hide Columns</button>
-
-  <!-- Modal Dialog -->
-  <div class="dialog-backdrop" *ngIf="showDialog">
-    <div class="dialog parameter-dialog">
-      <div class="dialog-header">
-        <h3>Show / Hide Columns</h3>
-        <button class="close-btn" (click)="closeDialog()">&times;</button>
+<div class="page-container">
+  <div class="content-wrapper">
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-title">
+        <h2>Customer Followup</h2>
+        <p class="subtitle">Manage customer visits and schedule follow-ups</p>
       </div>
-      <div class="dialog-content">
-        <div class="toggles-grid">
-          <label *ngFor="let field of fields" class="toggle-item">
+      <div class="header-actions">
+        <button class="btn btn-outline" (click)="openDialog()">
+          <span class="icon">⚙️</span> Show / Hide Columns
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="card main-card">
+      <div class="table-container">
+        <table class="data-grid">
+          <thead>
+            <tr>
+              <th *ngFor="let col of visibleColumns" [class]="'col-' + col">
+                {{ getLabel(col) }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let customer of customers" class="data-row">
+              <td *ngFor="let col of visibleColumns" [class]="'col-' + col">
+                <ng-container *ngIf="col !== 'remarks'">
+                  {{ customer[col] }}
+                </ng-container>
+                <div *ngIf="col === 'remarks'" class="cell-with-action">
+                  <span class="cell-text">{{ customer[col] }}</span>
+                  <button class="btn-icon-pill small-btn" (click)="followupCustomer(customer)">
+                    <span class="icon">📞</span> Followup
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="customers.length === 0" class="empty-state">
+              <td [attr.colspan]="visibleColumns.length">
+                <div class="empty-content">
+                  <span class="empty-icon">📂</span>
+                  <p>No customers found.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Column Configuration Modal -->
+  <div class="modal-backdrop" *ngIf="showDialog" (click)="closeDialog()">
+    <div class="modal-card config-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Column Configuration</h3>
+        <button class="btn-close" (click)="closeDialog()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-instruction">Select columns to display in the table:</p>
+        <div class="toggle-grid">
+          <label *ngFor="let field of fields" class="toggle-checkbox">
             <input type="checkbox" [(ngModel)]="field.visible" />
-            <span class="toggle-label">{{ field.label }}</span>
+            <span class="checkmark"></span>
+            <span class="label-text">{{ field.label }}</span>
           </label>
         </div>
       </div>
-      <div class="dialog-actions">
-        <button class="primary-btn" (click)="closeDialog()">Apply Changes</button>
-        <button class="secondary-btn" (click)="closeDialog()">Cancel</button>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDialog()">Close</button>
+        <button class="btn btn-primary" (click)="closeDialog()">Apply Changes</button>
       </div>
     </div>
   </div>
 
-  <!-- Customer Follow-up Details Popup -->
-  <div class="dialog-backdrop" *ngIf="showFollowupPopup">
-    <div class="dialog followup-dialog">
-      <div class="dialog-header">
-        <h3>Customer Follow-up Details</h3>
-        <button class="close-btn" (click)="closeFollowupPopup()">&times;</button>
+  <!-- Follow-up Details Modal -->
+  <div class="modal-backdrop" *ngIf="showFollowupPopup" (click)="closeFollowupPopup()">
+    <div class="modal-card followup-modal big-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Update Activity</h3>
+        <button class="btn-close" (click)="closeFollowupPopup()">&times;</button>
       </div>
-      <div class="dialog-content">
-        <!-- Customer Info -->
-        <div class="customer-info">
-          <h4>Customer: {{ selectedCustomer['name'] || 'Unknown' }}</h4>
-          <p>Mobile: {{ selectedCustomer['mobileno'] || 'N/A' }} | Location: {{ selectedCustomer['location'] || 'N/A' }}</p>
-        </div>
 
-        <!-- Visit Details Form -->
-        <div class="form-section">
-          <h4>Visit Details</h4>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="dateofvisit">Date of Visit:</label>
-              <input 
-                type="datetime-local" 
-                id="dateofvisit" 
-                [(ngModel)]="followupForm.dateofvisit" 
-                class="form-control"
-              />
-            </div>
-            <div class="form-group">
-              <label for="nextvisit">Next Visit:</label>
-              <input 
-                type="datetime-local" 
-                id="nextvisit" 
-                [(ngModel)]="followupForm.nextvisit" 
-                class="form-control"
-              />
-            </div>
-            <div class="form-group full-width">
-              <label for="remarks">Remarks:</label>
-              <textarea 
-                id="remarks" 
-                [(ngModel)]="followupForm.remarks" 
-                class="form-control" 
-                rows="3" 
-                placeholder="Enter visit remarks..."
-              ></textarea>
+      <div class="modal-body with-sidebar">
+        <!-- Main Form Area -->
+        <div class="modal-main">
+          <div class="customer-banner">
+            <div class="avatar-placeholder">{{ (selectedCustomer['name'] || 'C')[0] }}</div>
+            <div class="customer-details">
+              <h4>{{ selectedCustomer['name'] || 'Unknown Customer' }}</h4>
+              <div class="meta-row">
+                <span class="meta-pill">📱 {{ selectedCustomer['mobileno'] || 'N/A' }}</span>
+                <span class="meta-pill">📍 {{ selectedCustomer['location'] || 'N/A' }}</span>
+              </div>
             </div>
           </div>
-          <div class="form-actions">
-            <button class="save-btn" (click)="saveFollowupDetails()">Save</button>
-            <button class="convert-btn" (click)="convertToContact()" [disabled]="convertingToContact">
-              {{ convertingToContact ? 'Converting...' : 'Convert to Contact' }}
-            </button>
+
+          <div class="form-section">
+            <h4 class="section-title">New Visit Entry</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dateofvisit">Date of Visit</label>
+                <div class="input-wrapper">
+                  <input type="datetime-local" id="dateofvisit" [(ngModel)]="followupForm.dateofvisit"
+                    class="form-input" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="nextvisit">Next Visit (Optional)</label>
+                <div class="input-wrapper">
+                  <input type="datetime-local" id="nextvisit" [(ngModel)]="followupForm.nextvisit" class="form-input" />
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="remarks">Remarks</label>
+              <textarea id="remarks" [(ngModel)]="followupForm.remarks" class="form-input textarea" rows="4"
+                placeholder="Enter detailed remarks about the interaction..."></textarea>
+            </div>
           </div>
         </div>
 
-        <!-- Previous History -->
-        <div class="history-section">
-          <h4>Previous History</h4>
-          <div *ngIf="loadingHistory" class="loading-message">
-            Loading previous history...
-          </div>
-          <div *ngIf="!loadingHistory && previousHistory.length === 0" class="no-data-message">
-            No previous history found.
-          </div>
-          <div *ngIf="!loadingHistory && previousHistory.length > 0" class="history-table-container">
-            <table class="history-table">
-              <thead>
-                <tr>
-                  <th>Date of Visit</th>
-                  <th>Next Visit</th>
-                  <th>Remarks</th>
-                  <th>Visit By</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let history of previousHistory">
-                  <td>{{ history['dateofvisit'] || 'N/A' }}</td>
-                  <td>{{ history['nextvisit'] || 'N/A' }}</td>
-                  <td>{{ history['remarks'] || 'N/A' }}</td>
-                  <td>{{ history['visitby'] || history['empname'] || 'N/A' }}</td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- Sidebar / History -->
+        <div class="modal-sidebar">
+          <h4 class="sidebar-title">Interaction History</h4>
+          <div class="history-timeline">
+            <div *ngIf="loadingHistory" class="loading-spinner"></div>
+            <div *ngIf="!loadingHistory && previousHistory.length === 0" class="empty-history">
+              No previous history
+            </div>
+
+            <div *ngFor="let history of previousHistory" class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <div class="timeline-date">{{ history['dateofvisit'] }}</div>
+                <div class="timeline-remarks">{{ history['remarks'] }}</div>
+                <div class="timeline-meta" *ngIf="history['nextvisit']">
+                  Next: {{ history['nextvisit'] }}
+                </div>
+                <div class="timeline-author">By: {{ history['visitby'] || history['empname'] || 'Unknown' }}</div>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeFollowupPopup()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveFollowupDetails()">Save Entry</button>
       </div>
     </div>
-  </div>
-
-  <!-- Data table -->
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Action</th>
-          <th *ngFor="let col of visibleColumns">{{ getLabel(col) }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let customer of customers">
-          <td><button class="followup-btn" (click)="followupCustomer(customer)" aria-label="Follow Up">📞</button></td>
-          <td *ngFor="let col of visibleColumns">{{ customer[col] }}</td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </div>
