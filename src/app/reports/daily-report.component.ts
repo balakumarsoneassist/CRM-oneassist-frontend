@@ -388,6 +388,12 @@ export class DailyReportComponent implements OnInit {
         `;
 
         reportContent.innerHTML = headerHTML + summaryHTML + tableHTML;
+        // Expose the component export function to window so the inline button can call it
+        try {
+          (window as any).exportReport = this.exportReport.bind(this);
+        } catch (e) {
+          console.warn('Failed to bind exportReport to window', e);
+        }
       } else {
         reportContent.innerHTML = `
           <div style="text-align: center; padding: 40px; background: white; border-radius: 8px; border: 2px dashed #dee2e6;">
