@@ -32,7 +32,10 @@
                 </ng-container>
                 <div *ngIf="col === 'remarks'" class="cell-with-action">
                   <span class="cell-text">{{ customer[col] }}</span>
-                  <button class="btn-icon-pill small-btn" (click)="followupCustomer(customer)">
+                  <button
+                    class="btn-icon-pill small-btn"
+                    (click)="followupCustomer(customer)"
+                  >
                     <span class="icon">📞</span> Followup
                   </button>
                 </div>
@@ -71,29 +74,46 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="closeDialog()">Close</button>
-        <button class="btn btn-primary" (click)="closeDialog()">Apply Changes</button>
+        <button class="btn btn-primary" (click)="closeDialog()">
+          Apply Changes
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Follow-up Details Modal -->
-  <div class="modal-backdrop" *ngIf="showFollowupPopup" (click)="closeFollowupPopup()">
-    <div class="modal-card followup-modal big-modal" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    *ngIf="showFollowupPopup"
+    (click)="closeFollowupPopup()"
+  >
+    <div
+      class="modal-card followup-modal big-modal"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
         <h3>Update Activity</h3>
-        <button class="btn-close" (click)="closeFollowupPopup()">&times;</button>
+        <button class="btn-close" (click)="closeFollowupPopup()">
+          &times;
+        </button>
       </div>
 
       <div class="modal-body with-sidebar">
         <!-- Main Form Area -->
         <div class="modal-main">
           <div class="customer-banner">
-            <div class="avatar-placeholder">{{ (selectedCustomer['name'] || 'C')[0] }}</div>
+            <div class="avatar-placeholder">
+              {{ (selectedCustomer["name"] || "C")[0] }}
+            </div>
             <div class="customer-details">
-              <h4>{{ selectedCustomer['name'] || 'Unknown Customer' }}</h4>
+              <h4>{{ selectedCustomer["name"] || "Unknown Customer" }}</h4>
               <div class="meta-row">
-                <span class="meta-pill">📱 {{ selectedCustomer['mobileno'] || 'N/A' }}</span>
-                <span class="meta-pill">📍 {{ selectedCustomer['location'] || 'N/A' }}</span>
+                <span class="meta-pill"
+                  >📱 {{ selectedCustomer["mobileno"] || "N/A" }}</span
+                >
+                <span class="meta-pill"
+                  >📍 {{ selectedCustomer["location"] || "N/A" }}</span
+                >
               </div>
             </div>
           </div>
@@ -104,21 +124,35 @@
               <div class="form-group">
                 <label for="dateofvisit">Date of Visit</label>
                 <div class="input-wrapper">
-                  <input type="datetime-local" id="dateofvisit" [(ngModel)]="followupForm.dateofvisit"
-                    class="form-input" />
+                  <input
+                    type="datetime-local"
+                    id="dateofvisit"
+                    [(ngModel)]="followupForm.dateofvisit"
+                    class="form-input"
+                  />
                 </div>
               </div>
               <div class="form-group">
                 <label for="nextvisit">Next Visit (Optional)</label>
                 <div class="input-wrapper">
-                  <input type="datetime-local" id="nextvisit" [(ngModel)]="followupForm.nextvisit" class="form-input" />
+                  <input
+                    type="datetime-local"
+                    id="nextvisit"
+                    [(ngModel)]="followupForm.nextvisit"
+                    class="form-input"
+                  />
                 </div>
               </div>
             </div>
             <div class="form-group">
               <label for="remarks">Remarks</label>
-              <textarea id="remarks" [(ngModel)]="followupForm.remarks" class="form-input textarea" rows="4"
-                placeholder="Enter detailed remarks about the interaction..."></textarea>
+              <textarea
+                id="remarks"
+                [(ngModel)]="followupForm.remarks"
+                class="form-input textarea"
+                rows="4"
+                placeholder="Enter detailed remarks about the interaction..."
+              ></textarea>
             </div>
           </div>
         </div>
@@ -128,19 +162,25 @@
           <h4 class="sidebar-title">Interaction History</h4>
           <div class="history-timeline">
             <div *ngIf="loadingHistory" class="loading-spinner"></div>
-            <div *ngIf="!loadingHistory && previousHistory.length === 0" class="empty-history">
+            <div
+              *ngIf="!loadingHistory && previousHistory.length === 0"
+              class="empty-history"
+            >
               No previous history
             </div>
 
             <div *ngFor="let history of previousHistory" class="timeline-item">
               <div class="timeline-dot"></div>
               <div class="timeline-content">
-                <div class="timeline-date">{{ history['dateofvisit'] }}</div>
-                <div class="timeline-remarks">{{ history['remarks'] }}</div>
+                <div class="timeline-date">{{ history["dateofvisit"] }}</div>
+                <div class="timeline-remarks">{{ history["remarks"] }}</div>
                 <div class="timeline-meta" *ngIf="history['nextvisit']">
-                  Next: {{ history['nextvisit'] }}
+                  Next: {{ history["nextvisit"] }}
                 </div>
-                <div class="timeline-author">By: {{ history['visitby'] || history['empname'] || 'Unknown' }}</div>
+                <div class="timeline-author">
+                  By:
+                  {{ history["visitby"] || history["empname"] || "Unknown" }}
+                </div>
               </div>
             </div>
           </div>
@@ -148,8 +188,12 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeFollowupPopup()">Cancel</button>
-        <button class="btn btn-primary" (click)="saveFollowupDetails()">Save Entry</button>
+        <button class="btn btn-secondary" (click)="closeFollowupPopup()">
+          Cancel
+        </button>
+        <button class="btn btn-primary" (click)="saveFollowupDetails()">
+          Save Entry
+        </button>
       </div>
     </div>
   </div>

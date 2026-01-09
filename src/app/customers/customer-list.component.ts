@@ -535,16 +535,6 @@ export class CustomerListComponent implements OnInit {
         },
       });
   }
-  // Reassignment Logic State
-  isReassignModalOpen = false;
-  isEmployeeModalOpen = false;
-  isReasonModalOpen = false;
-
-  selectedReassignCustomer: Customer | null = null;
-  reassignReason: string = '';
-
-  employees: any[] = [];
-  reassignCustomerList: Customer[] = []; // List for the modal
 
   openReassignFlow(): void {
     if (!this.isAdmin) return;

@@ -80,15 +80,27 @@ export class TargetAchievementService {
 
   getAllAchievementMetrics(
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
+    search: string = '',
+    designation: string = '',
+    sortBy: string = '',
+    sortOrder: string = ''
   ): Observable<any> {
     const headers = this.getAuthHeaders();
-    // Add timestamp to force new network request
-    const timestamp = new Date().getTime();
-    return this.http.get(
-      `${this.apiUrl}/api/all-achievement-metrics?t=${timestamp}&page=${page}&limit=${limit}`,
-      { headers }
-    );
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('t', new Date().getTime().toString());
+
+    if (search) params = params.set('search', search);
+    if (designation) params = params.set('designation', designation);
+    if (sortBy) params = params.set('sortBy', sortBy);
+    if (sortOrder) params = params.set('sortOrder', sortOrder);
+
+    return this.http.get(`${this.apiUrl}/api/all-achievement-metrics`, {
+      headers,
+      params,
+    });
   }
 
   bulkAssignCustomers(empid: string): Observable<any> {
