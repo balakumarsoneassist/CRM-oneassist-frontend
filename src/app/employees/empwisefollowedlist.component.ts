@@ -285,7 +285,7 @@ export class EmpWiseFollowedListComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private trackNumberService: TrackNumberService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Get parameters from route
@@ -293,7 +293,7 @@ export class EmpWiseFollowedListComponent implements OnInit {
       this.empId = params['empid'] || '';
       this.statusCode = params['statuscode'] || '';
     });
-    
+
     // Get employee name from query parameters
     this.route.queryParams.subscribe(queryParams => {
       this.empName = queryParams['name'] || `Employee ${this.empId}`;
@@ -321,7 +321,7 @@ export class EmpWiseFollowedListComponent implements OnInit {
     this.http.get<EmpFollowResponse>(`${environment.apiUrl}/LCFollowEmpStatusRportSummaryList`, { params }).subscribe({
       next: (response) => {
         console.log('Employee follow response:', response);
-        
+
         // Handle different response formats
         if (response && Array.isArray(response)) {
           this.followItems = response;
@@ -332,13 +332,13 @@ export class EmpWiseFollowedListComponent implements OnInit {
         } else {
           this.followItems = [];
         }
-        
+
         // Extract and combine status and statustype to create statusLabel
         if (this.followItems.length > 0) {
           const firstItem = this.followItems[0];
           const status = firstItem['status'] || '';
           const statustype = firstItem['statustype'] || '';
-          
+
           if (status && statustype) {
             this.statusLabel = `${status} - ${statustype}`;
           } else if (status) {
@@ -351,7 +351,7 @@ export class EmpWiseFollowedListComponent implements OnInit {
         } else {
           this.statusLabel = `Status ${this.statusCode}`;
         }
-        
+
         setTimeout(() => {
           this.loading = false;
           // Use direct DOM manipulation for reliable rendering
@@ -373,36 +373,48 @@ export class EmpWiseFollowedListComponent implements OnInit {
 
   getTableHeaders(): string[] {
     if (this.followItems.length === 0) return [];
-    
+
     // Get all unique keys from the first few items to determine table headers
     const headers = new Set<string>();
     const itemsToCheck = this.followItems.slice(0, Math.min(5, this.followItems.length));
-    
+
     itemsToCheck.forEach(item => {
       Object.keys(item).forEach(key => headers.add(key));
     });
-    
+
     // Filter out unwanted columns
-    const filteredHeaders = Array.from(headers).filter(header => 
-      !header.toLowerCase().includes('contactfollowedby') && 
+    const filteredHeaders = Array.from(headers).filter(header =>
+      !header.toLowerCase().includes('contactfollowedby') &&
       !header.toLowerCase().includes('leadfollowedby') &&
       !header.toLowerCase().includes('contactfolloedby') &&
       !header.toLowerCase().includes('status') &&
       !header.toLowerCase().includes('statustype')
     );
-    
+
     return filteredHeaders.sort();
   }
 
-  getDisplayValue(value: any): string {
+  getDisplayValue(value: any, key: string = ''): string {
     if (value === null || value === undefined) return '-';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+
+    if (key.toLowerCase().includes('date') || key.toLowerCase().includes('time') || key === 'createdon') {
+      if (typeof value === 'string' || value instanceof Date) {
+        try {
+          const date = new Date(value);
+          return isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+        } catch (e) {
+          return String(value);
+        }
+      }
+    }
+
     if (typeof value === 'object') return JSON.stringify(value);
     return String(value);
   }
 
   titleCase(str: string): string {
-    return str.replace(/\w\S*/g, (txt) => 
+    return str.replace(/\w\S*/g, (txt) =>
       txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
     );
   }
@@ -414,17 +426,17 @@ export class EmpWiseFollowedListComponent implements OnInit {
 
   trackItem(item: EmpFollowItem, index: number): void {
     console.log('Track clicked for employee item:', item, 'at index:', index);
-    
+
     // Extract TrackNumber from the item data
     const trackNumber = item['tracknumber'] || item['TrackNumber'] || item['track_number'] || item['trackno'] || '';
-    
+
     if (trackNumber) {
       console.log('Opening track popup with tracknumber:', trackNumber);
       this.selectedTrackNumber = trackNumber;
-      
+
       // Emit the track number via the observable service
       this.trackNumberService.setTrackNumber(trackNumber);
-      
+
       // Show popup using direct DOM manipulation
       this.showTrackPopupDOM();
     } else {
@@ -437,24 +449,24 @@ export class EmpWiseFollowedListComponent implements OnInit {
     const popupOverlay = document.getElementById('track-popup-overlay');
     if (popupOverlay) {
       popupOverlay.style.display = 'flex';
-      
+
       // Add event listeners for closing the popup
       const closeBtn = document.getElementById('track-popup-close');
       const popupContent = document.getElementById('track-popup-content');
-      
+
       if (closeBtn) {
         closeBtn.addEventListener('click', () => {
           this.closeTrackPopupDOM();
         });
       }
-      
+
       // Close popup when clicking on overlay (outside content)
       popupOverlay.addEventListener('click', (event) => {
         if (event.target === popupOverlay) {
           this.closeTrackPopupDOM();
         }
       });
-      
+
       // Prevent closing when clicking inside popup content
       if (popupContent) {
         popupContent.addEventListener('click', (event) => {
@@ -495,27 +507,27 @@ export class EmpWiseFollowedListComponent implements OnInit {
     const totalRecordsValue = document.getElementById('total-records-value');
     const tableContent = document.getElementById('table-content');
     const noDataMessage = document.getElementById('no-data-message');
-    
+
     // Hide loading box
     if (loadingBox) {
       loadingBox.style.display = 'none';
     }
-    
+
     // Hide error box
     if (errorBox) {
       errorBox.style.display = 'none';
     }
-    
+
     // Show content container
     if (contentContainer) {
       contentContainer.style.display = 'block';
     }
-    
+
     // Update report heading
     if (reportHeading) {
       reportHeading.textContent = `Employee Wise Follow Report`;
     }
-    
+
     // Update info values
     if (orgIdValue) {
       orgIdValue.textContent = this.orgId;
@@ -529,12 +541,12 @@ export class EmpWiseFollowedListComponent implements OnInit {
     if (totalRecordsValue) {
       totalRecordsValue.textContent = this.followItems.length.toString();
     }
-    
+
     // Generate and display table or no data message
     if (this.followItems.length > 0) {
       if (tableContent) {
         const headers = this.getTableHeaders();
-        
+
         let tableHTML = `
           <table class="data-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
             <thead>
@@ -546,7 +558,7 @@ export class EmpWiseFollowedListComponent implements OnInit {
             <tbody>
               ${this.followItems.map((item, index) => `
                 <tr class="table-row" style="border-bottom: 1px solid #dee2e6;">
-                  ${headers.map(header => `<td class="table-cell" style="padding: 12px; border: 1px solid #dee2e6; vertical-align: middle;">${this.getDisplayValue(item[header])}</td>`).join('')}
+                  ${headers.map(header => `<td class="table-cell" style="padding: 12px; border: 1px solid #dee2e6; vertical-align: middle;">${this.getDisplayValue(item[header], header)}</td>`).join('')}
                   <td class="table-cell" style="padding: 12px; border: 1px solid #dee2e6; text-align: center; vertical-align: middle;">
                     <button id="track-btn-${index}" class="track-btn" style="background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">Track</button>
                   </td>
@@ -556,7 +568,7 @@ export class EmpWiseFollowedListComponent implements OnInit {
           </table>
         `;
         tableContent.innerHTML = tableHTML;
-        
+
         // Add event listeners for Track buttons
         this.followItems.forEach((item, index) => {
           const button = document.getElementById(`track-btn-${index}`);
@@ -564,7 +576,7 @@ export class EmpWiseFollowedListComponent implements OnInit {
             button.addEventListener('click', () => {
               this.trackItem(item, index);
             });
-            
+
             // Add hover effects
             button.addEventListener('mouseenter', () => {
               button.style.backgroundColor = '#138496';
@@ -575,7 +587,7 @@ export class EmpWiseFollowedListComponent implements OnInit {
           }
         });
       }
-      
+
       if (noDataMessage) {
         noDataMessage.style.display = 'none';
       }
@@ -583,12 +595,12 @@ export class EmpWiseFollowedListComponent implements OnInit {
       if (tableContent) {
         tableContent.innerHTML = '';
       }
-      
+
       if (noDataMessage) {
         noDataMessage.style.display = 'block';
       }
     }
-    
+
     console.log('DOM elements updated directly for employee follow data:', {
       loadingBox: !!loadingBox,
       errorBox: !!errorBox,

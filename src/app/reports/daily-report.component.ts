@@ -23,6 +23,7 @@ interface ReportData {
   tracknumber: string;
   assigneename: string;
   status: string;
+  isdirectmeet?: boolean;
 }
 
 @Component({
@@ -348,6 +349,7 @@ export class DailyReportComponent implements OnInit {
                   <th style="padding: 12px; text-align: left; font-weight: 600;">Location</th>
                   <th style="padding: 12px; text-align: left; font-weight: 600;">Assignee</th>
                   <th style="padding: 12px; text-align: left; font-weight: 600;">Status</th>
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">Direct Meet</th>
                   <th style="padding: 12px; text-align: left; font-weight: 600;">Appointment</th>
                   <th style="padding: 12px; text-align: left; font-weight: 600;">Reference</th>
                   <th style="padding: 12px; text-align: left; font-weight: 600;">Notes</th>
@@ -371,6 +373,7 @@ export class DailyReportComponent implements OnInit {
                   ${(row.status || 'Unknown').toUpperCase()}
                 </span>
               </td>
+              <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">${row.isdirectmeet === true ? 'Yes' : 'No'}</td>
               <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">${row.appoinmentdate ? new Date(row.appoinmentdate).toLocaleDateString() : 'N/A'}</td>
               <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">${row.referencename || 'N/A'}</td>
               <td style="padding: 12px; border-bottom: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">${row.notes || 'N/A'}</td>
@@ -385,6 +388,12 @@ export class DailyReportComponent implements OnInit {
         `;
 
         reportContent.innerHTML = headerHTML + summaryHTML + tableHTML;
+        // Expose the component export function to window so the inline button can call it
+        try {
+          (window as any).exportReport = this.exportReport.bind(this);
+        } catch (e) {
+          console.warn('Failed to bind exportReport to window', e);
+        }
       } else {
         reportContent.innerHTML = `
           <div style="text-align: center; padding: 40px; background: white; border-radius: 8px; border: 2px dashed #dee2e6;">

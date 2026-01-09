@@ -66,6 +66,14 @@ export class TargetAchievementService {
     return this.http.put(url, data, { headers });
   }
 
+  getRevenueBreakdown(empId: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.get(
+      `${this.apiUrl}/api/target-metrics/${empId}/revenue-breakdown`,
+      { headers }
+    );
+  }
+
   getEmployeeById(id: string): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.get(`${this.apiUrl}/employees/${id}`, { headers });

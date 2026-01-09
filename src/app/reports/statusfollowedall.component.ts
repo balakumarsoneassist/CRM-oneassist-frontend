@@ -254,14 +254,14 @@ export class StatusFollowedAllComponent implements OnInit {
     private http: HttpClient,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Get statuscode from route parameters and label from query parameters
     this.route.params.subscribe(params => {
       this.statusCode = params['statuscode'] || '';
     });
-    
+
     this.route.queryParams.subscribe(queryParams => {
       this.statusLabel = queryParams['label'] || `Status ${this.statusCode}`;
       // Extract report type (Contact or Lead) from statusLabel
@@ -300,19 +300,19 @@ export class StatusFollowedAllComponent implements OnInit {
     // Determine which API endpoint to call based on statuscode
     const statusCodeNum = parseInt(this.statusCode);
     let apiEndpoint: string;
-    
+
     if ((statusCodeNum < 11) || (statusCodeNum == 22)) {
       apiEndpoint = `/ContactFollowallStatusRportSummaryList`;
     } else {
       apiEndpoint = `/LeadFollowallStatusRportSummaryList`;
     }
-    
+
     console.log('Using API endpoint:', apiEndpoint, 'for statuscode:', statusCodeNum);
-    
+
     this.http.get<FollowStatusResponse>(`${environment.apiUrl}${apiEndpoint}`, { params }).subscribe({
       next: (response) => {
         console.log('Follow status response:', response);
-        
+
         // Handle different response formats
         if (response && Array.isArray(response)) {
           // Direct array response
@@ -329,12 +329,12 @@ export class StatusFollowedAllComponent implements OnInit {
         } else {
           this.followItems = [];
         }
-        
+
         // Use setTimeout to ensure change detection fires (proven solution)
         setTimeout(() => {
           this.loading = false;
           console.log('Follow status data loaded:', this.followItems.length, 'items');
-          
+
           // Direct DOM manipulation to bypass Angular's change detection issues
           setTimeout(() => {
             this.updateDOMDirectly();
@@ -354,27 +354,39 @@ export class StatusFollowedAllComponent implements OnInit {
 
   getTableHeaders(): string[] {
     if (this.followItems.length === 0) return [];
-    
+
     // Get all unique keys from the first few items to determine table headers
     const headers = new Set<string>();
     const itemsToCheck = this.followItems.slice(0, Math.min(5, this.followItems.length));
-    
+
     itemsToCheck.forEach(item => {
       Object.keys(item).forEach(key => headers.add(key));
     });
-    
+
     // Filter out contactfollowedby and leadfollowedby columns
-    const filteredHeaders = Array.from(headers).filter(header => 
-      !header.toLowerCase().includes('contactfollowedby') && 
+    const filteredHeaders = Array.from(headers).filter(header =>
+      !header.toLowerCase().includes('contactfollowedby') &&
       !header.toLowerCase().includes('leadfollowedby')
     );
-    
+
     return filteredHeaders.sort();
   }
 
-  getDisplayValue(value: any): string {
+  getDisplayValue(value: any, key: string = ''): string {
     if (value === null || value === undefined) return '-';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+
+    if (key.toLowerCase().includes('date') || key.toLowerCase().includes('time') || key === 'createdon') {
+      if (typeof value === 'string' || value instanceof Date) {
+        try {
+          const date = new Date(value);
+          return isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+        } catch (e) {
+          return String(value);
+        }
+      }
+    }
+
     if (typeof value === 'object') return JSON.stringify(value);
     return String(value);
   }
@@ -385,7 +397,7 @@ export class StatusFollowedAllComponent implements OnInit {
 
   viewItemDetails(item: FollowStatusItem, index: number): void {
     console.log('View details clicked for item:', item, 'at index:', index);
-    
+
     // Extract empid from contactfollowedby or leadfollowedby field
     let empId = '';
     if (item['contactfollowedby']) {
@@ -394,18 +406,18 @@ export class StatusFollowedAllComponent implements OnInit {
       empId = item['leadfollowedby'];
     } else {
       // Look for any field that might contain employee ID
-      const possibleEmpFields = Object.keys(item).filter(key => 
-        key.toLowerCase().includes('emp') || 
+      const possibleEmpFields = Object.keys(item).filter(key =>
+        key.toLowerCase().includes('emp') ||
         key.toLowerCase().includes('follow')
       );
       if (possibleEmpFields.length > 0) {
         empId = item[possibleEmpFields[0]];
       }
     }
-    
+
     // Extract employee name from name field
     const empName = item['name'] || item['employeename'] || item['emp_name'] || '';
-    
+
     if (empId && this.statusCode) {
       console.log('Navigating to empwisefollowedlist with empid:', empId, 'statuscode:', this.statusCode, 'name:', empName);
       this.router.navigate(['/dashboard/empwisefollowedlist', empId, this.statusCode], {
@@ -428,27 +440,27 @@ export class StatusFollowedAllComponent implements OnInit {
     const totalRecordsValue = document.getElementById('total-records-value');
     const tableContent = document.getElementById('table-content');
     const noDataMessage = document.getElementById('no-data-message');
-    
+
     // Hide loading box
     if (loadingBox) {
       loadingBox.style.display = 'none';
     }
-    
+
     // Hide error box
     if (errorBox) {
       errorBox.style.display = 'none';
     }
-    
+
     // Show content container
     if (contentContainer) {
       contentContainer.style.display = 'block';
     }
-    
+
     // Update report heading with type
     if (reportHeading) {
       reportHeading.textContent = `Status Follow Report - ${this.reportType}`;
     }
-    
+
     // Update info values
     if (orgIdValue) {
       orgIdValue.textContent = this.orgId;
@@ -459,12 +471,12 @@ export class StatusFollowedAllComponent implements OnInit {
     if (totalRecordsValue) {
       totalRecordsValue.textContent = this.followItems.length.toString();
     }
-    
+
     // Generate and display table or no data message
     if (this.followItems.length > 0) {
       if (tableContent) {
         const headers = this.getTableHeaders();
-        
+
         // Create 3-column layout with proper spacing
         let tableHTML = `
           <table class="data-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -478,8 +490,8 @@ export class StatusFollowedAllComponent implements OnInit {
             <tbody>
               ${this.followItems.map((item, index) => `
                 <tr class="table-row" style="border-bottom: 1px solid #dee2e6;">
-                  <td class="table-cell" style="width: 35%; padding: 12px; border: 1px solid #dee2e6; vertical-align: middle;">${headers[0] ? this.getDisplayValue(item[headers[0]]) : '-'}</td>
-                  <td class="table-cell" style="width: 35%; padding: 12px; border: 1px solid #dee2e6; vertical-align: middle;">${headers[1] ? this.getDisplayValue(item[headers[1]]) : '-'}</td>
+                  <td class="table-cell" style="width: 35%; padding: 12px; border: 1px solid #dee2e6; vertical-align: middle;">${headers[0] ? this.getDisplayValue(item[headers[0]], headers[0]) : '-'}</td>
+                  <td class="table-cell" style="width: 35%; padding: 12px; border: 1px solid #dee2e6; vertical-align: middle;">${headers[1] ? this.getDisplayValue(item[headers[1]], headers[1]) : '-'}</td>
                   <td class="table-cell" style="width: 30%; padding: 12px; border: 1px solid #dee2e6; text-align: center; vertical-align: middle;">
                     <button id="detail-btn-${index}" class="detail-btn" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s;">View Details</button>
                   </td>
@@ -489,7 +501,7 @@ export class StatusFollowedAllComponent implements OnInit {
           </table>
         `;
         tableContent.innerHTML = tableHTML;
-        
+
         // Add event listeners for View Details buttons
         this.followItems.forEach((item, index) => {
           const button = document.getElementById(`detail-btn-${index}`);
@@ -497,7 +509,7 @@ export class StatusFollowedAllComponent implements OnInit {
             button.addEventListener('click', () => {
               this.viewItemDetails(item, index);
             });
-            
+
             // Add hover effects
             button.addEventListener('mouseenter', () => {
               button.style.backgroundColor = '#0056b3';
@@ -508,7 +520,7 @@ export class StatusFollowedAllComponent implements OnInit {
           }
         });
       }
-      
+
       if (noDataMessage) {
         noDataMessage.style.display = 'none';
       }
@@ -516,12 +528,12 @@ export class StatusFollowedAllComponent implements OnInit {
       if (tableContent) {
         tableContent.innerHTML = '';
       }
-      
+
       if (noDataMessage) {
         noDataMessage.style.display = 'block';
       }
     }
-    
+
     console.log('DOM elements updated directly:', {
       loadingBox: !!loadingBox,
       errorBox: !!errorBox,
@@ -529,9 +541,9 @@ export class StatusFollowedAllComponent implements OnInit {
       itemsLength: this.followItems.length
     });
   }
-  
+
   private titleCase(str: string): string {
-    return str.replace(/\w\S*/g, (txt) => 
+    return str.replace(/\w\S*/g, (txt) =>
       txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
     );
   }

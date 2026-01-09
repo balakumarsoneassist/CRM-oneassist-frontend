@@ -1,8 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TargetAchievementService } from './target-achievement.service';
 import { AuthService } from '../services/auth.service';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-achievement',
@@ -11,17 +13,23 @@ import { AuthService } from '../services/auth.service';
   templateUrl: './achievement.component.html',
   styleUrls: ['./achievement.component.css'],
 })
-export class AchievementComponent implements OnInit {
+export class AchievementComponent implements OnInit, OnDestroy {
   loading = false;
   error: string | null = null;
   isAdmin: boolean = false;
 
 
-  // Pagination
+  // Pagination & Filtering
   paginatedMetrics: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalRecords: number = 0;
+  itemsPerPageOptions: number[] = [10, 20, 25];
+
+  searchQuery: string = '';
+  designationFilter: string = '';
+  sortBy: string = 'name';
+  sortOrder: 'asc' | 'desc' = 'asc';
 
   // Single User Metrics
   loginsCount: number = 0;
@@ -34,9 +42,15 @@ export class AchievementComponent implements OnInit {
   attendedCallsTarget: number = 0;
   converted_leads: number = 0;
   convertedLeadsTarget: number = 0;
+  revenueActual: number = 0;
+  revenueTarget: number = 0;
 
   // Admin View Data
   allMetrics: any[] = [];
+
+  // Search Debouncing
+  private searchSubject = new Subject<string>();
+  private searchSubscription: Subscription | undefined;
 
   constructor(
     private service: TargetAchievementService,
@@ -46,10 +60,26 @@ export class AchievementComponent implements OnInit {
 
   ngOnInit() {
     this.checkUserRole();
+
+    // Setup debounce for search
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.currentPage = 1;
+      this.fetchAllMetrics();
+    });
+
     if (this.isAdmin) {
       this.fetchAllMetrics();
     } else {
       this.fetchMetrics();
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
     }
   }
 
@@ -61,7 +91,7 @@ export class AchievementComponent implements OnInit {
   // Refresh Button Handler
   refreshData() {
     if (this.isAdmin) {
-      this.selectedEmployee = null; // Clear selection on refresh
+      this.selectedEmployee = null;
       this.fetchAllMetrics();
     } else {
       this.fetchMetrics();
@@ -70,15 +100,23 @@ export class AchievementComponent implements OnInit {
 
   fetchAllMetrics() {
     this.loading = true;
-    this.service.getAllAchievementMetrics(this.currentPage, this.itemsPerPage).subscribe({
+
+    const params = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      search: this.searchQuery,
+      sortBy: this.sortBy,
+      sortOrder: this.sortOrder
+    };
+
+    this.service.getAllAchievementMetrics(params.page, params.limit, params.search, undefined, params.sortBy, params.sortOrder).subscribe({
       next: (data: any) => {
         console.log('✅ Network Data Received (Achievement Page):', data);
         if (data.success) {
-          this.allMetrics = data.data || []; // Contains only current page data
-          this.paginatedMetrics = this.allMetrics; // Server already paginated
+          this.allMetrics = data.data || [];
+          this.paginatedMetrics = this.allMetrics;
           this.totalRecords = data.totalCount || 0;
 
-          // Use server-side totals if available
           if (data.totals) {
             this.updateAggregateMetricsFromServer(data.totals);
           }
@@ -89,12 +127,30 @@ export class AchievementComponent implements OnInit {
       error: (err: any) => {
         console.error('Failed to fetch all achievement metrics', err);
         this.loading = false;
-        this.cdr.detectChanges(); // Stop loader on error
+        this.cdr.detectChanges();
       },
     });
   }
 
+  onSearchChange() {
+    this.searchSubject.next(this.searchQuery);
+  }
 
+  onSort(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.fetchAllMetrics();
+  }
+
+  onPageSizeChange(event: any) {
+    this.itemsPerPage = Number(event.target.value);
+    this.currentPage = 1;
+    this.fetchAllMetrics();
+  }
 
   // Pagination Logic
   get totalPages(): number {
@@ -102,8 +158,7 @@ export class AchievementComponent implements OnInit {
   }
 
   updatePagination() {
-    // Deprecated: Server side pagination handles slicing
-    this.fetchAllMetrics();
+    // Deprecated
   }
 
   prevPage() {
@@ -147,33 +202,18 @@ export class AchievementComponent implements OnInit {
   }
 
   updateLocalMetrics(data: any) {
-    this.loginsCount = Number(data.logins) || 0; // Note: For non-admin, API might return 'logins' as actual or target depending on context, assuming existing logic was correct for what it had. Detailed view fixes this.
-    // Actually, looking at backend /target-metrics, it returns: logins (target), sanctions (target), etc.
-    // And for 'my' metrics, we might need actuals.
-    // BUT, the user prompt specifically asked to "bring me to that state" showing 1/15.
-    // The previous analysis showed /all-achievement-metrics returns both.
-    // /target-metrics returns target values mainly + some actuals (attendedCalls).
-    // Let's stick to what we decided: Add the target variables.
-
-    // Safety check: if data has _actual suffix, use it, else fallback or 0
-    this.loginsCount = Number(data.logins_actual) || Number(data.logins) || 0;
-    this.loginsTarget = Number(data.logins_target) || Number(data.logins) || 0; // If only one login value exists, it might be ambiguous without strict typing from backend, but for Admin view (all-achievement-metrics), we have explicit keys.
-
-    // Let's use the explicit keys from all-achievement-metrics for the Admin Dashboard view
     this.loginsCount = Number(data.logins_actual) || 0;
     this.loginsTarget = Number(data.logins_target) || 0;
-
     this.sanctionsCount = Number(data.sanctions_actual) || 0;
     this.sanctionsTarget = Number(data.sanctions_target) || 0;
-
     this.disbursementVolume = Number(data.disbursement_actual) || 0;
     this.disbursementVolumeTarget = Number(data.disbursement_target) || 0;
-
     this.attendedCalls = Number(data.attended_calls) || 0;
     this.attendedCallsTarget = Number(data.attended_calls_target) || 0;
-
     this.converted_leads = Number(data.converted_actual) || 0;
     this.convertedLeadsTarget = Number(data.converted_target) || 0;
+    this.revenueActual = Number(data.revenue_achievement) || 0;
+    this.revenueTarget = Number(data.revenue_target) || 0;
   }
 
   updateAggregateMetricsFromServer(totals: any) {
@@ -187,9 +227,10 @@ export class AchievementComponent implements OnInit {
     this.attendedCallsTarget = totals.attended_calls_target || 0;
     this.converted_leads = totals.converted_actual || 0;
     this.convertedLeadsTarget = totals.converted_target || 0;
+    this.revenueActual = totals.revenue_achievement || 0;
+    this.revenueTarget = totals.revenue_target || 0;
   }
 
-  // kept for compatibility if needed, but unused
   calculateAggregateMetrics() { }
 
   selectedEmployee: any = null;
@@ -211,5 +252,65 @@ export class AchievementComponent implements OnInit {
 
     this.converted_leads = Number(emp.converted_actual) || 0;
     this.convertedLeadsTarget = Number(emp.converted_target) || 0;
+
+    this.revenueActual = Number(emp.revenue_achievement) || 0;
+    this.revenueTarget = Number(emp.revenue_target) || 0;
+  }
+
+  // Revenue Breakdown Modal Logic
+  showRevenueModal = false;
+  revenueDetails: any[] = [];
+  modalLoading = false;
+
+  openRevenueModal() {
+    // If Admin is viewing dashboard (no specific employee selected), we might disable or show aggregate?
+    // Current requirement implies clicking the card shows details.
+    // If admin has selected a user, show that user's details.
+    // If admin is viewing general dashboard (aggregate), showing breakdown might be too much data or needs aggregate breakdown.
+    // Assuming for now:
+    // - If normal user: show their own.
+    // - If admin selected user: show selected user.
+    // - If admin viewing all: show nothing or alert "Select a user first".
+
+    let targetId = '';
+    if (this.selectedEmployee && this.selectedEmployee.id) {
+      targetId = this.selectedEmployee.id;
+    } else if (!this.isAdmin) {
+      // Normal user, get own ID from token or service if possible.
+      // Usually target-metrics endpoint uses token if no ID param.
+      // But for revenue breakdown we need ID or pass nothing and let backend use token.
+      targetId = 'self'; // Special flag or let backend handle
+    } else {
+      // Admin view -> aggregate. Alert or handle?
+      // For now, let's only allow if a specific user context is clear or if it's the logged-in user.
+      return;
+    }
+
+    this.showRevenueModal = true;
+    this.modalLoading = true;
+
+    // If targetId is 'self', we pass undefined to service wrapper which usually handles it?
+    // Service expects string.
+    const finalId = targetId === 'self' ? (localStorage.getItem('usernameID') || '') : targetId;
+
+    this.service.getRevenueBreakdown(finalId).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          this.revenueDetails = res.data;
+        }
+        this.modalLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to fetch revenue breakdown', err);
+        this.modalLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeRevenueModal() {
+    this.showRevenueModal = false;
+    this.revenueDetails = [];
   }
 }
