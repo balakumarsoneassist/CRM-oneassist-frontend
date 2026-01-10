@@ -24,6 +24,7 @@ export class DashboardComponent {
     reports: false,
     performance: false,
     connector: false,
+    checklist: false,
     tools: false
   };
 
