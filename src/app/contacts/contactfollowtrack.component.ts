@@ -13,13 +13,14 @@ import { CallTrackHistoryComponent } from './calltrackhistory.component';
 })
 export class ContactFollowTrackComponent {
   @Input() tracknumber: string | null = null;
+  @Input() isEmployee: boolean = false;
   @Output() closePopup = new EventEmitter<void>(); // Event to notify parent to close popup
   @Output() dataSaved = new EventEmitter<void>(); // Event to notify parent that data was saved
-  
+
   onClosePopup(): void {
     this.closePopup.emit();
   }
-  
+
   onDataSaved(): void {
     this.dataSaved.emit();
   }

@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 export class TargetAchievementService {
   private apiUrl = environment.apiUrl; // Base API URL
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');

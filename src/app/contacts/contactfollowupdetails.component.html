@@ -117,7 +117,7 @@
   </div>
   <div class="grid-container">
     <!-- Basic Details -->
-    <div class="details-card span-4">
+    <div class="details-card span-4" *ngIf="!isEmployee">
       <h3>Basic Details</h3>
       <div class="details-grid">
         <label>
@@ -197,7 +197,7 @@
   </div>
 
   <!-- Doc Details Section - Visible only when status >= 12 -->
-  <div class="grid-container" *ngIf="form.get('status')?.value >= 12">
+  <div class="grid-container" *ngIf="!isEmployee && form.get('status')?.value >= 12">
     <div class="details-card span-full">
       <div class="doc-header"
         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -260,7 +260,7 @@
   </div>
 
   <!-- File Login Details Section - Visible only when status >= 13 -->
-  <div class="grid-container" *ngIf="form.get('status')?.value >= 13">
+  <div class="grid-container" *ngIf="!isEmployee && form.get('status')?.value >= 13">
     <div class="details-card span-4">
       <h3>File Login Details</h3>
       <div class="details-grid">
@@ -288,7 +288,7 @@
   </div>
 
   <!-- Sanction Details Section - Visible only when status >= 15 -->
-  <div class="grid-container" *ngIf="form.get('status')?.value >= 15">
+  <div class="grid-container" *ngIf="!isEmployee && form.get('status')?.value >= 15">
     <div class="details-card span-4">
       <h3>Sanction Details</h3>
       <div class="details-grid">
@@ -313,7 +313,7 @@
   </div>
 
   <!-- Disbursement Details Section - Visible only when status >= 17 -->
-  <div class="grid-container" *ngIf="form.get('status')?.value >= 17">
+  <div class="grid-container" *ngIf="!isEmployee && form.get('status')?.value >= 17">
     <div class="details-card span-4">
       <h3>Disbursement Details</h3>
       <div class="details-grid">
@@ -348,7 +348,7 @@
 </form>
 
 <!-- Details Navigation Frame - Visible only when status >= 12 -->
-<div class="details-navigation-frame" *ngIf="form.get('status')?.value >= 12">
+<div class="details-navigation-frame" *ngIf="!isEmployee && form.get('status')?.value >= 12">
   <div class="navigation-header">
     <h3>Additional Details</h3>
     <p>Access detailed information sections</p>
