@@ -107,25 +107,7 @@
         </div>
       </div>
 
-      <!-- Reports -->
-      <div class="menu-section">
-        <div class="section-header" (click)="toggleSection('reports')">
-          <i class="icon reports-icon">📊</i>
-          <span>Reports</span>
-          <i class="chevron" [class.expanded]="expandedSections.reports">▶</i>
-        </div>
-        <div class="submenu" [class.expanded]="expandedSections.reports">
-          <a routerLink="daily-report" routerLinkActive="active" class="submenu-link" aria-label="daily report">
-            <i class="sub-icon">📅</i>
-            <span>Daily Report</span>
-          </a>
-          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link"
-            aria-label="status summary report">
-            <i class="sub-icon">📈</i>
-            <span>Status Summary Report</span>
-          </a>
-        </div>
-      </div>
+
 
       <!-- Leads -->
       <div class="menu-section">
@@ -202,6 +184,48 @@
             aria-label="target achievement">
             <i class="sub-icon">🎯</i>
             <span>Target Assignments</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Check List Module -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('checklist')">
+          <i class="icon reports-icon">📋</i>
+          <span>Credit Appraisal</span>
+          <i class="chevron" [class.expanded]="expandedSections.checklist">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.checklist">
+          <a routerLink="checklist/salaried" routerLinkActive="active" class="submenu-link"
+            aria-label="salaried checklist">
+            <i class="sub-icon">💼</i>
+            <span>Salaried</span>
+          </a>
+          <a routerLink="checklist/self-employed" routerLinkActive="active" class="submenu-link"
+            aria-label="self employed checklist">
+            <i class="sub-icon">🏙️</i>
+            <span>Self Employeed</span>
+          </a>
+        </div>
+      </div>
+
+
+      <!-- Reports -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('reports')">
+          <i class="icon reports-icon">📊</i>
+          <span>Reports</span>
+          <i class="chevron" [class.expanded]="expandedSections.reports">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.reports">
+          <a routerLink="daily-report" routerLinkActive="active" class="submenu-link" aria-label="daily report">
+            <i class="sub-icon">📅</i>
+            <span>Daily Report</span>
+          </a>
+          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link"
+            aria-label="status summary report">
+            <i class="sub-icon">📈</i>
+            <span>Status Summary Report</span>
           </a>
         </div>
       </div>

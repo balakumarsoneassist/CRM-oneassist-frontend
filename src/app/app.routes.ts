@@ -39,6 +39,7 @@ import { ConnectorListComponent } from './connectors/connector-list.component';
 import { CustomerSegregationComponent } from './customers/customer-segregation.component';
 import { AchievementComponent } from './reports/achievement.component';
 import { TargetAchievementComponent } from './reports/target-achievement.component';
+import { ChecklistComponent } from './checklist/checklist.component';
 
 
 export const routes: Routes = [
@@ -84,7 +85,8 @@ export const routes: Routes = [
       { path: 'contactfollowtrack/:tracknumber', component: ContactFollowTrackComponent },
       { path: 'customer-segregation', component: CustomerSegregationComponent },
       { path: 'achievement', component: AchievementComponent },
-      { path: 'target-achievement', component: TargetAchievementComponent }
+      { path: 'target-achievement', component: TargetAchievementComponent },
+      { path: 'checklist/:type', component: ChecklistComponent }
     ]
   },
   { path: '**', redirectTo: 'login' }
