@@ -39,6 +39,7 @@ import { ConnectorListComponent } from './connectors/connector-list.component';
 import { CustomerSegregationComponent } from './customers/customer-segregation.component';
 import { AchievementComponent } from './reports/achievement.component';
 import { TargetAchievementComponent } from './reports/target-achievement.component';
+import { TrackCustomersComponent } from './customers/trackcustomers.component';
 
 
 export const routes: Routes = [
@@ -67,6 +68,7 @@ export const routes: Routes = [
       { path: 'assigned-contacts', component: AssignedContactsComponent },
       { path: 'assignedleads', component: AssignedLeadsComponent },
       { path: 'trackcontacts', component: TrackContactsComponent },
+      { path: 'trackcustomers', component: TrackCustomersComponent },
       { path: 'trackleads', component: TrackLeadsComponent },
       { path: 'customer-list', component: CustomerListComponent },
       { path: 'loan-list', component: LoanListComponent },

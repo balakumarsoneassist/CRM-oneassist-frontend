@@ -1,4 +1,5 @@
 <div class="contact-follow-track">
-  <app-contactfollowupdetails (closePopup)="onClosePopup()" (dataSaved)="onDataSaved()"></app-contactfollowupdetails>
-  <app-calltrackhistory></app-calltrackhistory>
+  <app-contactfollowupdetails [isEmployee]="isEmployee" (closePopup)="onClosePopup()"
+    (dataSaved)="onDataSaved()"></app-contactfollowupdetails>
+  <app-calltrackhistory *ngIf="!isEmployee"></app-calltrackhistory>
 </div>
