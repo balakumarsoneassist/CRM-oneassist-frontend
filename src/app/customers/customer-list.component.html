@@ -1,6 +1,14 @@
 <div class="customer-list-container">
   <div class="header-section">
-    <h2>Customer List</h2>
+    <div class="left-header">
+      <h2>Customer List</h2>
+      <!-- Search Control -->
+      <div class="search-container">
+        <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="search()" placeholder="Search customers..."
+          class="search-input">
+        <button class="search-btn" (click)="search()">🔍</button>
+      </div>
+    </div>
     <div class="actions">
       <!-- Admin Reassign Button -->
       <button *ngIf="isAdmin" class="reassign-btn" (click)="openReassignFlow()">
@@ -52,11 +60,9 @@
 
               <div class="actions-cell" *ngIf="col.key === 'actions'">
                 <!-- Employee: Follow Up button (stop propagation to prevent row click) -->
-                <button *ngIf="!isAdmin"
-                     class="followup-btn"
-                     (click)="openFollowUpPopup($event)">
-                     📞 Follow Up
-                 </button>
+                <button *ngIf="!isAdmin" class="followup-btn" (click)="openFollowUpPopup($event)">
+                  📞 Follow Up
+                </button>
 
               </div>
             </td>

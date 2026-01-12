@@ -30,6 +30,8 @@ interface Customer {
 })
 export class CustomerListComponent implements OnInit {
   customers: Customer[] = [];
+  allCustomers: Customer[] = []; // Cache for filtering
+  searchTerm: string = '';
   loading = false;
   error: string | null = null;
   isAdmin = false;
@@ -108,6 +110,9 @@ export class CustomerListComponent implements OnInit {
           this.customers = [];
         }
 
+        // Cache the full list for searching
+        this.allCustomers = [...this.customers];
+
         console.log('Processed customers:', this.customers);
 
         // Apply comprehensive change detection fix (following established pattern)
@@ -128,7 +133,24 @@ export class CustomerListComponent implements OnInit {
   }
 
   refreshData(): void {
+    this.searchTerm = ''; // Clear search on refresh
     this.loadCustomers();
+  }
+
+  // Search functionality
+  search(): void {
+    if (!this.searchTerm || this.searchTerm.trim() === '') {
+      this.customers = [...this.allCustomers]; // Reset to full list
+      return;
+    }
+
+    const term = this.searchTerm.toLowerCase().trim();
+    this.customers = this.allCustomers.filter(customer =>
+      (customer.name && customer.name.toLowerCase().includes(term)) ||
+      (customer.mobilenumber && customer.mobilenumber.toLowerCase().includes(term)) ||
+      (customer.bank && customer.bank.toLowerCase().includes(term)) ||
+      (customer.product && customer.product.toLowerCase().includes(term))
+    );
   }
 
   trackByCustomerId(index: number, customer: Customer): number {
@@ -218,9 +240,9 @@ export class CustomerListComponent implements OnInit {
     this.reassignReason = '';
   }
   openFollowUpPopup(event: Event) {
-  event.stopPropagation();
-  alert('The customer has been reconnected to discuss newly available services and provide updated assistance.');
-}
+    event.stopPropagation();
+    alert('The customer has been reconnected to discuss newly available services and provide updated assistance.');
+  }
 
   submitReason(): void {
     if (!this.reassignReason || this.reassignReason.trim() === '') {

@@ -139,7 +139,12 @@
   </div>
 
   <!-- Customer Data Table -->
-  <div *ngIf="!loading && !error" class="table-wrapper">
+  <div class="table-wrapper" [class.loading-active]="loading" *ngIf="!error">
+
+    <!-- Loading Overlay -->
+    <div class="table-loading-overlay" *ngIf="loading">
+      <div class="table-loading-spinner"></div>
+    </div>
     <div class="table-header">
       <span class="record-count">
         Showing {{ paginatedData.length }} of

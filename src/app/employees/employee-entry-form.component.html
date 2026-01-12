@@ -3,88 +3,89 @@
     <div class="modal-header">
       <h3>Add New Employee</h3>
     </div>
-    
+
     <form [formGroup]="form" (ngSubmit)="submit()" class="employee-form">
       <div class="grid-container">
-      <label>
-        Name *:
-        <input type="text" formControlName="name" />
-        <div class="error" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
-          Name is required
+        <label>
+          Name *:
+          <input type="text" formControlName="name" />
+          <div class="error" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+            Name is required
+          </div>
+        </label>
+        <label>
+          Qualification:
+          <input type="text" formControlName="qualification" />
+        </label>
+        <label>
+          Date of Birth *:
+          <input type="date" formControlName="dateofbirth" />
+          <div class="error" *ngIf="form.get('dateofbirth')?.invalid && form.get('dateofbirth')?.touched">
+            Date of birth is required
+          </div>
+        </label>
+        <label>
+          Join Date:
+          <input type="date" formControlName="joindate" />
+        </label>
+        <label class="span-2">
+          Present Address:
+          <textarea formControlName="presentaddress"></textarea>
+        </label>
+        <label class="span-2">
+          Permanent Address:
+          <textarea formControlName="permanentaddress"></textarea>
+        </label>
+        <label>
+          Email *:
+          <input type="email" formControlName="emailid" />
+          <div class="error" *ngIf="form.get('emailid')?.invalid && form.get('emailid')?.touched">
+            Valid email is required
+          </div>
+        </label>
+        <label>
+          Designation:
+          <input type="text" formControlName="designation" />
+        </label>
+        <label>
+          Mobile Number:
+          <input type="text" formControlName="mobilenumber" />
+        </label>
+        <label>
+          Contact Person:
+          <input type="text" formControlName="contactperson" />
+        </label>
+        <label>
+          Contact Number:
+          <input type="text" formControlName="contactnumber" />
+        </label>
+        <label>
+          Department:
+          <input type="text" formControlName="dept" />
+        </label>
+
+        <!-- Boolean Flags -->
+        <div class="span-2 checkbox-group">
+          <label><input type="checkbox" formControlName="isactive" /> Is Active</label>
+          <label><input type="checkbox" formControlName="isadminrights" /> Admin Rights</label>
+          <label><input type="checkbox" formControlName="isleadrights" /> Lead Rights</label>
+          <label><input type="checkbox" formControlName="iscontactrights" /> Contact Rights</label>
+          <label><input type="checkbox" formControlName="iscibilrights" /> CIBIL Rights</label>
+          <label><input type="checkbox" formControlName="isicicirights" /> ICICI Rights</label>
+          <label><input type="checkbox" formControlName="issplrights" /> SPL Rights</label>
+          <label><input type="checkbox" formControlName="isreassignrights" /> Reassign Rights</label>
         </div>
-      </label>
-      <label>
-        Qualification:
-        <input type="text" formControlName="qualification" />
-      </label>
-      <label>
-        Date of Birth *:
-        <input type="date" formControlName="dateofbirth" />
-        <div class="error" *ngIf="form.get('dateofbirth')?.invalid && form.get('dateofbirth')?.touched">
-          Date of birth is required
-        </div>
-      </label> 
-      <label>
-        Join Date:
-        <input type="date" formControlName="joindate" />
-      </label>
-      <label class="span-2">
-        Present Address:
-        <textarea formControlName="presentaddress"></textarea>
-      </label>
-      <label class="span-2">
-        Permanent Address:
-        <textarea formControlName="permanentaddress"></textarea>
-      </label>
-      <label>
-        Email *:
-        <input type="email" formControlName="emailid" />
-        <div class="error" *ngIf="form.get('emailid')?.invalid && form.get('emailid')?.touched">
-          Valid email is required
-        </div>
-      </label>
-      <label>
-        Designation:
-        <input type="text" formControlName="designation" />
-      </label>
-      <label>
-        Mobile Number:
-        <input type="text" formControlName="mobilenumber" />
-      </label>
-      <label>
-        Contact Person:
-        <input type="text" formControlName="contactperson" />
-      </label>
-      <label>
-        Contact Number:
-        <input type="text" formControlName="contactnumber" />
-      </label>
-      <label>
-        Department:
-        <input type="text" formControlName="dept" />
-      </label>
-     
-      <!-- Boolean Flags -->
-      <div class="span-2 checkbox-group">
-        <label><input type="checkbox" formControlName="isactive" /> Is Active</label>
-        <label><input type="checkbox" formControlName="isadminrights" /> Admin Rights</label>
-        <label><input type="checkbox" formControlName="isleadrights" /> Lead Rights</label>
-        <label><input type="checkbox" formControlName="iscontactrights" /> Contact Rights</label>
-        <label><input type="checkbox" formControlName="iscibilrights" /> CIBIL Rights</label>
-        <label><input type="checkbox" formControlName="isicicirights" /> ICICI Rights</label>
-        <label><input type="checkbox" formControlName="issplrights" /> SPL Rights</label>
-        <label><input type="checkbox" formControlName="isreassignrights" /> Reassign Rights</label>
+
+        <label>
+          Organization:
+          <input type="text" formControlName="organizationLocation" list="branchList"
+            placeholder="--Select or Type Branch--" />
+          <datalist id="branchList">
+            <option *ngFor="let b of branches" [value]="b.location"></option>
+          </datalist>
+        </label>
       </div>
-      
-      <label>
-        Organization:
-        <select formControlName="organizationid">
-          <option value="">--Select Branch--</option>
-          <option *ngFor="let b of branches" [ngValue]="b.id">{{ b.location }}</option>
-        </select>
-      </label>
-      </div>
-      
+
       <div class="buttons">
         <button type="submit" [disabled]="form.invalid">Add Employee</button>
         <button type="button" class="secondary" onclick="history.back()">Cancel</button>

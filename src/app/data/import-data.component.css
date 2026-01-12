@@ -45,7 +45,8 @@
 }
 
 /* Messages */
-.error-message, .success-message {
+.error-message,
+.success-message {
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -249,7 +250,8 @@
   justify-content: center;
 }
 
-.reset-btn, .upload-btn {
+.reset-btn,
+.upload-btn {
   padding: 12px 24px;
   border: none;
   border-radius: 6px;
@@ -280,7 +282,8 @@
   background: #218838;
 }
 
-.reset-btn:disabled, .upload-btn:disabled {
+.reset-btn:disabled,
+.upload-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -295,8 +298,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Preview Section */
@@ -390,22 +398,22 @@
   .import-data-container {
     padding: 15px;
   }
-  
+
   .requirements-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .action-buttons {
     flex-direction: column;
   }
-  
+
   .back-btn {
     position: relative;
     left: auto;
     top: auto;
     margin-bottom: 15px;
   }
-  
+
   .header {
     text-align: left;
     padding: 15px;

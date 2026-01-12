@@ -44,6 +44,11 @@ export class DashboardComponent {
     return localStorage.getItem('username') || 'User';
   }
 
+  // Check if we should show back to dashboard button
+  get showBackButton(): boolean {
+    return this.router.url === '/dashboard/import-data';
+  }
+
   constructor(
     private auth: AuthService,
     private router: Router,
@@ -56,6 +61,10 @@ export class DashboardComponent {
     this.themeService.currentTheme$.subscribe(theme => {
       this.currentTheme = theme;
     });
+  }
+
+  goHome(): void {
+    this.router.navigate(['/dashboard']);
   }
 
   openSettings(): void {

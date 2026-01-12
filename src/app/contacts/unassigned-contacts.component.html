@@ -6,25 +6,13 @@
     <div class="search-filters">
       <div class="search-field">
         <label for="searchFirstName">Search by First Name:</label>
-        <input 
-          id="searchFirstName"
-          type="text" 
-          [(ngModel)]="searchFirstName" 
-          (input)="applySearch()"
-          placeholder="Enter first name..."
-          class="search-input"
-        />
+        <input id="searchFirstName" type="text" [(ngModel)]="searchFirstName" (input)="applySearch()"
+          placeholder="Enter first name..." class="search-input" />
       </div>
       <div class="search-field">
         <label for="searchMobileNumber">Search by Mobile Number:</label>
-        <input 
-          id="searchMobileNumber"
-          type="text" 
-          [(ngModel)]="searchMobileNumber" 
-          (input)="applySearch()"
-          placeholder="Enter mobile number..."
-          class="search-input"
-        />
+        <input id="searchMobileNumber" type="text" [(ngModel)]="searchMobileNumber" (input)="applySearch()"
+          placeholder="Enter mobile number..." class="search-input" />
       </div>
       <div class="search-actions">
         <button class="clear-btn" (click)="clearSearch()">Clear Search</button>
@@ -38,29 +26,29 @@
   <!-- Column visibility toggles -->
   <button class="toggle-btn" (click)="openDialog()">Show / Hide Columns</button>
 
-<!-- Modal Dialog -->
-<div class="dialog-backdrop" *ngIf="showDialog">
-  <div class="dialog parameter-dialog">
-    <div class="dialog-header">
-      <h3>Show / Hide Columns</h3>
-      <button class="close-btn" (click)="closeDialog()">&times;</button>
-    </div>
-    <div class="dialog-content">
-      <div class="toggles-grid">
-        <label *ngFor="let field of fields" class="toggle-item">
-          <input type="checkbox" [(ngModel)]="field.visible" />
-          <span class="toggle-label">{{ field.label }}</span>
-        </label>
+  <!-- Modal Dialog -->
+  <div class="dialog-backdrop" *ngIf="showDialog">
+    <div class="dialog parameter-dialog">
+      <div class="dialog-header">
+        <h3>Show / Hide Columns</h3>
+        <button class="close-btn" (click)="cancelChanges()">&times;</button>
+      </div>
+      <div class="dialog-content">
+        <div class="toggles-grid">
+          <label *ngFor="let field of fields" class="toggle-item">
+            <input type="checkbox" [(ngModel)]="field.visible" />
+            <span class="toggle-label">{{ field.label }}</span>
+          </label>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button class="primary-btn" (click)="applyChanges()">Apply Changes</button>
+        <button class="secondary-btn" (click)="cancelChanges()">Cancel</button>
       </div>
     </div>
-    <div class="dialog-actions">
-      <button class="primary-btn" (click)="closeDialog()">Apply Changes</button>
-      <button class="secondary-btn" (click)="closeDialog()">Cancel</button>
-    </div>
   </div>
-</div>
 
-  
+
 
   <!-- Data table -->
   <div class="table-wrapper">

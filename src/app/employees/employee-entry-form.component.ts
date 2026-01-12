@@ -44,6 +44,7 @@ export class EmployeeEntryFormComponent {
       iscibilrights: [false],
       isicicirights: [false],
       organizationid: [null],
+      organizationLocation: [''], // For datalist input
       dept: [''],
       issplrights: [false],
       isreassignrights: [false]
@@ -61,6 +62,14 @@ export class EmployeeEntryFormComponent {
       dateofbirth: this.form.value.dateofbirth ? this.form.value.dateofbirth + " 00:00:00" : null,
       joindate: this.form.value.joindate ? this.form.value.joindate + " 00:00:00" : null,
     } as any;
+
+    // Map organizationLocation name back to ID
+    const selectedBranch = this.branches.find(b => b.location === this.form.value.organizationLocation);
+    if (selectedBranch) {
+      payload.organizationid = selectedBranch.id;
+    } else {
+      payload.organizationid = null; // or handle invalid selection
+    }
 
     this.http.post(`${environment.apiUrl}/employees`, payload).subscribe({
       next: () => {

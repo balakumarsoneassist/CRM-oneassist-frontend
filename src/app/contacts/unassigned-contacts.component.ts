@@ -29,7 +29,8 @@ export class UnassignedContactsComponent implements OnInit {
   searchMobileNumber = '';
   allContacts: Record<string, any>[] = [];
   filteredContacts: Record<string, any>[] = [];
-  
+  fieldsBackup: FieldMeta[] = [];
+
   fields: FieldMeta[] = [
     { key: 'firstname', label: 'First Name', visible: true },
     { key: 'lastname', label: 'Last Name', visible: true },
@@ -45,7 +46,7 @@ export class UnassignedContactsComponent implements OnInit {
     return this.filteredContacts;
   }
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private ngZone: NgZone) { }
 
   ngOnInit(): void {
     this.loadContacts();
@@ -67,10 +68,10 @@ export class UnassignedContactsComponent implements OnInit {
           });
           return normalized;
         });
-        
+
         // Initialize filtered contacts with all contacts
         this.applySearch();
-        
+
         // Apply direct DOM manipulation for reliable rendering
         setTimeout(() => {
           this.applyDirectDOMUpdate();
@@ -85,11 +86,27 @@ export class UnassignedContactsComponent implements OnInit {
   }
 
   openDialog(): void {
+    // Backup current fields state
+    this.fieldsBackup = JSON.parse(JSON.stringify(this.fields));
     this.showDialog = true;
   }
 
-  closeDialog(): void {
+  applyChanges(): void {
     this.showDialog = false;
+    // Trigger immediate DOM update to reflect column visibility changes
+    this.applyDirectDOMUpdate();
+  }
+
+  cancelChanges(): void {
+    // Revert to backup
+    if (this.fieldsBackup.length > 0) {
+      this.fields = JSON.parse(JSON.stringify(this.fieldsBackup));
+    }
+    this.showDialog = false;
+  }
+
+  closeDialog(): void {
+    this.cancelChanges();
   }
 
   /**
@@ -245,11 +262,11 @@ export class UnassignedContactsComponent implements OnInit {
   private applyDirectDOMUpdate(): void {
     // Multiple change detection attempts
     this.cdr.detectChanges();
-    
+
     this.ngZone.run(() => {
       setTimeout(() => {
         this.cdr.detectChanges();
-        
+
         setTimeout(() => {
           this.updateTableDirectly();
         }, 20);
@@ -270,14 +287,14 @@ export class UnassignedContactsComponent implements OnInit {
     // Generate new rows
     this.contacts.forEach((contact, index) => {
       const row = document.createElement('tr');
-      
+
       // Action column with assign button
       const actionCell = document.createElement('td');
       const assignBtn = document.createElement('button');
       assignBtn.className = 'assign-btn';
       assignBtn.textContent = 'Assign to Me';
       assignBtn.setAttribute('aria-label', 'Assign to Me');
-      
+
       // Apply inline styles to ensure visibility
       assignBtn.style.cssText = `
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
@@ -294,7 +311,7 @@ export class UnassignedContactsComponent implements OnInit {
         text-align: center;
         display: inline-block;
       `;
-      
+
       assignBtn.onclick = () => this.assignToMe(contact);
       actionCell.appendChild(assignBtn);
       row.appendChild(actionCell);
