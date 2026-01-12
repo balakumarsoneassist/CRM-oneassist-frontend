@@ -7,13 +7,13 @@
   </div>
 
   <!-- Loading State -->
-  <div class="loading-container" style="display: flex;">
+  <div class="loan-loading-container" style="display: flex;">
     <div class="loading-spinner"></div>
     <p>Loading loan data...</p>
   </div>
 
   <!-- Error State -->
-  <div class="error-container" style="display: none;">
+  <div class="loan-error-container" style="display: none;">
     <div class="error-message">
       <i class="error-icon">⚠️</i>
       <p>{{ error }}</p>
@@ -22,9 +22,9 @@
   </div>
 
   <!-- Content Wrapper -->
-  <div class="content-wrapper" style="display: none;">
+  <div class="loan-content-wrapper" style="display: none;">
     <!-- Summary Statistics Cards -->
-    <div class="summary-cards">
+    <div class="loan-summary-cards">
       <div class="summary-card customers-card">
         <div class="card-icon">👥</div>
         <div class="card-content">
@@ -32,7 +32,7 @@
           <div class="card-value total-customers-value">{{ totalCustomers | number }}</div>
         </div>
       </div>
-      
+
       <div class="summary-card amount-card">
         <div class="card-icon">💰</div>
         <div class="card-content">
@@ -45,9 +45,9 @@
     <!-- Loan Data Table -->
     <div class="table-wrapper">
       <div class="table-header">
-        <span class="record-count">Total Products: {{ loans.length }}</span>
+        <span class="loan-record-count">Total Products: {{ loans.length }}</span>
       </div>
-      
+
       <div class="table-container">
         <table class="loan-table">
           <thead>

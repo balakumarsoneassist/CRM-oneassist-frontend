@@ -47,7 +47,7 @@ export class ConnectorListComponent implements OnInit {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadConnectors();
@@ -66,13 +66,13 @@ export class ConnectorListComponent implements OnInit {
           this.loading = false;
           this.connectors = [...this.connectors];
           this.showContent = true;
-          
+
           // Multiple change detection attempts
           setTimeout(() => {
             this.showContent = false;
             setTimeout(() => {
               this.showContent = true;
-              
+
               // FINAL SOLUTION: Direct DOM manipulation
               setTimeout(() => {
                 this.updateDOMDirectly();
@@ -90,14 +90,14 @@ export class ConnectorListComponent implements OnInit {
 
   openEdit(connector: Connector): void {
     this.editingConnectorId = connector.id || null;
-    
+
     // Load full connector data using GET /connector/:id API
     this.http.get<any>(`${environment.apiUrl}/connector/${connector.id}`).subscribe({
       next: (response) => {
         // Handle API response structure: {success: true, data: {...}}
         console.log('GET Connector API Response:', response);
         const data = response.data || response;
-        
+
         // Populate the form with API response data
         this.connectorForm = {
           name: data.name || '',
@@ -106,10 +106,10 @@ export class ConnectorListComponent implements OnInit {
           isactive: data.isactive || false,
           createdby: data.createdby || ''
         };
-        
+
         this.showPopup = true;
         this.showModalDirectly();
-        
+
         // Force form field updates with direct DOM manipulation
         setTimeout(() => {
           this.updateFormDOMDirectly();
@@ -124,6 +124,11 @@ export class ConnectorListComponent implements OnInit {
 
   close(): void {
     this.showPopup = false;
+    // Explicitly hide via DOM as it was shown via DOM
+    const modalElement = document.querySelector('.modal') as HTMLElement;
+    if (modalElement) {
+      modalElement.style.display = 'none';
+    }
     this.resetForm();
   }
 
@@ -183,22 +188,22 @@ export class ConnectorListComponent implements OnInit {
   showSuccess(message: string): void {
     this.showSuccessMessage = true;
     this.showErrorMessage = false;
-    
+
     // Force immediate DOM update for success message
     this.updateFormDOMDirectly();
-    
+
     // Auto-close popup after success message
     setTimeout(() => {
       this.close();
       this.loadConnectors(); // Refresh the list
-    }, 1500);
+    }, 1000);
   }
 
   showError(message: string): void {
     this.errorMessage = message;
     this.showErrorMessage = true;
     this.showSuccessMessage = false;
-    
+
     // Hide error message after 5 seconds
     setTimeout(() => {
       this.showErrorMessage = false;
@@ -211,51 +216,51 @@ export class ConnectorListComponent implements OnInit {
     const loadingBox = document.getElementById('loading-box');
     const connectorContainer = document.getElementById('connector-container');
     const connectorTable = document.getElementById('connector-table');
-    
+
     // Hide loading, show content
     if (loadingBox) loadingBox.style.display = 'none';
-    
+
     // Display actual connector table with full styling
     if (connectorContainer && connectorTable) {
       connectorContainer.style.display = 'block';
-      
+
       // Generate connector table HTML
       let tableHTML = `
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--theme-surface); color: var(--theme-text); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <thead>
             <tr style="background: var(--primary-color, #007bff); color: white;">
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Name</th>
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Mobile Number</th>
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Location</th>
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Status</th>
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Created By</th>
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Actions</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--theme-border);">Name</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--theme-border);">Mobile Number</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--theme-border);">Location</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--theme-border);">Status</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--theme-border);">Created By</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--theme-border);">Actions</th>
             </tr>
           </thead>
           <tbody>
       `;
-      
+
       this.connectors.forEach((connector, index) => {
-        const rowColor = index % 2 === 0 ? '#f8f9fa' : 'white';
+        const rowColor = index % 2 === 0 ? 'var(--theme-background)' : 'var(--theme-surface)';
         const statusColor = connector.isactive ? '#28a745' : '#dc3545';
         const statusText = connector.isactive ? 'Active' : 'Inactive';
-        
+
         tableHTML += `
           <tr style="background: ${rowColor}; transition: background-color 0.2s;" 
-              onmouseover="this.style.background='#e3f2fd'" 
+              onmouseover="this.style.background='var(--theme-border)'" 
               onmouseout="this.style.background='${rowColor}'">
-            <td style="padding: 12px; border-bottom: 1px solid #ddd;">
+            <td style="padding: 12px; border-bottom: 1px solid var(--theme-border);">
               <strong>${connector.name || 'N/A'}</strong>
             </td>
-            <td style="padding: 12px; border-bottom: 1px solid #ddd;">${connector.mobilenumber || 'N/A'}</td>
-            <td style="padding: 12px; border-bottom: 1px solid #ddd;">${connector.location || 'N/A'}</td>
-            <td style="padding: 12px; border-bottom: 1px solid #ddd;">
+            <td style="padding: 12px; border-bottom: 1px solid var(--theme-border);">${connector.mobilenumber || 'N/A'}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--theme-border);">${connector.location || 'N/A'}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--theme-border);">
               <span style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
                 ${statusText}
               </span>
             </td>
-            <td style="padding: 12px; border-bottom: 1px solid #ddd;">${connector.createdby || 'N/A'}</td>
-            <td style="padding: 12px; border-bottom: 1px solid #ddd;">
+            <td style="padding: 12px; border-bottom: 1px solid var(--theme-border);">${connector.createdby || 'N/A'}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--theme-border);">
               <button onclick="window.editConnector(${connector.id}); return false;" 
                       onmousedown="window.editConnector(${connector.id}); return false;"
                       style="background: var(--primary-color, #007bff); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
@@ -265,22 +270,22 @@ export class ConnectorListComponent implements OnInit {
           </tr>
         `;
       });
-      
+
       tableHTML += `
           </tbody>
         </table>
       `;
-      
+
       connectorTable.innerHTML = tableHTML;
-      
+
       // Set up global edit function with immediate binding and proper context
       const self = this;
-      
+
       // Clear any existing function first
       delete (window as any).editConnector;
-      
+
       // Set up the global function with immediate execution capability
-      (window as any).editConnector = function(connectorId: number) {
+      (window as any).editConnector = function (connectorId: number) {
         try {
           const connector = self.connectors.find(conn => conn.id === connectorId);
           if (connector) {
@@ -291,7 +296,7 @@ export class ConnectorListComponent implements OnInit {
         }
         return false;
       };
-      
+
       // Also bind to component instance for backup
       this.editConnectorHandler = (connectorId: number) => {
         const connector = this.connectors.find(conn => conn.id === connectorId);
@@ -306,14 +311,14 @@ export class ConnectorListComponent implements OnInit {
   openEditWithDirectDOM(connector: Connector): void {
     // Set the editing state
     this.editingConnectorId = connector.id || null;
-    
+
     // Load full connector data using GET /connector/:id API
     this.http.get<any>(`${environment.apiUrl}/connector/${connector.id}`).subscribe({
       next: (response) => {
         // Handle API response structure: {success: true, data: {...}}
         console.log('GET Connector API Response (DirectDOM):', response);
         const data = response.data || response;
-        
+
         // Populate the form with API response data
         this.connectorForm = {
           name: data.name || '',
@@ -322,10 +327,10 @@ export class ConnectorListComponent implements OnInit {
           isactive: data.isactive || false,
           createdby: data.createdby || ''
         };
-        
+
         // Show modal using direct DOM manipulation
         this.showModalDirectly();
-        
+
         // Force form field updates with direct DOM manipulation
         setTimeout(() => {
           this.updateFormDOMDirectly();
@@ -342,7 +347,7 @@ export class ConnectorListComponent implements OnInit {
   showModalDirectly(): void {
     // Set the showPopup flag
     this.showPopup = true;
-    
+
     // Find the modal element and force it to display
     setTimeout(() => {
       const modalElement = document.querySelector('.modal') as HTMLElement;
@@ -374,22 +379,22 @@ export class ConnectorListComponent implements OnInit {
   updateFormDOMDirectly(): void {
     // Multiple change detection attempts
     this.cdr.detectChanges();
-    
+
     this.ngZone.run(() => {
       this.cdr.detectChanges();
-      
+
       setTimeout(() => {
         // Force update form field values directly in DOM
         const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
         const mobileInput = document.querySelector('input[name="mobilenumber"]') as HTMLInputElement;
         const locationInput = document.querySelector('input[name="location"]') as HTMLInputElement;
         const activeCheckbox = document.querySelector('input[name="isactive"]') as HTMLInputElement;
-        
+
         if (nameInput) nameInput.value = this.connectorForm.name;
         if (mobileInput) mobileInput.value = this.connectorForm.mobilenumber;
         if (locationInput) locationInput.value = this.connectorForm.location;
         if (activeCheckbox) activeCheckbox.checked = this.connectorForm.isactive;
-        
+
         // Force update of form state
         const submitBtn = document.querySelector('.submit-btn') as HTMLButtonElement;
         if (submitBtn) {
@@ -400,21 +405,21 @@ export class ConnectorListComponent implements OnInit {
         // Update message displays with direct DOM manipulation
         const successMsg = document.querySelector('.success-message') as HTMLElement;
         const errorMsg = document.querySelector('.error-message') as HTMLElement;
-        
+
         if (successMsg) {
           successMsg.style.display = this.showSuccessMessage ? 'block' : 'none';
           if (this.showSuccessMessage) {
             successMsg.innerHTML = '<i class="fas fa-check-circle"></i> Connector updated successfully!';
           }
         }
-        
+
         if (errorMsg) {
           errorMsg.style.display = this.showErrorMessage ? 'block' : 'none';
           if (this.showErrorMessage) {
             errorMsg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${this.errorMessage}`;
           }
         }
-        
+
         // Force another change detection cycle
         this.cdr.detectChanges();
       }, 10);

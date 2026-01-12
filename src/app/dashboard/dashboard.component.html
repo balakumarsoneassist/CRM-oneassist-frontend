@@ -305,6 +305,10 @@
   <section class="content">
     <!-- Top Bar -->
     <header class="topbar">
+      <button *ngIf="showBackButton" (click)="goHome()" class="nav-back-btn">
+        <span class="btn-icon">⬅️</span>
+        <span>Back to Dashboard</span>
+      </button>
       <span class="spacer"></span>
       <div class="welcome-message">
         <span>Welcome - {{ username }}</span>

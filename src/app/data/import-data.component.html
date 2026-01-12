@@ -1,8 +1,5 @@
 <div class="import-data-container">
   <div class="header">
-    <button class="back-btn" (click)="goBack()">
-      ← Back to Dashboard
-    </button>
     <h2>Import Data</h2>
     <p>Upload CSV files to import lead personal data into the system</p>
   </div>
@@ -30,7 +27,7 @@
             <li><strong>presentaddress</strong> - Present address (text)</li>
           </ul>
         </div>
-        
+
         <div class="requirement-card">
           <h4>Auto-Added Fields</h4>
           <ul class="field-list">
@@ -43,7 +40,7 @@
           </ul>
         </div>
       </div>
-      
+
       <div class="sample-section">
         <button type="button" class="download-sample-btn" (click)="downloadSampleCsv()">
           📥 Download Sample CSV Template
@@ -55,16 +52,10 @@
     <!-- File Upload Section -->
     <div class="upload-section">
       <h3>📁 Upload CSV File</h3>
-      
+
       <div class="file-upload-area">
         <div class="file-input-wrapper">
-          <input 
-            type="file" 
-            id="csvFile" 
-            accept=".csv" 
-            (change)="onFileSelected($event)"
-            class="file-input"
-          />
+          <input type="file" id="csvFile" accept=".csv" (change)="onFileSelected($event)" class="file-input" />
           <label for="csvFile" class="file-input-label">
             <div class="upload-icon">📄</div>
             <div class="upload-text">
@@ -73,7 +64,7 @@
             </div>
           </label>
         </div>
-        
+
         <div *ngIf="errors.file" class="error-text">
           {{ errors.file }}
         </div>
@@ -89,21 +80,11 @@
 
       <!-- Action Buttons -->
       <div class="action-buttons">
-        <button 
-          type="button" 
-          class="reset-btn" 
-          (click)="resetForm()"
-          [disabled]="loading"
-        >
+        <button type="button" class="reset-btn" (click)="resetForm()" [disabled]="loading">
           🔄 Reset
         </button>
-        
-        <button 
-          type="button" 
-          class="upload-btn" 
-          (click)="uploadCsvData()"
-          [disabled]="!selectedFile || loading"
-        >
+
+        <button type="button" class="upload-btn" (click)="uploadCsvData()" [disabled]="!selectedFile || loading">
           <span *ngIf="loading" class="loading-spinner"></span>
           {{ loading ? 'Processing...' : '📤 Import Data' }}
         </button>
@@ -116,7 +97,7 @@
       <div class="preview-stats">
         <span class="stat-item">Total Records: <strong>{{ csvData.length }}</strong></span>
       </div>
-      
+
       <div class="preview-table-wrapper">
         <table class="preview-table">
           <thead>
@@ -149,7 +130,8 @@
       <h3>📝 Instructions</h3>
       <ol class="instruction-list">
         <li>Download the sample CSV template to see the required format</li>
-        <li>Prepare your CSV file with all required columns: firstname, lastname, mobilenumber, email, presentaddress</li>
+        <li>Prepare your CSV file with all required columns: firstname, lastname, mobilenumber, email, presentaddress
+        </li>
         <li>Make sure all required fields have values (no empty cells)</li>
         <li>Select your CSV file using the file picker above</li>
         <li>Click "Import Data" to process and upload the data</li>

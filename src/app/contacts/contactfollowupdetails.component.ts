@@ -405,22 +405,22 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
       const loginvalue = this.form.get('loginvalue')?.value;
 
       if (!bankname) {
-        alert('Please select a bank name when status is 13.');
+        alert('Please select a bank name when status is file login.');
         return;
       }
 
       if (!applicationnumber) {
-        alert('Please enter an application number when status is 13.');
+        alert('Please enter an application number when status is file login.');
         return;
       }
 
       if (!logindate) {
-        alert('Please select a login date when status is 13.');
+        alert('Please select a login date when status is file login.');
         return;
       }
 
       if (!loginvalue || loginvalue <= 0) {
-        alert('Please enter a valid login value when status is 13.');
+        alert('Please enter a valid login value when status is file login.');
         return;
       }
     }
@@ -433,22 +433,22 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
       const sanctiondate = this.form.get('sanctiondate')?.value;
 
       if (!sanctionroi || sanctionroi <= 0) {
-        alert('Please enter a valid sanction ROI when status is 15.');
+        alert('Please enter a valid sanction ROI when status is sanction.');
         return;
       }
 
       if (!sanctiontenure || sanctiontenure <= 0) {
-        alert('Please enter a valid sanction tenure when status is 15.');
+        alert('Please enter a valid sanction tenure when status is sanction.');
         return;
       }
 
       if (!sanctionvalue || sanctionvalue <= 0) {
-        alert('Please enter a valid sanction value when status is 15.');
+        alert('Please enter a valid sanction value when status is sanction.');
         return;
       }
 
       if (!sanctiondate) {
-        alert('Please select a sanction date when status is 15.');
+        alert('Please select a sanction date when status is sanction.');
         return;
       }
     }
@@ -460,12 +460,12 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
       const istechnical = this.form.get('istechnical')?.value;
 
       if (!disbursementamount || disbursementamount <= 0) {
-        alert('Please enter a valid disbursement amount when status is 17.');
+        alert('Please enter a valid disbursement amount when status is Disbursement.');
         return;
       }
 
       if (!islegal && !istechnical) {
-        alert('Please select at least one option (Legal or Technical) when status is 17.');
+        alert('Please select at least one option (Legal or Technical) when status is Disbursement.');
         return;
       }
     }

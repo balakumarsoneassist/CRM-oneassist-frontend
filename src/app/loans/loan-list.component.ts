@@ -32,7 +32,7 @@ export class LoanListComponent implements OnInit {
     { key: 'amount', label: 'Loan Amount' }
   ];
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private ngZone: NgZone) { }
 
   ngOnInit(): void {
     this.loadLoans();
@@ -45,12 +45,14 @@ export class LoanListComponent implements OnInit {
     // Force UI update for loading state
     this.ngZone.run(() => {
       this.cdr.detectChanges();
+      // IMMEDIATE DOM update to show loading spinner
+      this.updateDOMDirectly();
     });
 
     this.http.get<any>(`${environment.apiUrl}/getloanlist`).subscribe({
       next: (response) => {
         console.log('Loan list data:', response);
-        
+
         // Handle wrapped response format or direct array
         if (response && response.data && Array.isArray(response.data)) {
           this.loans = response.data;
@@ -59,21 +61,21 @@ export class LoanListComponent implements OnInit {
         } else {
           this.loans = [];
         }
-        
+
         // Calculate summary statistics
         this.calculateSummaryStats();
-        
+
         console.log('Processed loans:', this.loans);
         console.log('Summary - Total Customers:', this.totalCustomers, 'Total Amount:', this.totalLoanAmount);
-        
+
         // Apply comprehensive change detection fix (following established pattern)
         this.ngZone.run(() => {
           this.loading = false;
           this.cdr.detectChanges();
-          
+
           setTimeout(() => {
             this.cdr.detectChanges();
-            
+
             // Force DOM update directly as fallback
             setTimeout(() => {
               this.updateDOMDirectly();
@@ -83,7 +85,7 @@ export class LoanListComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load loan list:', err);
-        
+
         // Force UI update for error state too
         this.ngZone.run(() => {
           this.error = 'Failed to load loan data. Please try again.';
@@ -101,40 +103,40 @@ export class LoanListComponent implements OnInit {
 
   // Direct DOM manipulation method (following established pattern from other components)
   updateDOMDirectly(): void {
-    const loadingContainer = document.querySelector('.loading-container') as HTMLElement;
-    const contentWrapper = document.querySelector('.content-wrapper') as HTMLElement;
-    const errorContainer = document.querySelector('.error-container') as HTMLElement;
-    
+    const loadingContainer = document.querySelector('.loan-loading-container') as HTMLElement;
+    const contentWrapper = document.querySelector('.loan-content-wrapper') as HTMLElement;
+    const errorContainer = document.querySelector('.loan-error-container') as HTMLElement;
+
     console.log('Direct DOM update - loading:', this.loading, 'loans:', this.loans.length, 'error:', this.error);
-    
+
     // Hide loading state
     if (loadingContainer) {
       loadingContainer.style.display = this.loading ? 'flex' : 'none';
     }
-    
+
     // Show/hide error state
     if (errorContainer) {
       errorContainer.style.display = (this.error && !this.loading) ? 'block' : 'none';
     }
-    
+
     // Show/hide content
     if (contentWrapper) {
       contentWrapper.style.display = (!this.loading && !this.error) ? 'block' : 'none';
     }
-    
+
     // Update summary statistics directly
     const totalCustomersEl = document.querySelector('.total-customers-value') as HTMLElement;
     const totalAmountEl = document.querySelector('.total-amount-value') as HTMLElement;
-    const recordCountEl = document.querySelector('.record-count') as HTMLElement;
-    
+    const recordCountEl = document.querySelector('.loan-record-count') as HTMLElement;
+
     if (totalCustomersEl && !this.loading && !this.error) {
       totalCustomersEl.textContent = this.totalCustomers.toLocaleString();
     }
-    
+
     if (totalAmountEl && !this.loading && !this.error) {
       totalAmountEl.textContent = `₹${this.totalLoanAmount.toLocaleString()}`;
     }
-    
+
     if (recordCountEl && !this.loading && !this.error) {
       recordCountEl.textContent = `Total Products: ${this.loans.length}`;
     }
@@ -146,17 +148,17 @@ export class LoanListComponent implements OnInit {
 
   getColumnValue(loan: LoanRecord, columnKey: string): any {
     const value = loan[columnKey as keyof LoanRecord];
-    
+
     // Format amount with currency
     if (columnKey === 'amount' && typeof value === 'number') {
       return `₹${value.toLocaleString()}`;
     }
-    
+
     // Format customer count
     if (columnKey === 'totalcustomers' && typeof value === 'number') {
       return value.toLocaleString();
     }
-    
+
     return value || '-';
   }
 
