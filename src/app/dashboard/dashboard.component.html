@@ -107,26 +107,6 @@
         </div>
       </div>
 
-      <!-- Reports -->
-      <div class="menu-section">
-        <div class="section-header" (click)="toggleSection('reports')">
-          <i class="icon reports-icon">📊</i>
-          <span>Reports</span>
-          <i class="chevron" [class.expanded]="expandedSections.reports">▶</i>
-        </div>
-        <div class="submenu" [class.expanded]="expandedSections.reports">
-          <a routerLink="daily-report" routerLinkActive="active" class="submenu-link" aria-label="daily report">
-            <i class="sub-icon">📅</i>
-            <span>Daily Report</span>
-          </a>
-          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link"
-            aria-label="status summary report">
-            <i class="sub-icon">📈</i>
-            <span>Status Summary Report</span>
-          </a>
-        </div>
-      </div>
-
       <!-- Leads -->
       <div class="menu-section">
         <div class="section-header" (click)="toggleSection('leads')">
@@ -166,7 +146,6 @@
             <i class="sub-icon">🔍</i>
             <span>Track Customers</span>
           </a>
-          <a routerLink="loan-list" routerLinkActive="active" class="submenu-link" aria-label="loan list">
           <a routerLink="loan-list" routerLinkActive="active" class="submenu-link" aria-label="loan list"
             *ngIf="isAdminUser">
             <i class="sub-icon">💰</i>
@@ -187,6 +166,26 @@
             aria-label="customer segregation">
             <i class="sub-icon">🔎</i>
             <span>All Segregated Data</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('reports')">
+          <i class="icon reports-icon">📊</i>
+          <span>Reports</span>
+          <i class="chevron" [class.expanded]="expandedSections.reports">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.reports">
+          <a routerLink="daily-report" routerLinkActive="active" class="submenu-link" aria-label="daily report">
+            <i class="sub-icon">📅</i>
+            <span>Daily Report</span>
+          </a>
+          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link"
+            aria-label="status summary report">
+            <i class="sub-icon">📈</i>
+            <span>Status Summary Report</span>
           </a>
         </div>
       </div>
