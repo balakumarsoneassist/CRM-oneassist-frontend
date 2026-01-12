@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -38,8 +38,10 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
   // Convert to customer functionality
   convertingToCustomer = false;
 
+  @Input() leadId: number | null = null;
+  @Input() isEmployee: boolean = false;
   @Output() closePopup = new EventEmitter<void>(); // Event to notify parent to close popup
-  @Output() dataSaved = new EventEmitter<void>(); // Event to notify parent that data was saved
+  @Output() dataSaved = new EventEmitter<void>();
 
   // Loan types list for dropdown (alphabetically sorted)
   loanTypes: string[] = [
@@ -1852,12 +1854,12 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
 
     // Prepare customer data according to the specified fields
     const customerData = {
-      //name: this.form.get('customername')?.value || '',
+      name: this.form.get('customername')?.value || '',
       loandate: this.form.get('logindate')?.value || '',
       location: this.form.get('presentaddress')?.value || '',
-      // mobilenumber: this.form.get('mobilenumber')?.value || '',
+      mobilenumber: this.form.get('mobilenumber')?.value || '',
       product: this.form.get('loantype')?.value || '',
-      // email: this.form.get('emailid')?.value || '',
+      email: this.form.get('emailid')?.value || '',
       status: this.form.get('status')?.value?.toString() || '',
       bank: this.form.get('bankname')?.value || '',
       disbursedvalue: this.form.get('disbursementamount')?.value?.toString() || '',

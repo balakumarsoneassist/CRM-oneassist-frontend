@@ -61,6 +61,7 @@
               <div class="actions-cell" *ngIf="col.key === 'actions'">
                 <!-- Employee: Follow Up button (stop propagation to prevent row click) -->
                 <button *ngIf="!isAdmin" class="followup-btn" (click)="openFollowUpPopup($event)">
+                <button *ngIf="!isAdmin" class="followup-btn" (click)="$event.stopPropagation(); followUp(customer)">
                   📞 Follow Up
                 </button>
 

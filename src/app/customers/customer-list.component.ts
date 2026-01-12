@@ -82,6 +82,11 @@ export class CustomerListComponent implements OnInit {
       this.displayColumns = this.displayColumns.filter(
         (col) => col.key !== 'following'
       );
+    } else {
+      // If admin, remove actions column as requested
+      this.displayColumns = this.displayColumns.filter(
+        (col) => col.key !== 'actions'
+      );
     }
 
     this.loadCustomers();
@@ -162,31 +167,35 @@ export class CustomerListComponent implements OnInit {
   }
 
   followUp(customer: Customer): void {
-    // Navigate to contact follow up details
-    // We need to set the track number (lead ID) first if passing via service is required
-    // or just navigate if the component handles it otherwise.
-    // Based on other components, we might need to set a track number.
+    const userId = localStorage.getItem('usernameID');
+    const orgId = localStorage.getItem('organizationid');
 
-    // Construct a track number or just pass lead ID
-    // Check if customer has a leadid, or use id as fallback
-    const leadId = customer.leadid || customer.id;
-
-    if (leadId) {
-      // Logic disabled as per user request (only button to be shown)
-      /*
-      // Format: TRACKNUMBER***LEADID
-      // We might not have a track number for a customer, so we might need to generate one or just pass ID
-      // Checking ContactFollowupDetailsComponent: it expects "trackNumber***leadId"
-      // const trackNum = `CUST-${customer.id}***${leadId}`;
-      // this.trackNumberService.setTrackNumber(trackNum);
-      this.router.navigate(['/dashboard/customer-followup'], {
-        state: { customer: customer }
-      });
-      */
-      console.log('Follow Up button clicked (Action disabled)');
-    } else {
-      console.warn('No ID found for customer follow up');
+    if (!userId || !orgId) {
+      alert('User session invalid. Please login again.');
+      return;
     }
+
+    this.loading = true;
+    this.http.post(`${environment.apiUrl}/start-tracking`, {
+      customerId: customer.id,
+      userId: userId,
+      orgId: orgId
+    }).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        if (res.success) {
+          // Navigate to Track Customers page
+          this.router.navigate(['/dashboard/trackcustomers']);
+        } else {
+          alert('Failed to start tracking.');
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error starting tracking:', err);
+        alert('An error occurred while trying to follow up.');
+      }
+    });
   }
 
   convertToContact(customer: Customer): void {
