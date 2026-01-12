@@ -167,6 +167,8 @@
             <span>Track Customers</span>
           </a>
           <a routerLink="loan-list" routerLinkActive="active" class="submenu-link" aria-label="loan list">
+          <a routerLink="loan-list" routerLinkActive="active" class="submenu-link" aria-label="loan list"
+            *ngIf="isAdminUser">
             <i class="sub-icon">💰</i>
             <span>Loan List</span>
           </a>
