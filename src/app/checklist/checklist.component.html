@@ -1,0 +1,234 @@
+<div class="checklist-container">
+    <div class="header-section">
+        <div class="header-content">
+            <span class="header-icon">📋</span>
+            <div class="header-text">
+                <h2>{{ employmentType === 'salaried' ? 'Salaried' : 'Self Employed' }} Checklist</h2>
+                <p>Required documents for loan processing</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Switcher Tabs -->
+    <div class="view-tabs">
+        <button [class.active]="activeMode === 'checklist'" (click)="setActiveMode('checklist')">
+            <span class="tab-icon">📄</span> Documents Checklist
+        </button>
+        <button [class.active]="activeMode === 'questionnaire'" (click)="setActiveMode('questionnaire')">
+            <span class="tab-icon">📋</span> Telecalling Questionnaire
+        </button>
+    </div>
+
+    <!-- Documents Checklist View -->
+    <div *ngIf="activeMode === 'checklist'">
+        <!-- Category Tabs (Only for Self-Employed within Checklist View) -->
+        <div class="category-tabs" *ngIf="employmentType === 'self-employed'">
+            <button [class.active]="subType === 'proprietorship'"
+                (click)="setSubType('proprietorship')">Proprietorship</button>
+            <button [class.active]="subType === 'partnership'" (click)="setSubType('partnership')">Partnership</button>
+            <button [class.active]="subType === 'company'" (click)="setSubType('company')">LLP / Private Ltd</button>
+            <button [class.active]="subType === 'doctor'" (click)="setSubType('doctor')">Doctors</button>
+            <button [class.active]="subType === 'auditor'" (click)="setSubType('auditor')">Auditors</button>
+        </div>
+
+        <div class="checklist-card">
+            <div class="checklist-header">
+                <h3>{{ employmentType === 'salaried' ? 'Salaried Employee Checklist' : 'Business Checklist' }}</h3>
+            </div>
+
+            <div class="checklist-items">
+                <div *ngFor="let item of currentChecklist" class="checklist-item fixed-item">
+                    <span class="bullet-icon">📄</span>
+                    <span class="label-text">{{ item.label }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telecalling Questionnaire View (Salaried) -->
+    <div class="checklist-card questionnaire-card salaried-q-card"
+        *ngIf="activeMode === 'questionnaire' && employmentType === 'salaried'">
+        <div class="checklist-header">
+            <div class="header-with-badge">
+                <h3>Telecalling - SALARIED Questionnaire</h3>
+                <span class="new-badge salaried-badge">Working Client Form</span>
+            </div>
+        </div>
+
+        <div class="questionnaire-sections">
+            <div class="q-section">
+                <h4>1. Client Details</h4>
+                <ul class="q-list">
+                    <li><strong>Name:</strong> Full Name of the working client</li>
+                    <li><strong>Contact Address:</strong> Residence & Permanent addresses</li>
+                    <li><strong>Family Members:</strong> Number of dependents, etc.</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>2. Monthly Income Details</h4>
+                <ul class="q-list">
+                    <li><strong>Net Income:</strong> Post deductions</li>
+                    <li><strong>Gross Income / CTC</strong></li>
+                    <li><strong>Incentives & Bonus</strong></li>
+                    <li><strong>Allowances</strong> (HRA, LTA, etc.)</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>3. Work Experience</h4>
+                <ul class="q-list">
+                    <li><strong>Current Company:</strong> Name & Designation</li>
+                    <li><strong>Tenure:</strong> Years in current company</li>
+                    <li><strong>Previous History:</strong> Details if current is < 3 years</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>4. Assets & Residence</h4>
+                <ul class="q-list">
+                    <li><strong>Assets:</strong> House, Car, Two-wheeler, etc.</li>
+                    <li><strong>Residence:</strong> Type (Rented/Owned), Locality, Tenure</li>
+                    <li><strong>Legality:</strong> DTCP/Plan Approval, Municipal limits</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>5. Property & Tax Details</h4>
+                <ul class="q-list">
+                    <li><strong>Classification:</strong> Resi/Comm/Ind/Agri</li>
+                    <li><strong>Area:</strong> Land, Built-up & UDS</li>
+                    <li><strong>Stats:</strong> Age, Approval Authority, Property Tax</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>6. Other Income</h4>
+                <ul class="q-list">
+                    <li><strong>Co-applicants:</strong> Income from other members</li>
+                    <li><strong>Rental:</strong> Amount, Tenants, Agreement details</li>
+                    <li><strong>Commissions</strong> & Other sources</li>
+                </ul>
+            </div>
+            <div class="q-section full-width">
+                <h4>7. Monthly Obligations & Liabilities</h4>
+                <div class="q-grid-3">
+                    <ul class="q-list">
+                        <li>Credit Card & EMI</li>
+                        <li>Car & Auto (Car/Bike) Loans</li>
+                        <li>Personal Loans (PL)</li>
+                    </ul>
+                    <ul class="q-list">
+                        <li>Staff / Society Loans</li>
+                        <li>Consumer Loans</li>
+                        <li>Property Loans (Check for BT)</li>
+                    </ul>
+                    <ul class="q-list">
+                        <li>Outside Borrowing details</li>
+                        <li>Loan details: Amount, Tenure, Bank, ROI, EMI, Outstanding</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telecalling Questionnaire View (Self-Employed) -->
+    <div class="checklist-card questionnaire-card"
+        *ngIf="activeMode === 'questionnaire' && employmentType === 'self-employed'">
+        <div class="checklist-header">
+            <div class="header-with-badge">
+                <h3>Telecalling - BL Questionnaire</h3>
+                <span class="new-badge">Detailed Form Content</span>
+            </div>
+
+        </div>
+
+        <div class="questionnaire-sections">
+            <div class="q-section">
+                <h4>1. Client Details</h4>
+                <ul class="q-list">
+                    <li><strong>Name:</strong> Full Name of the client</li>
+                    <li><strong>Contact Address:</strong> Residence, Business & Permanent addresses</li>
+                    <li><strong>Family Members:</strong> Number of dependents, etc.</li>
+                </ul>
+                <h4 style="margin-top: 15px;">2. Company Type</h4>
+                <ul class="q-list">
+                    <li>Partnership / Public Ltd / Private Ltd</li>
+                    <li>Proprietorship / Self Employed / Others</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>3. Occupation Details</h4>
+                <ul class="q-list">
+                    <li><strong>Industry/Sector:</strong> Kind of activity (Trading, Mfg, etc.)</li>
+                    <li><strong>Secondary Businesses:</strong> Other relevant details</li>
+                    <li><strong>Number of Branches:</strong> Reach of the business</li>
+                </ul>
+                <h4 style="margin-top: 15px;">4. Office Details</h4>
+                <ul class="q-list">
+                    <li><strong>Type:</strong> Independent, Shop, Factory, Shared, etc.</li>
+                    <li><strong>Location:</strong> Industrial area, Shop, Plant, Residential</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>5. Business & Ownership</h4>
+                <ul class="q-list">
+                    <li><strong>Duration:</strong> Current & Prior entities, Sister concerns</li>
+                    <li><strong>Ownership Status:</strong> Office, Current & Permanent residence</li>
+                    <li><strong>Office Building:</strong> Estimated area & value, Mandatory licenses</li>
+                </ul>
+                <h4 style="margin-top: 15px;">6. Assets & Residence</h4>
+                <ul class="q-list">
+                    <li><strong>Assets:</strong> Properties, Car, Two-wheeler, etc.</li>
+                    <li><strong>Residence:</strong> Locality (Independent/Flat), Tenure, Legality (DTCP Approval)</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>7. Land Classification</h4>
+                <ul class="q-list">
+                    <li><strong>Classification:</strong> Resi/Comm/Ind/Agri</li>
+                    <li><strong>Area Details:</strong> Land, Built-up & Undivided Share (UDS)</li>
+                    <li><strong>Property Stats:</strong> Age, Plan Approval Authority, Property Tax</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>8. Financial Management</h4>
+                <ul class="q-list">
+                    <li><strong>Management:</strong> Number of partners & employees</li>
+                    <li><strong>Performance:</strong> Annual Turnover & Profit (Last 3 Years)</li>
+                    <li><strong>Expenses:</strong> CAPEX, OPEX, Working Capital, Inventory</li>
+                </ul>
+            </div>
+            <div class="q-section full-width">
+                <h4>9. Monthly Obligations & Liabilities</h4>
+                <div class="q-grid-3">
+                    <ul class="q-list">
+                        <li>Credit Card & EMI</li>
+                        <li>Car & Auto (Car/Bike) Loans</li>
+                        <li>Personal Loans (PL)</li>
+                    </ul>
+                    <ul class="q-list">
+                        <li>Staff / Society Loans</li>
+                        <li>Consumer Loans</li>
+                        <li>Property Loans (Check for BT)</li>
+                    </ul>
+                    <ul class="q-list">
+                        <li>Outside Borrowing details</li>
+                        <li>Loan details: Amount, Tenure, Bank, ROI, EMI, Outstanding</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="q-section">
+                <h4>10. Revenue & Stock</h4>
+                <ul class="q-list">
+                    <li><strong>Other Income:</strong> Rental, Commissions, Co-applicants</li>
+                    <li><strong>Rent Details:</strong> Tenants, Rent amount, Registered Agreement</li>
+                    <li><strong>Stock:</strong> Moving, Godown, Business & Dead stock</li>
+                </ul>
+            </div>
+            <div class="q-section">
+                <h4>11. Operational Stats</h4>
+                <ul class="q-list">
+                    <li><strong>Daily Cash Flow:</strong> Cash/Bank Payments & Receipts</li>
+                    <li><strong>Employee Strength:</strong> Permanent vs Temporary</li>
+                    <li><strong>Network:</strong> Major clients/suppliers & contribution to turnover</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
