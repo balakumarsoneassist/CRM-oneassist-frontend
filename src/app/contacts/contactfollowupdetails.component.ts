@@ -112,9 +112,21 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
 
   private statusPollingInterval: any;
 
-  constructor(private fb: FormBuilder, private http: HttpClient, private trackNumberService: TrackNumberService, private cdr: ChangeDetectorRef, private ngZone: NgZone) { }
+  constructor(private fb: FormBuilder, private http: HttpClient, private trackNumberService: TrackNumberService, private cdr: ChangeDetectorRef, private ngZone: NgZone) {
+    console.log('ContactFollowupDetailsComponent Constructed');
+  }
+
+  ngOnChanges(): void {
+    console.log('ngOnChanges - isEmployee:', this.isEmployee);
+    console.log('ngOnChanges - leadId:', this.leadId);
+    if (this.model && this.model.status !== undefined) {
+      this.SetStatus();
+    }
+  }
 
   ngOnInit(): void {
+    console.log('ngOnInit - isEmployee:', this.isEmployee);
+    console.log('ngOnInit - StatusCodeDataModel:', StatusCodeDataModel);
     this.loadBanks();
 
     // Subscribe to track number changes
@@ -272,7 +284,16 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
 
   SetStatus(): void {
     // Set status options based on the model's Status value
-    console.log('Model Status:', this.model.status);
+    console.log('SetStatus called. Model Status:', this.model?.status);
+    console.log('SetStatus called. Is Employee:', this.isEmployee);
+    console.log('Is Employee:', this.isEmployee);
+
+    // If employee, force the ContactStatusDataModel to match the required dropdown options
+    if (this.isEmployee) {
+      this.StatusCode = StatusCodeDataModel.ContactStatusDataModel;
+      return;
+    }
+
     if ((this.model.status < 4) || (this.model.status == 22)) {
       this.StatusCode = StatusCodeDataModel.ContactStatusDataModel;
     }
@@ -309,7 +330,9 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
     }
 
     console.log('Status options set:', this.StatusCode);
+    console.log('Status options length:', this.StatusCode?.length);
     console.log('Model Status:', this.model.status);
+    this.cdr.detectChanges(); // Force UI update
   }
 
   loadLeadTrackDetails(trackNumber: string): void {
@@ -349,6 +372,11 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
 
           // Populate form with existing data
           this.form.patchValue(data);
+        } else {
+          console.log('No data returned for track number, initializing as new lead');
+          this.model = { status: 0 };
+          this.originalData = { status: null, appoinmentdate: null };
+          this.SetStatus();
         }
       },
       error: (err) => {
