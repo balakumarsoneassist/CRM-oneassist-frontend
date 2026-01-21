@@ -86,24 +86,21 @@ export class TargetAchievementService {
     });
   }
 
-  getAllAchievementMetrics(
-    page: number = 1,
-    limit: number = 10,
-    search: string = '',
-    designation: string = '',
-    sortBy: string = '',
-    sortOrder: string = ''
-  ): Observable<any> {
+  getAllAchievementMetrics(filters: any): Observable<any> {
     const headers = this.getAuthHeaders();
     let params = new HttpParams()
-      .set('page', page.toString())
-      .set('limit', limit.toString())
+      .set('page', (filters.page || 1).toString())
+      .set('limit', (filters.limit || 10).toString())
       .set('t', new Date().getTime().toString());
 
-    if (search) params = params.set('search', search);
-    if (designation) params = params.set('designation', designation);
-    if (sortBy) params = params.set('sortBy', sortBy);
-    if (sortOrder) params = params.set('sortOrder', sortOrder);
+    if (filters.search) params = params.set('search', filters.search);
+    if (filters.designation) params = params.set('designation', filters.designation);
+    if (filters.sortBy) params = params.set('sortBy', filters.sortBy);
+    if (filters.sortOrder) params = params.set('sortOrder', filters.sortOrder);
+
+    if (filters.viewType) params = params.set('viewType', filters.viewType);
+    if (filters.month) params = params.set('month', filters.month);
+    if (filters.year) params = params.set('year', filters.year);
 
     return this.http.get(`${this.apiUrl}/api/all-achievement-metrics`, {
       headers,

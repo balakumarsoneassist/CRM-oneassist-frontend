@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { TrackNumberService } from '../services/track-number.service';
+import { Subscription } from 'rxjs';
 
 interface Customer {
   id: number;
@@ -33,6 +34,7 @@ export class CustomerListComponent implements OnInit {
   loading = false;
   error: string | null = null;
   isAdmin = false;
+  activeTab: 'new' | 'existing' = 'new';
 
   // Reassignment properties
   isReassignModalOpen = false;
@@ -90,32 +92,96 @@ export class CustomerListComponent implements OnInit {
     this.loadCustomers();
   }
 
+  page = 1;
+  limit = 25;
+  hasMore = true;
+  totalCustomers = 0;
+  productOptions = ['HL', 'PL', 'BL', 'LAP', 'AL', 'WC', 'OD', 'CC'];
+  selectedProducts: string[] = [];
+
+  // ... (existing imports)
+
+  requestSubscription: Subscription | null = null;
+  selectedProduct: string = '';
+
+  // ... (existing imports)
+
+  setActiveTab(tab: 'new' | 'existing'): void {
+    if (this.activeTab === tab) return;
+    if (this.requestSubscription) {
+      this.requestSubscription.unsubscribe();
+    }
+    this.activeTab = tab;
+    this.page = 1; // Reset to first page on tab switch
+    this.selectedProducts = []; // Reset filters
+    this.selectedProduct = ''; // Reset UI
+    this.loadCustomers();
+  }
+
+  onProductSelect(event: any): void {
+    const selectedValue = event.target.value;
+    this.selectedProduct = selectedValue;
+    if (selectedValue) {
+      this.selectedProducts = [selectedValue];
+    } else {
+      this.selectedProducts = [];
+    }
+    this.page = 1;
+    this.loadCustomers();
+  }
+
   loadCustomers(): void {
+    if (this.requestSubscription) {
+      this.requestSubscription.unsubscribe();
+    }
+
     this.loading = true;
     this.error = null;
 
-    // Force UI update for loading state
     this.ngZone.run(() => {
       this.cdr.detectChanges();
     });
 
-    this.http.get<any>(`${environment.apiUrl}/getcustomerlist`).subscribe({
+    let url = `${environment.apiUrl}/getcustomerlist?type=${this.activeTab}&page=${this.page}&limit=${this.limit}`;
+    if (this.selectedProducts.length > 0) {
+      const productsParam = encodeURIComponent(this.selectedProducts.join(','));
+      url += `&products=${productsParam}`;
+    }
+
+    this.requestSubscription = this.http.get<any>(url).subscribe({
       next: (response) => {
         console.log('Customer list data:', response);
 
-        // Handle wrapped response format {success: true, data: [...], count: 2}
         if (response && response.data && Array.isArray(response.data)) {
-          this.customers = response.data;
+          let loadedCustomers = response.data;
+
+          // Frontend Safety Filter: If not admin, strictly enforce ownership
+          if (!this.isAdmin) {
+            const loggedInUserId = localStorage.getItem('usernameID'); // Ensure this matches backend ID type (string/int)
+            if (loggedInUserId) {
+              loadedCustomers = loadedCustomers.filter((c: any) =>
+                // Check if customer is assigned to logged in user
+                // Use loose equality (==) to handle string vs number differences
+                c.leadfollowedby == loggedInUserId
+              );
+            }
+          }
+
+          this.customers = loadedCustomers;
+          this.hasMore = response.data.length === this.limit;
+          this.totalCustomers = this.isAdmin ? (response.count !== undefined ? response.count : this.customers.length) : this.customers.length;
         } else if (Array.isArray(response)) {
-          // Handle direct array response
           this.customers = response;
+          this.hasMore = response.length === this.limit;
+          this.totalCustomers = response.length;
         } else {
           this.customers = [];
+          this.hasMore = false;
+          this.totalCustomers = 0;
         }
 
         console.log('Processed customers:', this.customers);
 
-        // Apply comprehensive change detection fix (following established pattern)
         this.ngZone.run(() => {
           this.loading = false;
           this.cdr.detectChanges();
@@ -130,6 +196,23 @@ export class CustomerListComponent implements OnInit {
         });
       },
     });
+  }
+
+  onLimitChange(): void {
+    this.page = 1;
+    this.loadCustomers();
+  }
+
+  nextPage(): void {
+    this.page++;
+    this.loadCustomers();
+  }
+
+  prevPage(): void {
+    if (this.page > 1) {
+      this.page--;
+      this.loadCustomers();
+    }
   }
 
   refreshData(): void {

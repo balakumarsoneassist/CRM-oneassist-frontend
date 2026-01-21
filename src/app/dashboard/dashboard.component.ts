@@ -20,11 +20,11 @@ export class DashboardComponent {
     contacts: false,
     leads: false,
     customers: false,
-    segregation: false,
     reports: false,
-    performance: false,
     connector: false,
-    tools: false
+    tools: false,
+    segregation: false,
+    performance: false
   };
 
   // Theme selector state

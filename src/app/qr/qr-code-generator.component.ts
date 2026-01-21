@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,25 +30,25 @@ export class QrCodeGeneratorComponent {
     createtime: string;
     modifiedby: string;
   } = {
-    name: '',
-    contactperson: '',
-    mobilenumber: '',
-    emailid: '',
-    address: '',
-    city: '',
-    state: '',
-    pincode: '',
-    referer: '', // Added referer field
-    createtime: new Date().toISOString(),
-    modifiedby: localStorage.getItem('userId') || ''
-  };
+      name: '',
+      contactperson: '',
+      mobilenumber: '',
+      emailid: '',
+      address: '',
+      city: '',
+      state: '',
+      pincode: '',
+      referer: '', // Added referer field
+      createtime: new Date().toISOString(),
+      modifiedby: localStorage.getItem('userId') || ''
+    };
 
   loading = false;
   qrCodeDataUrl = '';
   showQrCode = false;
   qrToken = '';
   qrUrl = '';
-  
+
   errors: any = {};
 
   constructor(
@@ -58,11 +59,11 @@ export class QrCodeGeneratorComponent {
   ) {
     // Set current timestamp for createtime
     this.qrForm.createtime = new Date().toISOString();
-    
+
     // Set modifiedby from localStorage
     const userId = localStorage.getItem('usernameID') || '';
     this.qrForm.modifiedby = userId;
-    
+
     // Generate initial QR token and URL
     this.generateQrToken();
   }
@@ -160,9 +161,9 @@ export class QrCodeGeneratorComponent {
 
     // Generate new QR token and URL
     this.generateQrToken();
-    
+
     console.log('Generated QR URL:', this.qrUrl);
-    
+
     // First save customer details to database before generating QR code
     this.saveQrCodeCustomer();
   }
@@ -208,7 +209,7 @@ export class QrCodeGeneratorComponent {
 
   createCustomQrDesign(data: string): void {
     console.log('Starting createCustomQrDesign with data:', data);
-    
+
     // Create canvas for custom design
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -236,46 +237,46 @@ export class QrCodeGeneratorComponent {
       const logoWidth = 100;
       const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
       const logoX = (canvas.width - logoWidth) / 2;
-      
+
       ctx.drawImage(logoImg, logoX, yPosition, logoWidth, logoHeight);
       yPosition += logoHeight + 30;
-      
+
       // Continue with text and QR
       this.drawTextAndQr(ctx, canvas, data, yPosition);
     };
-    
+
     logoImg.onerror = () => {
       console.log('Logo not found, creating programmatic logo');
       // Create programmatic logo as fallback
       const centerX = canvas.width / 2;
       const logoRadius = 40;
-      
+
       // Draw circle background
       ctx.beginPath();
       ctx.arc(centerX, yPosition + logoRadius, logoRadius, 0, 2 * Math.PI);
       ctx.fillStyle = '#1e3a8a'; // Blue background
       ctx.fill();
-      
+
       // Draw "OA" text in the circle
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 24px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('OA', centerX, yPosition + logoRadius);
-      
+
       yPosition += (logoRadius * 2) + 30;
-      
+
       // Continue with text and QR
       this.drawTextAndQr(ctx, canvas, data, yPosition);
     };
-    
+
     logoImg.src = './logo.png';
   }
-  
+
   private drawTextAndQr(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, data: string, yPosition: number): void {
     // Reset text baseline
     ctx.textBaseline = 'alphabetic';
-    
+
     // Draw first promotional text
     ctx.fillStyle = '#4b5563';
     ctx.font = '18px Arial';
@@ -305,69 +306,69 @@ export class QrCodeGeneratorComponent {
         light: '#FFFFFF'
       }
     })
-    .then((qrDataUrl: string) => {
-      console.log('QR code generated, adding to canvas');
-      const qrImg = new Image();
-      
-      qrImg.onload = () => {
-        console.log('Drawing QR code on canvas...');
-        // Draw QR code centered
-        const qrSize = 200;
-        ctx.drawImage(qrImg, (canvas.width - qrSize) / 2, yPosition, qrSize, qrSize);
-        
-        console.log('Converting canvas to data URL...');
-        // Convert final canvas to data URL
-        this.qrCodeDataUrl = canvas.toDataURL('image/png');
-        this.showQrCode = true;
+      .then((qrDataUrl: string) => {
+        console.log('QR code generated, adding to canvas');
+        const qrImg = new Image();
+
+        qrImg.onload = () => {
+          console.log('Drawing QR code on canvas...');
+          // Draw QR code centered
+          const qrSize = 200;
+          ctx.drawImage(qrImg, (canvas.width - qrSize) / 2, yPosition, qrSize, qrSize);
+
+          console.log('Converting canvas to data URL...');
+          // Convert final canvas to data URL
+          this.qrCodeDataUrl = canvas.toDataURL('image/png');
+          this.showQrCode = true;
+          this.loading = false;
+
+          console.log('Custom QR design completed successfully');
+          console.log('showQrCode set to:', this.showQrCode);
+          console.log('loading set to:', this.loading);
+          console.log('qrCodeDataUrl length:', this.qrCodeDataUrl.length);
+
+          // Force UI update using comprehensive change detection + DOM manipulation
+          setTimeout(() => {
+            this.forceAngularUpdate();
+          }, 100);
+        };
+
+        qrImg.onerror = (error) => {
+          console.error('Error loading QR image:', error);
+          this.errors.general = 'Failed to load QR code image.';
+          this.loading = false;
+        };
+
+        qrImg.src = qrDataUrl;
+      })
+      .catch((error: any) => {
+        console.error('QR Code generation failed:', error);
+        this.errors.general = 'Failed to generate QR code: ' + error.message;
         this.loading = false;
-        
-        console.log('Custom QR design completed successfully');
-        console.log('showQrCode set to:', this.showQrCode);
-        console.log('loading set to:', this.loading);
-        console.log('qrCodeDataUrl length:', this.qrCodeDataUrl.length);
-        
-        // Force UI update using comprehensive change detection + DOM manipulation
-        setTimeout(() => {
-          this.forceAngularUpdate();
-        }, 100);
-      };
-      
-      qrImg.onerror = (error) => {
-        console.error('Error loading QR image:', error);
-        this.errors.general = 'Failed to load QR code image.';
-        this.loading = false;
-      };
-      
-      qrImg.src = qrDataUrl;
-    })
-    .catch((error: any) => {
-      console.error('QR Code generation failed:', error);
-      this.errors.general = 'Failed to generate QR code: ' + error.message;
-      this.loading = false;
-    });
+      });
   }
 
   // Force Angular update using comprehensive change detection + DOM manipulation
   private forceAngularUpdate(): void {
     console.log('🔄 Starting comprehensive Angular update...');
-    
+
     // Multiple change detection approaches
     this.ngZone.run(() => {
       console.log('Running in NgZone...');
-      
+
       // Force multiple change detection cycles
       setTimeout(() => {
         this.showQrCode = false;
         this.cdr.detectChanges();
-        
+
         setTimeout(() => {
           this.showQrCode = true;
           this.cdr.detectChanges();
-          
+
           setTimeout(() => {
             this.cdr.markForCheck();
             this.cdr.detectChanges();
-            
+
             console.log('Angular change detection completed, now applying DOM manipulation...');
             this.forceUIUpdate();
           }, 50);
@@ -379,14 +380,14 @@ export class QrCodeGeneratorComponent {
   // Force UI update using direct DOM manipulation (fixes Angular change detection issues)
   private forceUIUpdate(): void {
     console.log('Forcing UI update via direct DOM manipulation...');
-    
+
     // Hide loading state
     const loadingElements = document.querySelectorAll('.loading-spinner, .loading-text');
     loadingElements.forEach(element => {
       (element as HTMLElement).style.display = 'none';
     });
-    
-    // Force show QR code section (bypass *ngIf="showQrCode")
+
+    // Force show QR code section (bypass *ngIf='showQrCode')
     const qrSection = document.querySelector('.qr-section');
     if (qrSection) {
       (qrSection as HTMLElement).style.display = 'block';
@@ -404,7 +405,7 @@ export class QrCodeGeneratorComponent {
         }
       }, 50);
     }
-    
+
     // Hide generate button loading state
     const generateBtn = document.querySelector('button[type="submit"]');
     if (generateBtn) {
@@ -412,7 +413,7 @@ export class QrCodeGeneratorComponent {
       (generateBtn as HTMLButtonElement).disabled = false;
       console.log('Generate button reset via DOM manipulation');
     }
-    
+
     // Force display of QR code image and buttons
     setTimeout(() => {
       const qrImage = document.querySelector('.qr-code-image');
@@ -423,7 +424,7 @@ export class QrCodeGeneratorComponent {
       } else {
         console.log('QR code image not found in DOM');
       }
-      
+
       // Make export buttons visible
       const exportButtons = document.querySelectorAll('.download-btn, .new-qr-btn');
       exportButtons.forEach(button => {
@@ -432,7 +433,7 @@ export class QrCodeGeneratorComponent {
       });
       console.log('Export buttons made visible:', exportButtons.length, 'buttons found');
     }, 100);
-    
+
     console.log('UI update completed via direct DOM manipulation');
   }
 
@@ -441,7 +442,7 @@ export class QrCodeGeneratorComponent {
     console.log('🚨 PDF EXPORT BUTTON CLICKED - METHOD CALLED!');
     alert('PDF Export method called! Check console for details.');
     console.log('Starting stylish PDF export...');
-    
+
     if (!this.qrCodeDataUrl) {
       console.error('No QR code data available for PDF export');
       this.errors.general = 'No QR code available. Please generate QR code first.';
@@ -453,25 +454,25 @@ export class QrCodeGeneratorComponent {
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      
+
       console.log('PDF page dimensions:', pageWidth, 'x', pageHeight);
-      
+
       // Set light background color
       pdf.setFillColor(248, 249, 250); // Light gray background
       pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-      
+
       let yPosition = 30;
-      
+
       // Try to load and add logo
       const logoImg = new Image();
       logoImg.onload = () => {
         console.log('Adding logo to stylish PDF...');
-        
+
         // Add logo (larger size like reference: 330px -> ~80mm)
         const logoWidth = 80;
         const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
         const logoX = (pageWidth - logoWidth) / 2;
-        
+
         // Convert logo to canvas and add to PDF
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -480,30 +481,30 @@ export class QrCodeGeneratorComponent {
           canvas.height = logoImg.height;
           ctx.drawImage(logoImg, 0, 0);
           const logoDataUrl = canvas.toDataURL('image/png');
-          
+
           pdf.addImage(logoDataUrl, 'PNG', logoX, yPosition, logoWidth, logoHeight);
           yPosition += logoHeight + 20;
         }
-        
+
         this.addStylishContentToPdf(pdf, yPosition);
       };
-      
+
       logoImg.onerror = () => {
         console.log('Logo not found, continuing with stylish PDF without logo');
         this.addStylishContentToPdf(pdf, yPosition);
       };
-      
+
       logoImg.src = './logo.png';
-      
+
     } catch (error) {
       console.error('Error during stylish PDF export:', error);
       this.errors.general = 'Failed to export PDF: ' + (error as Error).message;
     }
   }
-  
+
   private addStylishContentToPdf(pdf: any, yPosition: number): void {
     const pageWidth = pdf.internal.pageSize.getWidth();
-    
+
     // Add main heading with better typography
     pdf.setFontSize(20);
     pdf.setTextColor(51, 51, 51); // Dark gray
@@ -512,7 +513,7 @@ export class QrCodeGeneratorComponent {
     const h1Width = pdf.getTextWidth(heading1);
     pdf.text(heading1, (pageWidth - h1Width) / 2, yPosition);
     yPosition += 15;
-    
+
     // Add subheading
     pdf.setFontSize(16);
     pdf.setTextColor(108, 117, 125); // Light gray
@@ -521,7 +522,7 @@ export class QrCodeGeneratorComponent {
     const h2Width = pdf.getTextWidth(heading2);
     pdf.text(heading2, (pageWidth - h2Width) / 2, yPosition);
     yPosition += 20;
-    
+
     // Add business name with emphasis
     if (this.qrForm.name) {
       pdf.setFontSize(18);
@@ -532,40 +533,40 @@ export class QrCodeGeneratorComponent {
       pdf.text(businessName, (pageWidth - businessWidth) / 2, yPosition);
       yPosition += 25;
     }
-    
+
     // Create stylish card for QR code (inspired by your reference) - BIGGER SIZE
     const cardWidth = 140; // Increased from 100
     const cardHeight = 160; // Increased from 120
     const cardX = (pageWidth - cardWidth) / 2;
     const cardY = yPosition;
-    
+
     // Card background (white)
     pdf.setFillColor(255, 255, 255);
     pdf.setDrawColor(222, 226, 230); // Light border
     pdf.setLineWidth(0.5);
     pdf.roundedRect(cardX, cardY, cardWidth, cardHeight, 3, 3, 'FD');
-    
-    // Card header with "SCAN" text (like your reference) - BIGGER HEADER
+
+    // Card header with 'SCAN' text (like your reference) - BIGGER HEADER
     const headerHeight = 20; // Increased from 15
     pdf.setFillColor(0, 123, 255); // Bootstrap primary blue
     pdf.roundedRect(cardX, cardY, cardWidth, headerHeight, 3, 3, 'F');
-    
-    // Add "SCAN" text in header - BIGGER TEXT
+
+    // Add 'SCAN' text in header - BIGGER TEXT
     pdf.setFontSize(18); // Increased from 14
     pdf.setTextColor(255, 255, 255); // White text
     pdf.setFont('helvetica', 'bold');
     const scanText = 'SCAN';
     const scanWidth = pdf.getTextWidth(scanText);
     pdf.text(scanText, cardX + (cardWidth - scanWidth) / 2, cardY + headerHeight - 5);
-    
+
     // Add QR code in card body - MUCH BIGGER QR CODE
     const qrSize = 110; // Increased from 70 - much bigger QR code
     const qrX = cardX + (cardWidth - qrSize) / 2;
     const qrY = cardY + headerHeight + 20; // More space from header
-    
+
     console.log('Adding QR code to stylish card...');
     pdf.addImage(this.qrCodeDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
-    
+
     // Add subtle footer text
     yPosition = cardY + cardHeight + 20;
     pdf.setFontSize(10);
@@ -574,12 +575,12 @@ export class QrCodeGeneratorComponent {
     const footerText = 'Scan this QR code to access your loan application';
     const footerWidth = pdf.getTextWidth(footerText);
     pdf.text(footerText, (pageWidth - footerWidth) / 2, yPosition);
-    
+
     // Generate filename and save
     const fileName = `qr-code-${this.qrForm.name || 'business'}-${Date.now()}.pdf`;
     console.log('Saving stylish PDF with filename:', fileName);
     pdf.save(fileName);
-    
+
     console.log('Stylish PDF export completed successfully!');
   }
 

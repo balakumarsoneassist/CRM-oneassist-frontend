@@ -2,14 +2,32 @@
     <div class="header-section">
         <!-- Top row: Title + Refresh -->
         <div class="header-top">
-            <h2>Monthly Achievements</h2>
+            <h2>{{ isAdmin ? 'Overall Achievements' : 'Monthly Achievements' }}</h2>
             <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
-                {{ loading ? "Loading..." : "Refresh" }}
+                <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+                {{ loading ? 'Refreshing...' : 'Refresh Data' }}
             </button>
         </div>
 
         <!-- Filter Row -->
         <div class="filter-row" *ngIf="isAdmin">
+            <!-- View Type Filter -->
+            <select [(ngModel)]="viewType" (change)="onFilterChange()" class="filter-select">
+                <option value="monthly">Monthly View</option>
+                <option value="yearly">Yearly View</option>
+            </select>
+
+            <!-- Month Filter -->
+            <select *ngIf="viewType === 'monthly'" [(ngModel)]="selectedMonth" (change)="onFilterChange()"
+                class="filter-select">
+                <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
+            </select>
+
+            <!-- Year Filter -->
+            <select [(ngModel)]="selectedYear" (change)="onFilterChange()" class="filter-select">
+                <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+            </select>
+
             <!-- Professional Search Bar -->
             <div class="search-wrapper">
                 <span class="search-icon">

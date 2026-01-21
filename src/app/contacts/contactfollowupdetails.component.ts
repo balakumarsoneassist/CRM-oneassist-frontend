@@ -76,7 +76,15 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
   compCategories: string[] = ['A', 'B', 'C', 'D'];
 
   // Customer segment options
-  custSegments: string[] = ['Open', 'Royal', 'Premium', 'Gold'];
+  // Customer segment options
+  custSegments: string[] = ['Royal', 'Premium', 'Gold', 'Open'];
+
+  segmentColors: any = {
+    Royal: '#7b1fa2',
+    Premium: '#1976d2',
+    Gold: '#c9a20d',
+    Open: '#6c757d'
+  };
 
   // Data strength options
   dataStrengthOptions: string[] = ['Useful > 60%', 'Hold 20% - 60%', 'Remove'];
@@ -209,7 +217,7 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
       datastrength: [''],
       compname: [''],
       compcat: [''],
-      custsegment: [''],
+      custsegment: ['Open'],
 
       // Document Details (status >= 12)
       isidproof: [false],
@@ -239,6 +247,16 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
       islegal: [false],
       istechnical: [false]
     });
+
+    // ************** AUTO CUSTOMER SEGMENT **************
+    this.form.get('incomeamount')?.valueChanges.subscribe(() => {
+      this.updateCustomerSegment();
+    });
+
+    this.form.get('compcat')?.valueChanges.subscribe(() => {
+      this.updateCustomerSegment();
+    });
+    // ***************************************************
 
     // Initialize Personal Details Form
     this.personalDetailsForm = this.fb.group({
@@ -274,12 +292,42 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Unsubscribe and clear polling to prevent memory leaks
     if (this.trackNumberSubscription) {
       this.trackNumberSubscription.unsubscribe();
     }
     this.stopStatusPolling();
   }
+
+  // ************* CUSTOMER SEGMENT LOGIC ***************
+  calculateCustomerSegment(): string {
+    const income = Number(this.form.get('incomeamount')?.value || 0);
+    const category = this.form.get('compcat')?.value;
+
+    if (!income || !category) return 'Open';
+
+    if (category === 'A') {
+      if (income >= 100000) return 'Royal';
+      if (income >= 75000) return 'Premium';
+      if (income >= 40000) return 'Gold';
+      return 'Open';
+    }
+
+    if (['B', 'C', 'D'].includes(category)) {
+      if (income > 100000) return 'Royal';
+      if (income === 100000) return 'Premium';
+      if (income >= 60000) return 'Gold';
+      return 'Open';
+    }
+
+    return 'Open';
+  }
+
+  updateCustomerSegment() {
+    const seg = this.calculateCustomerSegment();
+    this.form.get('custsegment')?.setValue(seg, { emitEvent: false });
+    this.cdr.detectChanges();
+  }
+  // *****************************************************
 
 
   SetStatus(): void {
@@ -567,6 +615,13 @@ export class ContactFollowupDetailsComponent implements OnInit, OnDestroy {
       islegal: this.form.get('islegal')?.value || false,
       istechnical: this.form.get('istechnical')?.value || false
     };
+
+    // If Direct Meet is selected, explicitly set approval_status to 'Pending'
+    // to ensure it appears in the Sales Visit Follow-up list for Approval
+    if (updateData.isdirectmeet === true) {
+      updateData['approval_status'] = 'Pending';
+      console.log('📌 Direct Meet selected: Setting approval_status to Pending');
+    }
 
     // Use the current track number for the API call
     if (!this.currentTrackNumber) {

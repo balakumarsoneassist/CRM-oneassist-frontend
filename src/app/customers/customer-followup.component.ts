@@ -52,6 +52,8 @@ export class CustomerFollowupComponent implements OnInit {
 
   customers: Record<string, any>[] = [];
 
+  isAdmin = false;
+
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -60,6 +62,11 @@ export class CustomerFollowupComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // Check for admin rights
+    const adminRights = localStorage.getItem('isadminrights');
+    this.isAdmin = adminRights === 'true' || adminRights === '1';
+    console.log('[DEBUG] isAdmin:', this.isAdmin);
+
     this.loadCustomers();
 
     // Check if customer data passed from Customer List
@@ -88,11 +95,16 @@ export class CustomerFollowupComponent implements OnInit {
   }
 
   loadCustomers(): void {
-    const empId = localStorage.getItem('usernameID') || '';
+    let empId = localStorage.getItem('usernameID') || '';
     console.log(
       '[DEBUG] loadCustomers - Current empId from localStorage:',
       empId
     );
+
+    if (this.isAdmin) {
+      empId = 'admin';
+      console.log('[DEBUG] User is Admin, fetching all pending follow-ups');
+    }
 
     if (!empId) {
       console.warn('[DEBUG] No empId found in localStorage (usernameID)');
@@ -139,6 +151,12 @@ export class CustomerFollowupComponent implements OnInit {
             // Fallback for remarks if using the new aggregated field
             if (!normalized['remarks'] && normalized['all_remarks']) {
               normalized['remarks'] = normalized['all_remarks'];
+            }
+            // Debug tracknumber
+            if (normalized['tracknumber']) {
+              console.log(`[DEBUG] Tracknumber found for ${normalized['name']}:`, normalized['tracknumber']);
+            } else {
+              console.warn(`[DEBUG] Tracknumber MISSING for ${normalized['name']} (Record Type: ${normalized['record_type']})`);
             }
 
             // Date formatting for UI
@@ -231,11 +249,52 @@ export class CustomerFollowupComponent implements OnInit {
 
       // Add followup button column
       const actionCell = document.createElement('td');
-      const followupBtn = document.createElement('button');
-      followupBtn.className = 'followup-btn';
-      followupBtn.innerHTML = '📞 Followup';
-      followupBtn.onclick = () => this.followupCustomer(customer);
-      actionCell.appendChild(followupBtn);
+
+      if (this.isAdmin) {
+        // Admin View: Approve / Reject Buttons
+        const btnContainer = document.createElement('div');
+        btnContainer.style.display = 'flex';
+        btnContainer.style.gap = '8px';
+
+        const approveBtn = document.createElement('button');
+        approveBtn.className = 'btn-approve';
+        approveBtn.textContent = '✅ Approve';
+        // Basic styling for direct DOM defaults
+        approveBtn.style.backgroundColor = '#10b981';
+        approveBtn.style.color = 'white';
+        approveBtn.style.border = 'none';
+        approveBtn.style.padding = '6px 12px';
+        approveBtn.style.borderRadius = '4px';
+        approveBtn.style.cursor = 'pointer';
+
+        approveBtn.onclick = () => this.approveFollowUp(customer);
+
+        const rejectBtn = document.createElement('button');
+        rejectBtn.className = 'btn-reject';
+        rejectBtn.textContent = '❌ Reject';
+        // Basic styling
+        rejectBtn.style.backgroundColor = '#ef4444';
+        rejectBtn.style.color = 'white';
+        rejectBtn.style.border = 'none';
+        rejectBtn.style.padding = '6px 12px';
+        rejectBtn.style.borderRadius = '4px';
+        rejectBtn.style.cursor = 'pointer';
+
+        rejectBtn.onclick = () => this.rejectFollowUp(customer);
+
+        btnContainer.appendChild(approveBtn);
+        btnContainer.appendChild(rejectBtn);
+        actionCell.appendChild(btnContainer);
+
+      } else {
+        // Employee View: Followup Button
+        const followupBtn = document.createElement('button');
+        followupBtn.className = 'followup-btn';
+        followupBtn.innerHTML = '📞 Followup';
+        followupBtn.onclick = () => this.followupCustomer(customer);
+        actionCell.appendChild(followupBtn);
+      }
+
       row.appendChild(actionCell);
 
       tableBody.appendChild(row);
@@ -245,6 +304,81 @@ export class CustomerFollowupComponent implements OnInit {
       'Direct DOM update applied - table rows:',
       this.customers.length
     );
+  }
+
+  approveFollowUp(customer: any): void {
+    if (!confirm(`Are you sure you want to Approve this follow-up for ${customer.name}?`)) return;
+
+    // tracknumber might be on the customer object directly or we might need to derive it
+    // Based on findBasicCustomersByEmp query, we don't select 'tracknumber' directly in the main list
+    // We might need to fetch it or ensure it's in the query.
+    // Looking at the query: It selects 's.id' etc. but not 'tracknumber'.
+    // However, we can try to guess or maybe we need to update the query?
+    // Wait, 'leadtrackdetails' has 'tracknumber'.
+    // The query selects 'appoinment_date' via subquery.
+    // We need 'tracknumber' to approve/reject.
+    // Modifying the Frontend implies the data is there.
+    // Let's check 'customer' object keys from the console logs or query.
+    // The query in sales.model.js DOES NOT return tracknumber for `record_type = 'customer'` explicitly in the main SELECT list, 
+    // but it does for 'lead' via join? No, wait.
+    // We need to ensure tracknumber is available. 
+    // Actually, for 'Pending' items, we are looking at `salesvisittrack` or `leadtrackdetails`.
+    // The requirement says "See all employees' follow-ups (status: Pending)".
+    // The data source is `leadtrackdetails` (Unified).
+    // Let's assume for now we might not have it and I should fix the backend query first if needed.
+    // BUT, I'll add the method here assuming 'tracknumber' is or will be available.
+    // If it's missing, I'll debug.
+
+    // actually, let's look at the query again in step 858.
+    // It selects s.id, s.name...
+    // It does NOT select tracknumber. This is a problem.
+    // I need to update the backend query in sales.model.js to include 'tracknumber'
+    // effectively so the frontend received it. 
+
+    // Start with alert for now to test UI then I will fix backend.
+    // console.log('Approving:', customer);
+
+    // For now, let's assume valid data logic:
+    // We can use the customer.id (svcid) to maybe match? No, tracknumber is unique.
+
+    // Proceeding with implementation, noting I might need to patch backend query.
+
+    const tracknumber = customer.tracknumber; // potential issue here
+
+    if (!tracknumber) {
+      // Attempt to find it if it's hidden or mapped
+      // or fallback to fetching details
+      alert('Error: Track Number missing for this record. Cannot approve.');
+      return;
+    }
+
+    this.http.post(`${environment.apiUrl}/approvefollowup`, { tracknumber })
+      .subscribe({
+        next: (res) => {
+          alert('Approved successfully');
+          this.loadCustomers(); // Reload to remove from list
+        },
+        error: (err) => alert('Failed to approve')
+      });
+  }
+
+  rejectFollowUp(customer: any): void {
+    if (!confirm(`Are you sure you want to Reject this follow-up for ${customer.name}?`)) return;
+
+    const tracknumber = customer.tracknumber;
+    if (!tracknumber) {
+      alert('Error: Track Number missing. Cannot reject.');
+      return;
+    }
+
+    this.http.post(`${environment.apiUrl}/rejectfollowup`, { tracknumber })
+      .subscribe({
+        next: (res) => {
+          alert('Rejected successfully');
+          this.loadCustomers();
+        },
+        error: (err) => alert('Failed to reject')
+      });
   }
 
   private loadSampleData(): Record<string, any>[] {

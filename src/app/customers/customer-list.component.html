@@ -12,6 +12,16 @@
     </div>
   </div>
 
+  <!-- Tab Navigation -->
+  <div class="tabs-container">
+    <button class="tab-btn" [class.active]="activeTab === 'new'" (click)="setActiveTab('new')">
+      New Customers
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'existing'" (click)="setActiveTab('existing')">
+      Existing Customers
+    </button>
+  </div>
+
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <div class="loading-spinner"></div>
@@ -27,10 +37,21 @@
     </div>
   </div>
 
+  <!-- Product Filter -->
+  <div class="filter-bar" *ngIf="!loading && !error && activeTab === 'existing'">
+    <div class="filter-control">
+      <label class="filter-label">Filter by Product:</label>
+      <select [(ngModel)]="selectedProduct" (change)="onProductSelect($event)" class="product-select">
+        <option value="">All Products</option>
+        <option *ngFor="let p of productOptions" [value]="p">{{ p }}</option>
+      </select>
+    </div>
+  </div>
+
   <!-- Customer Data Table -->
   <div *ngIf="!loading && !error" class="table-wrapper">
     <div class="table-header">
-      <span class="record-count">Total Customers: {{ customers.length }}</span>
+      <span class="record-count">Total Customers: {{ totalCustomers }}</span>
     </div>
 
     <div class="table-container">
@@ -61,6 +82,18 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls" *ngIf="customers.length > 0 || page > 1">
+
+      <div class="items-per-page">
+        <span>Show: 25</span>
+      </div>
+
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="page === 1">Previous</button>
+      <span class="page-info">Page {{ page }}</span>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="!hasMore">Next</button>
     </div>
 
     <!-- Empty State -->

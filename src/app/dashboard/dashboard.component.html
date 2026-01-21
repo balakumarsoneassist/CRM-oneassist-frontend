@@ -70,9 +70,8 @@
             <i class="sub-icon">📞</i>
             <span>Customer Followup</span>
           </a>
-          <a *ngIf="isAdminUser" routerLink="overall-report" routerLinkActive="active" class="submenu-link"
-            aria-label="overall report">
-            <i class="sub-icon">📄</i>
+          <a routerLink="overall-report" routerLinkActive="active" class="submenu-link" aria-label="overall report">
+            <i class="sub-icon">📊</i>
             <span>Overall Report</span>
           </a>
         </div>
@@ -142,14 +141,13 @@
             <i class="sub-icon">📋</i>
             <span>Customer List</span>
           </a>
+          <a routerLink="loan-list" routerLinkActive="active" class="submenu-link" aria-label="loan list">
+            <i class="sub-icon">💰</i>
+            <span>Loan List</span>
+          </a>
           <a routerLink="trackcustomers" routerLinkActive="active" class="submenu-link" aria-label="track customers">
             <i class="sub-icon">🔍</i>
             <span>Track Customers</span>
-          </a>
-          <a routerLink="loan-list" routerLinkActive="active" class="submenu-link" aria-label="loan list"
-            *ngIf="isAdminUser">
-            <i class="sub-icon">💰</i>
-            <span>Loan List</span>
           </a>
         </div>
       </div>
@@ -170,27 +168,6 @@
         </div>
       </div>
 
-      <!-- Reports -->
-      <div class="menu-section">
-        <div class="section-header" (click)="toggleSection('reports')">
-          <i class="icon reports-icon">📊</i>
-          <span>Reports</span>
-          <i class="chevron" [class.expanded]="expandedSections.reports">▶</i>
-        </div>
-        <div class="submenu" [class.expanded]="expandedSections.reports">
-          <a routerLink="daily-report" routerLinkActive="active" class="submenu-link" aria-label="daily report">
-            <i class="sub-icon">📅</i>
-            <span>Daily Report</span>
-          </a>
-          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link"
-            aria-label="status summary report">
-            <i class="sub-icon">📈</i>
-            <span>Status Summary Report</span>
-          </a>
-        </div>
-      </div>
-
-
       <!-- Performance & Achievements Module -->
       <div class="menu-section">
         <div class="section-header" (click)="toggleSection('performance')">
@@ -207,6 +184,26 @@
             aria-label="target achievement">
             <i class="sub-icon">🎯</i>
             <span>Target Assignments</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Reports - Only show if user has admin rights -->
+      <div class="menu-section" *ngIf="isAdminUser">
+        <div class="section-header" (click)="toggleSection('reports')">
+          <i class="icon reports-icon">📊</i>
+          <span>Reports</span>
+          <i class="chevron" [class.expanded]="expandedSections.reports">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.reports">
+          <a routerLink="daily-report" routerLinkActive="active" class="submenu-link" aria-label="daily report">
+            <i class="sub-icon">📅</i>
+            <span>Daily Report</span>
+          </a>
+          <a routerLink="status-report-summary" routerLinkActive="active" class="submenu-link"
+            aria-label="status summary report">
+            <i class="sub-icon">📈</i>
+            <span>Status Summary Report</span>
           </a>
         </div>
       </div>

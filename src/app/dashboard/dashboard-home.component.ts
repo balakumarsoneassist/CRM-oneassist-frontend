@@ -15,6 +15,10 @@ interface DashboardStats {
   todaytotal: string;
   monthtotal: string;
   status_label: string;
+  colorConfig?: { primary: string; secondary: string; bg: string };
+  percentage?: number;
+  trendIcon?: string;
+  trendText?: string;
 }
 
 @Component({
@@ -37,13 +41,50 @@ interface DashboardStats {
             <p>Your scheduled meetings for today</p>
           </div>
         </div>
-        <div id="appointments-loading" class="loading-card">
+        <div *ngIf="appointmentsLoading" class="loading-card">
           <div class="loading-spinner"></div>
           <p>Loading today's appointments...</p>
         </div>
-        <div id="appointments-content" class="appointments-content" style="display: none;">
-          <div id="appointments-list" class="appointments-list">
-            <!-- Appointments will be populated here -->
+        
+        <div *ngIf="!appointmentsLoading" class="appointments-content">
+          <div *ngIf="appointments.length === 0" class="appointment-card" style="text-align: center; color: #6c757d; display: flex; align-items: center; justify-content: center; min-height: 150px;">
+            <p style="margin: 0;">No appointments scheduled for today</p>
+          </div>
+
+          <div *ngIf="appointments.length > 0" class="appointments-list">
+            <div *ngFor="let appointment of appointments.slice(0, 5)" class="appointment-card">
+              <div class="appointment-header">
+                <div class="appointment-name" [title]="appointment.firstname || 'N/A'">
+                  {{appointment.firstname || 'N/A'}}
+                </div>
+                <div class="appointment-track">
+                  Track: {{appointment.tracknumber || 'N/A'}}
+                </div>
+              </div>
+              
+              <div class="appointment-details">
+                <div class="appointment-detail">
+                  <span>📱</span>
+                  <strong>Mobile:</strong>
+                </div>
+                <div style="font-size: 0.8rem; text-align: center;">{{appointment.mobilenumber || 'N/A'}}</div>
+                
+                <div class="appointment-detail">
+                  <span>🕒</span>
+                  <strong>Date:</strong>
+                </div>
+                <div style="font-size: 0.8rem; text-align: center;">
+                  {{appointment.appoinmentdate | date:'MMM d, y, h:mm a'}}
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="appointments.length > 5" class="more-appointments">
+              <strong>+ {{appointments.length - 5}} more appointments</strong>
+              <div style="margin-top: 5px; font-size: 0.9rem; opacity: 0.9;">
+                Total appointments today: {{appointments.length}}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -57,14 +98,54 @@ interface DashboardStats {
             <p>Today vs Monthly overview</p>
           </div>
         </div>
-        <div id="stats-loading" class="loading-card">
+        <div *ngIf="statsLoading" class="loading-card">
           <div class="loading-spinner"></div>
           <p>Loading dashboard statistics...</p>
         </div>
-        <div id="stats-content" class="stats-content" style="display: none;">
-          <div id="stats-cards" class="stats-cards">
-            <!-- Statistics will be populated here -->
+        <div class="stats-content" *ngIf="!statsLoading && dashboardStats.length > 0">
+          <div class="stats-cards">
+            <div class="stat-card" *ngFor="let stat of dashboardStats">
+              <div class="stat-card-header" [style.background]="stat.colorConfig?.bg">
+                <div class="stat-label">{{stat.status_label}}</div>
+              </div>
+              <div class="stat-card-body">
+                <div class="stat-table">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th class="today-header">Today</th>
+                        <th class="month-header">Month</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="count-row">
+                        <td class="today-cell">
+                          <span class="count-value" [style.color]="stat.colorConfig?.primary">{{stat.todaytotal}}</span>
+                          <div class="mini-progress">
+                            <div class="mini-progress-bar" 
+                                 [style.width.%]="stat.percentage" 
+                                 [style.background]="stat.colorConfig?.primary"></div>
+                          </div>
+                        </td>
+                        <td class="month-cell">
+                          <span class="count-value" [style.color]="stat.colorConfig?.primary">{{stat.monthtotal}}</span>
+                          <div class="percentage-text" [style.color]="stat.colorConfig?.primary">{{stat.percentage}}% target</div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="stat-trend">
+                  <span>{{stat.trendIcon}}</span>
+                  <span>{{stat.trendText}}</span>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div *ngIf="!statsLoading && dashboardStats.length === 0" class="stat-card" style="text-align: center; color: #6c757d; padding: 20px;">
+          <p>No dashboard statistics available</p>
         </div>
       </div>
     </div>
@@ -187,6 +268,7 @@ interface DashboardStats {
     .appointment-card {
       background: linear-gradient(135deg, #f8f9fa, #ffffff);
       border: 1px solid #e0e0e0;
+      border-left: 4px solid var(--primary-color, #007bff);
       border-radius: 12px;
       padding: 15px;
       transition: all 0.3s ease;
@@ -560,12 +642,12 @@ interface DashboardStats {
   `]
 })
 export class DashboardHomeComponent implements OnInit {
-  //private baseUrl = 'http://localhost:3000';
   private baseUrl = environment.apiUrl;
-  
+
   appointments: TodayAppointment[] = [];
   dashboardStats: DashboardStats[] = [];
-  loading = true;
+  appointmentsLoading = true;
+  statsLoading = true;
   empId: string = '';
   isAdminUser = false;
 
@@ -573,468 +655,146 @@ export class DashboardHomeComponent implements OnInit {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.empId = localStorage.getItem('usernameID') || '';
     this.isAdminUser = localStorage.getItem('isadminrights') === 'true';
-    
-    this.loadDashboardData();
+
+    // Load independently
+    this.loadTodayAppointments();
+    this.loadDashboardStats();
   }
 
-  private loadDashboardData() {
-    // Load appointments and stats in parallel
-    Promise.all([
-      this.loadTodayAppointments(),
-      this.loadDashboardStats()
-    ]).then(() => {
-      this.loading = false;
-      this.updateDashboardDisplay();
-    }).catch(error => {
-      console.error('Error loading dashboard data:', error);
-      this.loading = false;
-      this.showErrorState();
-    });
-  }
+  private loadTodayAppointments() {
+    if (!this.empId) {
+      this.appointmentsLoading = false;
+      return;
+    }
 
-  private loadTodayAppointments(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.empId) {
-        console.error('Employee ID not found in localStorage');
-        resolve();
-        return;
-      }
+    this.http.get<any>(`${this.baseUrl}/gettodayappoinment/${this.empId}`).subscribe({
+      next: (response) => {
+        console.log('Appointments API response:', response);
 
-      this.http.get<any>(`${this.baseUrl}/gettodayappoinment/${this.empId}`).subscribe({
-        next: (response) => {
-          console.log('Appointments API response:', response);
-          
-          // Handle different response formats
-          if (response && Array.isArray(response)) {
-            this.appointments = response;
-          } else if (response && response.data && Array.isArray(response.data)) {
-            this.appointments = response.data;
-          } else if (response && response.result && Array.isArray(response.result)) {
-            this.appointments = response.result;
-          } else {
-            this.appointments = [];
-          }
-          
-          resolve();
-        },
-        error: (error) => {
-          console.error('Error loading appointments:', error);
+        if (response && Array.isArray(response)) {
+          this.appointments = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          this.appointments = response.data;
+        } else if (response && response.result && Array.isArray(response.result)) {
+          this.appointments = response.result;
+        } else {
           this.appointments = [];
-          resolve(); // Don't reject, continue with empty data
         }
-      });
+
+        this.appointmentsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading appointments:', error);
+        this.appointments = [];
+        this.appointmentsLoading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  private loadDashboardStats(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const apiUrl = this.isAdminUser 
-        ? `${this.baseUrl}/getdashboardadmin`
-        : `${this.baseUrl}/getdashboarduser/${this.empId}`;
+  private loadDashboardStats() {
+    const apiUrl = this.isAdminUser
+      ? `${this.baseUrl}/getdashboardadmin`
+      : `${this.baseUrl}/getdashboarduser/${this.empId}`;
 
-      this.http.get<any>(apiUrl).subscribe({
-        next: (response) => {
-          console.log('Dashboard stats API response:', response);
-          
-          // Handle different response formats
-          if (response && Array.isArray(response)) {
-            this.dashboardStats = response;
-          } else if (response && response.data && Array.isArray(response.data)) {
-            this.dashboardStats = response.data;
-          } else if (response && response.result && Array.isArray(response.result)) {
-            this.dashboardStats = response.result;
-          } else {
-            this.dashboardStats = [];
+    this.http.get<any>(apiUrl).subscribe({
+      next: (response) => {
+        console.log('Dashboard stats API response:', response);
+
+        let statsData: any[] = [];
+        if (response && Array.isArray(response)) {
+          statsData = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          statsData = response.data;
+        } else if (response && response.result && Array.isArray(response.result)) {
+          statsData = response.result;
+        }
+
+        const requiredStats = [
+          'Total Assigned',
+          'Total Calls',
+          'Lead',
+          'No Response',
+          'Reject Calls'
+        ];
+
+        const statusColors: any = {
+          'Total Calls': { primary: '#007bff', secondary: '#0056b3', bg: 'linear-gradient(135deg, #007bff, #0056b3)' }, // Blue
+          'Total Assigned': { primary: '#28a745', secondary: '#1e7e34', bg: 'linear-gradient(135deg, #28a745, #1e7e34)' }, // Green
+          'Lead': { primary: '#17a2b8', secondary: '#117a8b', bg: 'linear-gradient(135deg, #17a2b8, #117a8b)' }, // Teal
+          'No Response': { primary: '#ffc107', secondary: '#e0a800', bg: 'linear-gradient(135deg, #ffc107, #e0a800)' }, // Yellow
+          'Reject Calls': { primary: '#dc3545', secondary: '#c82333', bg: 'linear-gradient(135deg, #dc3545, #c82333)' } // Red
+        };
+
+        // Create a map for easy lookup of API data, normalizing keys to uppercase for loose matching if needed
+        const statsMap = new Map();
+        statsData.forEach(stat => {
+          if (stat.status_label) {
+            // Store original referencing the label
+            statsMap.set(stat.status_label.trim(), stat);
+            // Also store lower case for case-insensitive lookup
+            statsMap.set(stat.status_label.trim().toLowerCase(), stat);
           }
-          
-          resolve();
-        },
-        error: (error) => {
-          console.error('Error loading dashboard stats:', error);
-          this.dashboardStats = [];
-          resolve(); // Don't reject, continue with empty data
-        }
-      });
-    });
-  }
-
-  private updateDashboardDisplay() {
-    // Use multiple change detection attempts followed by direct DOM manipulation
-    setTimeout(() => {
-      this.cdr.detectChanges();
-      
-      setTimeout(() => {
-        this.ngZone.run(() => {
-          this.cdr.detectChanges();
-          
-          setTimeout(() => {
-            this.updateAppointmentsDOM();
-            this.updateStatsDOM();
-          }, 50);
         });
-      }, 20);
-    }, 10);
-  }
 
-  private updateAppointmentsDOM() {
-    const loadingElement = document.getElementById('appointments-loading');
-    const contentElement = document.getElementById('appointments-content');
-    const listElement = document.getElementById('appointments-list');
-
-    if (loadingElement) {
-      loadingElement.style.display = 'none';
-    }
-
-    if (contentElement) {
-      contentElement.style.display = 'block';
-    }
-
-    if (listElement) {
-      if (this.appointments.length === 0) {
-        listElement.innerHTML = `
-          <div class="appointment-card" style="text-align: center; color: #6c757d;">
-            <p>No appointments scheduled for today</p>
-          </div>
-        `;
-        return;
-      }
-
-      // Display up to 5 appointments
-      const displayAppointments = this.appointments.slice(0, 5);
-      let appointmentsHTML = '';
-
-      displayAppointments.forEach(appointment => {
-        appointmentsHTML += `
-          <div style="
-            background: #f8f9fa;
-            border-left: 4px solid #007bff;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            position: relative;
-            min-width: 200px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e0e0e0;
-          ">
-            <div style="margin-bottom: 12px;">
-              <div style="
-                font-size: 1.1rem;
-                font-weight: 700;
-                color: #007bff;
-                margin-bottom: 8px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-                padding: 8px 12px;
-                border-radius: 6px;
-                border: 1px solid #2196f3;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-              " title="${appointment.firstname || 'N/A'}">${appointment.firstname || 'N/A'}</div>
-              <div style="
-                background: #007bff;
-                color: white;
-                padding: 4px 10px;
-                border-radius: 15px;
-                font-size: 0.8rem;
-                font-weight: 500;
-                display: inline-block;
-              ">Track: ${appointment.tracknumber || 'N/A'}</div>
-            </div>
-            <div style="
-              display: flex;
-              flex-direction: column;
-              gap: 8px;
-              margin-top: 12px;
-            ">
-              <div style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-                color: #6c757d;
-                font-size: 0.85rem;
-              ">
-                <span>📱</span>
-                <span><strong>Mobile:</strong></span>
-              </div>
-              <div style="font-size: 0.8rem; color: #6c757d; margin-bottom: 8px;">${appointment.mobilenumber || 'N/A'}</div>
-              <div style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-                color: #6c757d;
-                font-size: 0.85rem;
-              ">
-                <span>🕒</span>
-                <span><strong>Date:</strong></span>
-              </div>
-              <div style="font-size: 0.8rem; color: #6c757d; text-align: center;">${this.formatDate(appointment.appoinmentdate)}</div>
-            </div>
-          </div>
-        `;
-      });
-
-      // Add "more appointments" indicator if there are more than 5
-      if (this.appointments.length > 5) {
-        appointmentsHTML += `
-          <div class="more-appointments">
-            <strong>+ ${this.appointments.length - 5} more appointments</strong>
-            <div style="margin-top: 5px; font-size: 0.9rem; opacity: 0.9;">
-              Total appointments today: ${this.appointments.length}
-            </div>
-          </div>
-        `;
-      }
-
-      listElement.innerHTML = appointmentsHTML;
-    }
-  }
-
-  private updateStatsDOM() {
-    const loadingElement = document.getElementById('stats-loading');
-    const contentElement = document.getElementById('stats-content');
-    const cardsElement = document.getElementById('stats-cards');
-
-    if (loadingElement) {
-      loadingElement.style.display = 'none';
-    }
-
-    if (contentElement) {
-      contentElement.style.display = 'block';
-    }
-
-    if (cardsElement) {
-      if (this.dashboardStats.length === 0) {
-        cardsElement.innerHTML = `
-          <div class="stat-card" style="text-align: center; color: #6c757d;">
-            <p>No dashboard statistics available</p>
-          </div>
-        `;
-        return;
-      }
-
-      let statsHTML = '';
-      const statusColors = {
-        'Total Calls': { primary: '#007bff', secondary: '#0056b3', bg: 'linear-gradient(135deg, #007bff, #0056b3)' },
-        'Total Assigned': { primary: '#28a745', secondary: '#1e7e34', bg: 'linear-gradient(135deg, #28a745, #1e7e34)' },
-        'Lead': { primary: '#17a2b8', secondary: '#117a8b', bg: 'linear-gradient(135deg, #17a2b8, #117a8b)' },
-        'No response': { primary: '#ffc107', secondary: '#e0a800', bg: 'linear-gradient(135deg, #ffc107, #e0a800)' },
-        'Reject Calls': { primary: '#dc3545', secondary: '#c82333', bg: 'linear-gradient(135deg, #dc3545, #c82333)' }
-      };
-
-      this.dashboardStats.forEach(stat => {
-        if (stat.status_label && stat.status_label !== 'NULL') {
-          const colorConfig = statusColors[stat.status_label as keyof typeof statusColors] || 
-            { primary: '#6c757d', secondary: '#545b62', bg: 'linear-gradient(135deg, #6c757d, #545b62)' };
+        this.dashboardStats = requiredStats.map(label => {
+          // Try exact match then case-insensitive match
+          const statData = statsMap.get(label) || statsMap.get(label.toLowerCase()) || {};
           
-          const todayNum = parseInt(stat.todaytotal) || 0;
-          const monthNum = parseInt(stat.monthtotal) || 0;
+          const todayTotalStr = statData.todaytotal || '0';
+          const monthTotalStr = statData.monthtotal || '0';
+          
+          const todayNum = parseInt(todayTotalStr) || 0;
+          const monthNum = parseInt(monthTotalStr) || 0;
           const percentage = monthNum > 0 ? Math.round((todayNum / monthNum) * 100) : 0;
-          
-          // Determine trend
+
           const trendIcon = todayNum > (monthNum / 30) ? '📈' : todayNum < (monthNum / 30) ? '📉' : '➡️';
           const trendText = todayNum > (monthNum / 30) ? 'Above Average' : todayNum < (monthNum / 30) ? 'Below Average' : 'On Track';
 
-          statsHTML += `
-            <div style="
-              background: white;
-              border-radius: 20px;
-              padding: 0;
-              transition: all 0.4s ease;
-              position: relative;
-              overflow: hidden;
-              box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-              border: 1px solid rgba(0, 0, 0, 0.05);
-              margin-bottom: 25px;
-            ">
-              <div style="
-                background: ${colorConfig.bg};
-                color: white;
-                padding: 20px 25px;
-                text-align: center;
-                position: relative;
-              ">
-                <div style="
-                  font-size: 1.3rem;
-                  font-weight: 800;
-                  margin: 0;
-                  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-                  position: relative;
-                  z-index: 1;
-                  color: white;
-                  text-transform: uppercase;
-                  letter-spacing: 1px;
-                ">${stat.status_label}</div>
-              </div>
-              <div style="padding: 25px 20px;">
-                <div style="margin-bottom: 20px;">
-                  <table style="
-                    width: 100%;
-                    border-collapse: collapse;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                  ">
-                    <thead style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
-                      <tr>
-                        <th style="
-                          padding: 15px;
-                          text-align: center;
-                          font-weight: 700;
-                          color: #28a745;
-                          font-size: 1rem;
-                          text-transform: uppercase;
-                          letter-spacing: 0.8px;
-                          border-bottom: 2px solid #dee2e6;
-                          background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(32, 201, 151, 0.2));
-                        ">Today</th>
-                        <th style="
-                          padding: 15px;
-                          text-align: center;
-                          font-weight: 700;
-                          color: #007bff;
-                          font-size: 1rem;
-                          text-transform: uppercase;
-                          letter-spacing: 0.8px;
-                          border-bottom: 2px solid #dee2e6;
-                          background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(111, 66, 193, 0.2));
-                        ">Month</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr style="background: linear-gradient(135deg, rgba(248, 249, 250, 0.8), rgba(233, 236, 239, 0.8));">
-                        <td style="
-                          padding: 20px 15px;
-                          border-bottom: 1px solid #f1f3f4;
-                          vertical-align: middle;
-                          text-align: center;
-                          background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1));
-                          border-right: 1px solid #dee2e6;
-                        ">
-                          <span style="
-                            font-size: 1.8rem;
-                            font-weight: 700;
-                            color: ${colorConfig.primary};
-                            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                          ">${todayNum}</span>
-                          <div style="
-                            width: 60px;
-                            height: 8px;
-                            background: #f1f3f4;
-                            border-radius: 4px;
-                            overflow: hidden;
-                            position: relative;
-                            margin: 10px auto;
-                          ">
-                            <div style="
-                              height: 100%;
-                              border-radius: 4px;
-                              transition: width 0.8s ease;
-                              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-                              width: ${percentage}%;
-                              background: ${colorConfig.primary};
-                            "></div>
-                          </div>
-                        </td>
-                        <td style="
-                          padding: 20px 15px;
-                          border-bottom: 1px solid #f1f3f4;
-                          vertical-align: middle;
-                          text-align: center;
-                          background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(111, 66, 193, 0.1));
-                        ">
-                          <span style="
-                            font-size: 1.8rem;
-                            font-weight: 700;
-                            color: ${colorConfig.primary};
-                            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                          ">${monthNum}</span>
-                          <div style="
-                            font-weight: 600;
-                            color: ${colorConfig.primary};
-                            font-size: 1rem;
-                            margin-top: 5px;
-                          ">${percentage}% target</div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div style="
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  gap: 5px;
-                  font-size: 0.9rem;
-                  color: #6c757d;
-                  margin-top: 10px;
-                ">
-                  <span>${trendIcon}</span>
-                  <span>${trendText}</span>
-                </div>
-              </div>
-            </div>
-          `;
-        }
-      });
+          const colorConfig = statusColors[label] || 
+            { primary: '#6c757d', secondary: '#545b62', bg: 'linear-gradient(135deg, #6c757d, #545b62)' };
 
-      cardsElement.innerHTML = statsHTML;
-    }
+          return {
+            status_label: label.toUpperCase(), // Display label
+            todaytotal: todayTotalStr,
+            monthtotal: monthTotalStr,
+            percentage,
+            trendIcon,
+            trendText,
+            colorConfig
+          };
+        });
+
+        this.statsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading dashboard stats:', error);
+        // Even on error, show empty cards? Or show error state? 
+        // Showing empty required cards might be better UI than nothing.
+        // For now, let's keep the existing error behavior of empty array, or we can populate zeros.
+        // Let's populate zeros on error to keep UI stable.
+        const requiredStats = ['Total Assigned', 'Total Calls', 'Lead', 'No Response', 'Reject Calls'];
+        // ... (Status colors logic duplication or reusable) ...
+        // Simplest to just leave empty array on full error, or empty cards.
+        this.dashboardStats = [];
+        this.statsLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
-  private formatDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      return dateString;
-    }
-  }
-
-  private getDarkerColor(color: string): string {
-    // Convert hex color to darker shade
-    const colorMap: { [key: string]: string } = {
-      '#007bff': '#0056b3',
-      '#28a745': '#1e7e34',
-      '#17a2b8': '#117a8b',
-      '#ffc107': '#e0a800',
-      '#dc3545': '#c82333',
-      '#6c757d': '#545b62'
-    };
-    
-    return colorMap[color] || color;
-  }
-
-  private showErrorState() {
-    const appointmentsLoading = document.getElementById('appointments-loading');
-    const statsLoading = document.getElementById('stats-loading');
-
-    if (appointmentsLoading) {
-      appointmentsLoading.innerHTML = 'Error loading appointments';
-      appointmentsLoading.style.background = '#f8d7da';
-      appointmentsLoading.style.color = '#721c24';
-    }
-
-    if (statsLoading) {
-      statsLoading.innerHTML = 'Error loading dashboard statistics';
-      statsLoading.style.background = '#f8d7da';
-      statsLoading.style.color = '#721c24';
-    }
-  }
+  // Helper method used in template for appointments - optional if template uses pipe
+  // But our template for appointments uses pipe date:'MMM d...' so this might not be needed
+  // leaving it just in case or we can remove it. The template uses `| date`.
+  // Wait, the new template uses `| date`. Do we need a manual helper?
+  // Only if date string format is weird. But Angular date pipe is robust.
+  // I will leave it out or keep as private helper if needed. 
+  // Actually, I'll remove it to keep it clean, relying on Angular pipe.
 }

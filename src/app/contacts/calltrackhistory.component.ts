@@ -84,8 +84,8 @@ export class CallTrackHistoryComponent implements OnInit, OnDestroy {
     // Split track number to get only the track number part (before ***)
     const actualTrackNumber = trackNumber.includes('***') ? trackNumber.split('***')[0] : trackNumber;
 
-    // console.log('API URL:', `${environment.apiUrl}/callhistorytracklist/${actualTrackNumber}`);
-    // console.log('Current loading state:', this.loading);
+    console.log('API URL:', `${environment.apiUrl}/callhistorytracklist/${actualTrackNumber}`);
+    console.log('Current loading state:', this.loading);
 
     this.loading = true;
     this.data = []; // Clear existing data
@@ -103,13 +103,13 @@ export class CallTrackHistoryComponent implements OnInit, OnDestroy {
           this.data = res || [];
           this.loading = false;
 
-          // console.log('Data assigned:', this.data);
-          // console.log('Data length:', this.data.length);
-          // console.log('Loading state set to false');
+          console.log('Data assigned:', this.data);
+          console.log('Data length:', this.data.length);
+          console.log('Loading state set to false');
 
           // Force change detection
           this.cdr.detectChanges();
-          // console.log('Change detection triggered');
+          console.log('Change detection triggered');
 
           // Add a small delay and check again
           setTimeout(() => {
