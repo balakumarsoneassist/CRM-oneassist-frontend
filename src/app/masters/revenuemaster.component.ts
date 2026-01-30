@@ -66,8 +66,9 @@ export class RevenuemasterComponent implements OnInit {
             volume: [data?.volume || 0, Validators.required],
             sourcing: [data?.sourcing || '', Validators.required],
             payoutPercent: [data?.payoutPercent || 0],
-            revenue: [data?.revenue || 0]
+            revenue: [data?.revenue || 0],
         });
+
     }
 
     addRow(data?: any) {
@@ -186,13 +187,26 @@ export class RevenuemasterComponent implements OnInit {
             );
 
             if (saved) {
-                item.selfPercent = Number(saved.selfPercent);
-                item.connectorPercent = Number(saved.connectorPercent);
+                const self = Number(saved.selfPercent);
+                const connector = Number(saved.connectorPercent);
+
+                // ✅ Update first table
+                item.selfPercent = self;
+                item.connectorPercent = connector;
                 item.isModified = false;
+
+                // ✅ IMPORTANT: sync second-table config
+                const cfg = this.productConfig.find(p => p.product === item.product);
+                if (cfg) {
+                    cfg.self = self;
+                    cfg.connector = connector;
+                }
             }
         });
+
         this.cdr.detectChanges();
     }
+
 
 
 
