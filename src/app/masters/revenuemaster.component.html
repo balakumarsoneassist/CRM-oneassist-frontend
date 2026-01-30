@@ -1,0 +1,216 @@
+<div class="revenuemaster">
+    <h2>Revenue Master</h2>
+    <div class="button-container">
+        <button class="assign-btn" (click)="openAssignTargetModal()">
+            👤 Assign Target
+        </button>
+    </div>
+
+    <table class="revenue-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Self / Website (%)</th>
+                <th>Connector / QR (%)</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr *ngFor="let item of productList; let i = index">
+                <td>{{ item.product }}</td>
+
+                <td>
+                    <input type="text" [value]="item.selfPercent" (input)="onSelfChange($event, i)" />
+                </td>
+
+                <td>
+                    <input type="text" [value]="item.connectorPercent" (input)="onConnectorChange($event, i)" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align:right;font-weight:bold;">
+                    <div class="button-container">
+                        <button class="save-btn" (click)="saveProductPercentages()" [disabled]="!hasChanges">
+                            💾 Save
+                        </button>
+                    </div>
+                </td>
+
+
+            </tr>
+
+
+        </tbody>
+    </table>
+    <div class="saved-targets mt-4" *ngIf="savedTargets.length > 0">
+        <h3>Saved Targets</h3>
+        <table class="revenue-table">
+            <thead>
+                <tr>
+                    <th>Employee Name</th>
+                    <th>Total Revenue Target</th>
+                    <th>View</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let target of savedTargets">
+                    <td>{{ target.employee_name }}</td>
+                    <td>{{ target.total_revenue}}</td>
+                    <td>
+                        <div style="display:flex;justify-content:center;align-items:center;">
+                            <button class="edit-btn" (click)="editTarget(target)">
+                                👁️
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display:flex;justify-content:center;align-items:center;">
+                            <button class="edit-btn" (click)="deleteEmployeeTarget(target)">
+                                🗑️
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isAssignModalOpen">
+    <div class="modal-content">
+        <h3>Assign Revenue Targets</h3>
+
+        <!-- Search -->
+        <input type="text" class="search-input" placeholder="Search employee name" (input)="onEmployeeSearch($event)" />
+
+        <!-- Employee List -->
+
+        <div class="employee-list">
+            <div class="employee-row" *ngFor="let emp of filteredEmployees | slice:0:10"
+                (click)="!emp.disabled && selectEmployee(emp)" [class.disabled]="emp.disabled">
+                {{ emp.name }}
+                <span *ngIf="emp.disabled" style="color:red;font-size:12px;">(Already has target)</span>
+            </div>
+
+
+            <div *ngIf="filteredEmployees.length === 0" class="no-data">
+                No employees found
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="cancel-btn" (click)="closeAssignModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Revenue Target Modal -->
+<div class="modal-overlay" *ngIf="isRevenueModalOpen">
+    <div class="modal-content large-modal">
+
+        <!-- Close -->
+        <div style="text-align:right">
+            <button type="button" (click)="closeRevenueModal()">✖</button>
+        </div>
+
+        <h3>
+            Revenue Target – {{ selectedEmployee?.name }}
+        </h3>
+
+        <!-- ✅ FORM WRAPPER (MANDATORY) -->
+        <form [formGroup]="revenueForm">
+
+            <table class="revenue-table">
+                <thead>
+                    <tr>
+                        <th>Business</th>
+                        <th>Volume</th>
+                        <th>Sourcing</th>
+                        <th>Payout %</th>
+                        <th>Revenue</th>
+                        <th *ngIf="!isViewMode">Action</th>
+                    </tr>
+                </thead>
+
+                <!-- ✅ FORM ARRAY -->
+                <tbody formArrayName="rows">
+
+                    <tr *ngFor="let row of rows.controls; let i=index" [formGroupName]="i">
+
+                        <!-- Business -->
+                        <td>
+                            <select formControlName="business" (change)="recalcRow(i)">
+                                <option value="">Select</option>
+                                <option *ngFor="let p of productConfig" [value]="p.product">
+                                    {{ p.product }}
+                                </option>
+                            </select>
+                        </td>
+
+                        <!-- Volume -->
+                        <td>
+                            <input type="text" formControlName="volume" (input)="recalcRow(i)" />
+                        </td>
+
+                        <!-- Sourcing -->
+                        <td>
+                            <select formControlName="sourcing" (change)="recalcRow(i)">
+                                <option value="">Select</option>
+                                <option value="SELF">SELF</option>
+                                <option value="CONNECTOR">CONNECTOR</option>
+                                <option value="QR">QR</option>
+                            </select>
+                        </td>
+
+                        <!-- Payout -->
+                        <td>
+                            {{ row.value.payoutPercent }}%
+                        </td>
+
+                        <!-- Revenue -->
+                        <td>
+                            {{ row.value.revenue }}
+                        </td>
+
+                        <!-- Actions -->
+
+                        <td *ngIf="!isViewMode">
+
+                            <button type="button" (click)="addRow()">+</button>
+                            <button type="button" (click)="deleteRevenueRow(i)"
+                                [disabled]="rows.length === 1">-</button>
+
+                        </td>
+
+
+
+                    </tr>
+
+                    <!-- TOTAL -->
+                    <tr>
+                        <td colspan="4" style="text-align:right;font-weight:bold;">
+                            Total Revenue
+                        </td>
+                        <td style="font-weight:bold;">
+                            {{ totalRevenue }}
+                        </td>
+
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <!-- Footer -->
+            <div class="modal-actions" *ngIf="!isViewMode">
+                <button type="button" (click)="saveEmployeeTarget()">
+                    Save
+                </button>
+                <button type="button" (click)="closeRevenueModal()">
+                    Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

@@ -30,6 +30,8 @@ export class AchievementComponent implements OnInit, OnDestroy {
   designationFilter: string = '';
   sortBy: string = 'name';
   sortOrder: 'asc' | 'desc' = 'asc';
+  fromDate: string | undefined;
+  toDate: string | undefined;
 
   // Single User Metrics
   loginsCount: number = 0;
@@ -59,6 +61,7 @@ export class AchievementComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.checkUserRole();
+
 
     // Setup debounce for search
     this.searchSubscription = this.searchSubject.pipe(
@@ -105,10 +108,12 @@ export class AchievementComponent implements OnInit, OnDestroy {
       limit: this.itemsPerPage,
       search: this.searchQuery,
       sortBy: this.sortBy,
-      sortOrder: this.sortOrder
+      sortOrder: this.sortOrder,
+      fromDate: this.fromDate,
+      toDate: this.toDate
     };
 
-    this.service.getAllAchievementMetrics(params.page, params.limit, params.search, undefined, params.sortBy, params.sortOrder).subscribe({
+    this.service.getAllAchievementMetrics(params.page, params.limit, params.search, undefined, params.sortBy, params.sortOrder, params.fromDate, params.toDate).subscribe({
       next: (data: any) => {
         console.log('✅ Network Data Received (Achievement Page):', data);
         if (data.success) {
@@ -289,7 +294,7 @@ export class AchievementComponent implements OnInit, OnDestroy {
     // Service expects string.
     const finalId = targetId === 'self' ? (localStorage.getItem('usernameID') || '') : targetId;
 
-    this.service.getRevenueBreakdown(finalId).subscribe({
+    this.service.getRevenueBreakdown(finalId, this.fromDate, this.toDate).subscribe({
       next: (res: any) => {
         if (res.success) {
           this.revenueDetails = res.data;

@@ -41,6 +41,20 @@
 
     <!-- ADMIN VIEW: All User Achievements Table -->
     <div class="admin-view" *ngIf="!loading && isAdmin">
+        <div class="date-filter">
+            <div class="date-field">
+                <label for="fromDate">From Date</label>
+                <input id="fromDate" type="date" [(ngModel)]="fromDate"
+                    (change)="fetchAllMetrics(); openRevenueModal()" />
+            </div>
+
+            <div class="date-field">
+                <label for="toDate">To Date</label>
+                <input id="toDate" type="date" [(ngModel)]="toDate" [min]="fromDate"
+                    (change)="fetchAllMetrics(); openRevenueModal()" />
+            </div>
+        </div>
+
 
         <div class="table-wrapper">
             <div class="table-header">
