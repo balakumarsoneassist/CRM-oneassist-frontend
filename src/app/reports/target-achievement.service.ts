@@ -66,11 +66,26 @@ export class TargetAchievementService {
     return this.http.put(url, data, { headers });
   }
 
-  getRevenueBreakdown(empId: string): Observable<any> {
+  getRevenueBreakdown(
+    empId: string,
+    fromDate?: string,
+    toDate?: string
+  ): Observable<any> {
+
     const headers = this.getAuthHeaders();
+    let params = new HttpParams();
+
+    if (fromDate) {
+      params = params.set('fromDate', fromDate);
+    }
+
+    if (toDate) {
+      params = params.set('toDate', toDate);
+    }
+
     return this.http.get(
       `${this.apiUrl}/api/target-metrics/${empId}/revenue-breakdown`,
-      { headers }
+      { headers, params }
     );
   }
 
@@ -92,7 +107,9 @@ export class TargetAchievementService {
     search: string = '',
     designation: string = '',
     sortBy: string = '',
-    sortOrder: string = ''
+    sortOrder: string = '',
+    fromDate: string | undefined,
+    toDate: string | undefined
   ): Observable<any> {
     const headers = this.getAuthHeaders();
     let params = new HttpParams()
@@ -104,7 +121,14 @@ export class TargetAchievementService {
     if (designation) params = params.set('designation', designation);
     if (sortBy) params = params.set('sortBy', sortBy);
     if (sortOrder) params = params.set('sortOrder', sortOrder);
+    if (fromDate !== null && fromDate !== undefined) {
+      params = params.set('fromDate', fromDate);
+    }
 
+    if (toDate !== null && toDate !== undefined) {
+      params = params.set('toDate', toDate);
+    }
+    console.log(params);
     return this.http.get(`${this.apiUrl}/api/all-achievement-metrics`, {
       headers,
       params,

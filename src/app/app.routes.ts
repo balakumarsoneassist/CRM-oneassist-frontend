@@ -41,6 +41,9 @@ import { AchievementComponent } from './reports/achievement.component';
 import { TargetAchievementComponent } from './reports/target-achievement.component';
 import { ChecklistComponent } from './checklist/checklist.component';
 import { TrackCustomersComponent } from './customers/trackcustomers.component';
+import { AllassignedContactsComponent } from './contacts/allassigned-contacts.component';
+import { AllTrackedContactsComponent } from './contacts/alltracked-contacts.component';
+import { RevenuemasterComponent } from './masters/revenuemaster.component';
 
 
 export const routes: Routes = [
@@ -88,7 +91,10 @@ export const routes: Routes = [
       { path: 'customer-segregation', component: CustomerSegregationComponent },
       { path: 'achievement', component: AchievementComponent },
       { path: 'target-achievement', component: TargetAchievementComponent },
-      { path: 'checklist/:type', component: ChecklistComponent }
+      { path: 'checklist/:type', component: ChecklistComponent },
+      { path: 'allassignedcontacts', component: AllassignedContactsComponent },
+      { path: 'alltrackedcontacts', component: AllTrackedContactsComponent },
+      { path: 'revenuemaster', component: RevenuemasterComponent },
     ]
   },
   { path: '**', redirectTo: 'login' }
