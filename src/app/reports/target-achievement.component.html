@@ -60,10 +60,6 @@
               <input type="number" [(ngModel)]="editModel.converted_leads" />
             </div>
 
-            <div class="form-group">
-              <label>Disbursement Volume (₹)</label>
-              <input type="number" [(ngModel)]="editModel.disbursement_volume" />
-            </div>
 
             <div class="form-group">
               <label>Attended Calls (Target)</label>
@@ -72,7 +68,7 @@
 
             <div class="form-group">
               <label>Revenue Target (₹)</label>
-              <input type="number" [(ngModel)]="editModel.revenue_target" />
+              <input type="text" [(ngModel)]="editModel.revenue_target" disabled />
             </div>
           </div>
 
@@ -315,7 +311,8 @@
 
                 <span title="Call Target">📞 {{ emp.attended_calls_target || 0 }}</span>
                 <span title="Revenue">💸
-                  {{ emp.revenue_target || 0 | currency : "INR" : "symbol" : "1.0-0" }}</span>
+                  {{emp.revenue_target | currency : "INR" : "symbol" : "1.0-0"}}</span>
+
               </div>
               <button class="icon-btn" (click)="editTargetForEmployee(emp.id)" title="Edit Target">
                 ✏️
