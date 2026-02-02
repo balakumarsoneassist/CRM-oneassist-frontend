@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-import-data',
@@ -19,10 +20,10 @@ export class ImportDataComponent {
   uploadProgress = 0;
   errors: any = {};
   successMessage = '';
-  
+
   // CSV requirements
-  requiredFields = ['firstname',  'mobilenumber', 'email', 'presentaddress'];
-  
+  requiredFields = ['firstname', 'mobilenumber', 'email', 'presentaddress'];
+
   // Fixed values for API
   fixedValues = {
     locationid: 5001,
@@ -36,7 +37,7 @@ export class ImportDataComponent {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   // Handle file selection
   onFileSelected(event: any): void {
@@ -65,7 +66,7 @@ export class ImportDataComponent {
         try {
           const csvText = e.target.result;
           const lines = csvText.split('\n').filter((line: string) => line.trim());
-          
+
           if (lines.length < 2) {
             reject('CSV file must contain at least a header row and one data row');
             return;
@@ -73,7 +74,7 @@ export class ImportDataComponent {
 
           // Parse header
           const headers = lines[0].split(',').map((h: string) => h.trim().toLowerCase());
-          
+
           // Validate required fields
           const missingFields = this.requiredFields.filter(field => !headers.includes(field));
           if (missingFields.length > 0) {
@@ -90,7 +91,7 @@ export class ImportDataComponent {
               headers.forEach((header: string, index: number) => {
                 row[header] = values[index];
               });
-              
+
               // Validate required fields are not empty
               const emptyFields = this.requiredFields.filter(field => !row[field] || row[field].trim() === '');
               if (emptyFields.length === 0) {
@@ -146,7 +147,7 @@ export class ImportDataComponent {
           console.error('Error saving row:', row, error);
           errorCount++;
         }
-        
+
         processedRows++;
         this.uploadProgress = Math.round((processedRows / totalRows) * 100);
         this.cdr.detectChanges();
@@ -155,13 +156,13 @@ export class ImportDataComponent {
       // Show results
       if (successCount > 0) {
         this.successMessage = `Successfully imported ${successCount} records`;
-        
+
         // Show alert message for successful import
         alert(`✅ Import Completed Successfully!\n\n${successCount} records have been imported.\n\nPlease select a new CSV file for the next import.`);
-        
+
         // Clear the selected file to disable import button
         this.selectedFile = null;
-        
+
         // Reset file input
         const fileInput = document.getElementById('csvFile') as HTMLInputElement;
         if (fileInput) {
@@ -170,17 +171,17 @@ export class ImportDataComponent {
       }
       if (errorCount > 0) {
         this.errors.general = `${errorCount} records failed to import`;
-        
+
         // Show alert for errors (if there were some successes too)
         if (successCount > 0) {
           alert(`⚠️ Import Completed with Some Errors\n\n${successCount} records imported successfully\n${errorCount} records failed\n\nPlease check the error messages and select a new file.`);
         } else {
           alert(`❌ Import Failed\n\nAll ${errorCount} records failed to import.\n\nPlease check your CSV file format and try again.`);
         }
-        
+
         // Clear the selected file to disable import button
         this.selectedFile = null;
-        
+
         // Reset file input
         const fileInput = document.getElementById('csvFile') as HTMLInputElement;
         if (fileInput) {
@@ -201,14 +202,12 @@ export class ImportDataComponent {
   // Save individual lead personal data
   private saveLeadPersonal(csvRow: any): Promise<any> {
     const leadData = {
-      // CSV data
       firstname: csvRow.firstname,
       lastname: csvRow.lastname,
       mobilenumber: csvRow.mobilenumber,
       email: csvRow.email,
       presentaddress: csvRow.presentaddress,
-      
-      // Fixed values
+
       locationid: this.fixedValues.locationid,
       status: this.fixedValues.status,
       organizationid: this.fixedValues.organizationid,
@@ -219,8 +218,11 @@ export class ImportDataComponent {
 
     console.log('Saving lead personal data:', leadData);
 
-    return this.http.post(`${environment.apiUrl}/leadpersonal`, leadData).toPromise();
+    return firstValueFrom(
+      this.http.post(`${environment.apiUrl}/leadpersonaldetails`, leadData)
+    );
   }
+
 
   // Force UI update using comprehensive change detection + DOM manipulation (fixes Angular change detection issues)
   private forceUIUpdate(): void {
@@ -228,12 +230,12 @@ export class ImportDataComponent {
     setTimeout(() => {
       this.loading = false;
       this.cdr.detectChanges();
-      
+
       setTimeout(() => {
         this.ngZone.run(() => {
           this.loading = false;
           this.cdr.detectChanges();
-          
+
           // Direct DOM manipulation to force button text update
           setTimeout(() => {
             this.updateButtonDirectly();
@@ -252,7 +254,7 @@ export class ImportDataComponent {
       if (spinner) {
         spinner.remove();
       }
-      
+
       // Update button text
       const buttonText = uploadButton.querySelector('span:not(.loading-spinner)');
       if (buttonText) {
@@ -261,10 +263,10 @@ export class ImportDataComponent {
         // If no span found, update entire button text
         uploadButton.innerHTML = '📤 Import Data';
       }
-      
+
       // Ensure button is enabled
       uploadButton.disabled = false;
-      
+
       console.log('Button state forcefully updated via DOM manipulation');
     }
   }
@@ -276,7 +278,7 @@ export class ImportDataComponent {
     this.errors = {};
     this.successMessage = '';
     this.uploadProgress = 0;
-    
+
     // Reset file input
     const fileInput = document.getElementById('csvFile') as HTMLInputElement;
     if (fileInput) {

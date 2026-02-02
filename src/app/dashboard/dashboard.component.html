@@ -209,26 +209,6 @@
         </div>
       </div>
 
-      <!-- Check List Module -->
-      <div class="menu-section">
-        <div class="section-header" (click)="toggleSection('checklist')">
-          <i class="icon reports-icon">📋</i>
-          <span>Credit Appraisal</span>
-          <i class="chevron" [class.expanded]="expandedSections.checklist">▶</i>
-        </div>
-        <div class="submenu" [class.expanded]="expandedSections.checklist">
-          <a routerLink="checklist/salaried" routerLinkActive="active" class="submenu-link"
-            aria-label="salaried checklist">
-            <i class="sub-icon">💼</i>
-            <span>Salaried</span>
-          </a>
-          <a routerLink="checklist/self-employed" routerLinkActive="active" class="submenu-link"
-            aria-label="self employed checklist">
-            <i class="sub-icon">🏙️</i>
-            <span>Self Employeed</span>
-          </a>
-        </div>
-      </div>
 
 
       <!-- Reports -->
@@ -291,6 +271,26 @@
           <a routerLink="import-data" routerLinkActive="active" class="submenu-link" aria-label="import data">
             <i class="sub-icon">📥</i>
             <span>Import Data</span>
+          </a>
+        </div>
+      </div>
+      <!-- Check List Module -->
+      <div class="menu-section">
+        <div class="section-header" (click)="toggleSection('checklist')">
+          <i class="icon reports-icon">📚</i>
+          <span>Knowledge Base</span>
+          <i class="chevron" [class.expanded]="expandedSections.checklist">▶</i>
+        </div>
+        <div class="submenu" [class.expanded]="expandedSections.checklist">
+          <a routerLink="checklist/salaried" routerLinkActive="active" class="submenu-link"
+            aria-label="salaried checklist">
+            <i class="sub-icon">💼</i>
+            <span>Salaried</span>
+          </a>
+          <a routerLink="checklist/self-employed" routerLinkActive="active" class="submenu-link"
+            aria-label="self employed checklist">
+            <i class="sub-icon">🏙️</i>
+            <span>Self Employeed</span>
           </a>
         </div>
       </div>

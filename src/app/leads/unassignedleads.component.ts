@@ -24,6 +24,7 @@ export class UnassignedLeadsComponent implements OnInit {
     { key: 'name', label: 'Name', visible: true },
     { key: 'mobilenumber', label: 'Mobile Number', visible: true },
     { key: 'location', label: 'Location', visible: true },
+    { key: 'contacttype', label: 'Contact Source', visible: true },
     { key: 'modifyon', label: 'Modify On', visible: true },
     { key: 'referencename', label: 'Reference Name', visible: true },
     { key: 'tracknumber', label: 'Track Number', visible: true }
@@ -32,7 +33,7 @@ export class UnassignedLeadsComponent implements OnInit {
   // Search properties
   searchName = '';
   searchMobileNumber = '';
-  
+
   // Separate arrays for all data and filtered data
   allLeads: Record<string, any>[] = [];
   filteredLeads: Record<string, any>[] = [];
@@ -42,7 +43,7 @@ export class UnassignedLeadsComponent implements OnInit {
     return this.filteredLeads;
   }
 
-  constructor(private http: HttpClient, private router: Router, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
+  constructor(private http: HttpClient, private router: Router, private cdr: ChangeDetectorRef, private ngZone: NgZone) { }
 
   ngOnInit(): void {
     this.loadContacts();
@@ -64,10 +65,10 @@ export class UnassignedLeadsComponent implements OnInit {
           });
           return normalized;
         });
-        
+
         // Initialize filtered leads with all leads
         this.filteredLeads = [...this.allLeads];
-        
+
         // Force change detection after data loads
         setTimeout(() => {
           this.cdr.detectChanges();
@@ -99,16 +100,16 @@ export class UnassignedLeadsComponent implements OnInit {
   assignToMe(contact: Record<string, any>): void {
     const username = localStorage.getItem('username') || '';
     const tracknumber = contact['tracknumber'] || '';
-  
+
     const payload = {
       // Use all values from contact record
       ...contact,
-      
+
       // Override specific values as requested
       status: 11,
       contactfollowedby: 0,
       leadfollowedby: Number(localStorage.getItem('usernameID') || 0),
-      
+
       // Update assignment info
       assignedto: username,
       remarks: `Lead Assigned to ${username}`,
@@ -146,12 +147,12 @@ export class UnassignedLeadsComponent implements OnInit {
   // Search functionality
   applySearch(): void {
     this.filteredLeads = this.allLeads.filter(lead => {
-      const nameMatch = !this.searchName || 
+      const nameMatch = !this.searchName ||
         (lead['name'] && lead['name'].toString().toLowerCase().includes(this.searchName.toLowerCase()));
-      
-      const mobileMatch = !this.searchMobileNumber || 
+
+      const mobileMatch = !this.searchMobileNumber ||
         (lead['mobilenumber'] && lead['mobilenumber'].toString().includes(this.searchMobileNumber));
-      
+
       return nameMatch && mobileMatch;
     });
   }

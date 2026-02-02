@@ -12,10 +12,10 @@
     <!-- View Switcher Tabs -->
     <div class="view-tabs">
         <button [class.active]="activeMode === 'checklist'" (click)="setActiveMode('checklist')">
-            <span class="tab-icon">📄</span> Documents Checklist
+            <span class="tab-icon">📑</span> Documents Checklist
         </button>
         <button [class.active]="activeMode === 'questionnaire'" (click)="setActiveMode('questionnaire')">
-            <span class="tab-icon">📋</span> Telecalling Questionnaire
+            <span class="tab-icon">📝</span> Questionnaire
         </button>
     </div>
 
@@ -50,8 +50,7 @@
         *ngIf="activeMode === 'questionnaire' && employmentType === 'salaried'">
         <div class="checklist-header">
             <div class="header-with-badge">
-                <h3>Telecalling - SALARIED Questionnaire</h3>
-                <span class="new-badge salaried-badge">Working Client Form</span>
+                <h3>Questionnaire</h3>
             </div>
         </div>
 
@@ -132,8 +131,7 @@
         *ngIf="activeMode === 'questionnaire' && employmentType === 'self-employed'">
         <div class="checklist-header">
             <div class="header-with-badge">
-                <h3>Telecalling - BL Questionnaire</h3>
-                <span class="new-badge">Detailed Form Content</span>
+                <h3>Questionnaire</h3>
             </div>
 
         </div>

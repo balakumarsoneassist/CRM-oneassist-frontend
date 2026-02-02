@@ -28,13 +28,14 @@ export class TrackContactsComponent implements OnInit {
   searchMobileNumber = '';
   allContacts: Record<string, any>[] = [];
   filteredContacts: Record<string, any>[] = [];
-  
+
   fields: FieldMeta[] = [
     { key: 'name', label: 'Name', visible: true },
     { key: 'emailid', label: 'Email', visible: true },
     { key: 'referencename', label: 'Reference Name', visible: true },
     { key: 'location', label: 'Location', visible: true },
     { key: 'mobilenumber', label: 'Mobile Number', visible: true },
+    { key: 'contacttype', label: 'Contact Source', visible: true },
     { key: 'status', label: 'Status', visible: true },
     { key: 'appointmentdate', label: 'Appointment Date', visible: true },
     { key: 'tracknumber', label: 'Track Number', visible: true }
@@ -44,7 +45,7 @@ export class TrackContactsComponent implements OnInit {
     return this.filteredContacts;
   }
 
-  constructor(private http: HttpClient, private router: Router, private trackNumberService: TrackNumberService, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
+  constructor(private http: HttpClient, private router: Router, private trackNumberService: TrackNumberService, private cdr: ChangeDetectorRef, private ngZone: NgZone) { }
 
   ngOnInit(): void {
     this.loadContacts();
@@ -68,10 +69,10 @@ export class TrackContactsComponent implements OnInit {
           });
           return normalized;
         });
-        
+
         // Initialize filtered contacts with all contacts
         this.applySearch();
-        
+
         // Apply direct DOM manipulation for reliable rendering after data loads
         setTimeout(() => {
           this.applyDirectDOMUpdate();
@@ -96,15 +97,15 @@ export class TrackContactsComponent implements OnInit {
   trackContact(contact: Record<string, any>): void {
     const trackNumber = contact['tracknumber'];
     this.selectedTrackNumber = trackNumber;
-    
+
     // Emit the track number via the observable service
     this.trackNumberService.setTrackNumber(trackNumber);
-    
+
     // Force change detection and popup display
     this.ngZone.run(() => {
       this.showTrackPopup = true;
       this.cdr.detectChanges();
-      
+
       // Additional timeout to ensure popup displays
       setTimeout(() => {
         this.cdr.detectChanges();
@@ -115,7 +116,7 @@ export class TrackContactsComponent implements OnInit {
   closeTrackPopup(): void {
     this.showTrackPopup = false;
     this.selectedTrackNumber = null;
-    
+
     // Clear the track number from the service when closing popup
     this.trackNumberService.clearTrackNumber();
   }
@@ -167,7 +168,7 @@ export class TrackContactsComponent implements OnInit {
   private refreshContacts(): void {
     // Reload contacts data from server
     this.loadContacts();
-    
+
     // Apply direct DOM manipulation for reliable rendering (following established pattern)
     setTimeout(() => {
       this.applyDirectDOMUpdate();
@@ -177,11 +178,11 @@ export class TrackContactsComponent implements OnInit {
   private applyDirectDOMUpdate(): void {
     // Multiple change detection attempts
     this.cdr.detectChanges();
-    
+
     this.ngZone.run(() => {
       setTimeout(() => {
         this.cdr.detectChanges();
-        
+
         setTimeout(() => {
           this.updateTableDirectly();
         }, 20);
@@ -202,13 +203,13 @@ export class TrackContactsComponent implements OnInit {
     // Generate new rows
     this.contacts.forEach((contact, index) => {
       const row = document.createElement('tr');
-      
+
       // Action column with track button
       const actionCell = document.createElement('td');
       const trackBtn = document.createElement('button');
       trackBtn.className = 'track-btn';
       trackBtn.textContent = 'Track';
-      
+
       // Apply inline styles to ensure visibility
       trackBtn.style.cssText = `
         background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
@@ -225,7 +226,7 @@ export class TrackContactsComponent implements OnInit {
         text-align: center;
         display: inline-block;
       `;
-      
+
       trackBtn.onclick = (event) => {
         event.preventDefault();
         event.stopPropagation();

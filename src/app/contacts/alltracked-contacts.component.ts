@@ -45,6 +45,7 @@ export class AllTrackedContactsComponent implements OnInit {
         { key: 'location', label: 'Location', visible: true },
         { key: 'mobilenumber', label: 'Mobile Number', visible: true },
         { key: 'status', label: 'Status', visible: true },
+        { key: 'contacttype', label: 'Contact Source', visible: true },
         { key: 'tracknumber', label: 'Track Number', visible: true },
         { key: 'followedbyname', label: 'Follower', visible: true },
     ];

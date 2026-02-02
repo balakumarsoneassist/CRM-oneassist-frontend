@@ -27,9 +27,10 @@ export class TrackLeadsComponent implements OnInit {
   fields: FieldMeta[] = [
     { key: 'name', label: 'Name', visible: true },
     { key: 'emailid', label: 'Email', visible: true },
-    { key: 'referencename', label: 'Reference Name', visible: true },
     { key: 'location', label: 'Location', visible: true },
     { key: 'mobilenumber', label: 'Mobile Number', visible: true },
+    { key: 'contacttype', label: 'Contact Source', visible: true },
+    { key: 'referencename', label: 'Reference Name', visible: true },
     { key: 'status', label: 'Status', visible: true },
     { key: 'appointmentdate', label: 'Appointment Date', visible: true },
     { key: 'tracknumber', label: 'Track Number', visible: true },
@@ -39,7 +40,7 @@ export class TrackLeadsComponent implements OnInit {
   // Search properties
   searchName = '';
   searchMobileNumber = '';
-  
+
   // Separate arrays for all data and filtered data
   allLeads: Record<string, any>[] = [];
   filteredLeads: Record<string, any>[] = [];
@@ -49,7 +50,7 @@ export class TrackLeadsComponent implements OnInit {
     return this.filteredLeads;
   }
 
-  constructor(private http: HttpClient, private router: Router, private trackNumberService: TrackNumberService) {}
+  constructor(private http: HttpClient, private router: Router, private trackNumberService: TrackNumberService) { }
 
   ngOnInit(): void {
     this.loadLeads();
@@ -73,7 +74,7 @@ export class TrackLeadsComponent implements OnInit {
           });
           return normalized;
         });
-        
+
         // Initialize filtered leads with all leads
         this.filteredLeads = [...this.allLeads];
       },
@@ -96,10 +97,10 @@ export class TrackLeadsComponent implements OnInit {
   trackLead(lead: Record<string, any>): void {
     const trackNumber = lead['tracknumber'];
     this.selectedTrackNumber = trackNumber;
-    
+
     // Emit the track number via the observable service
     this.trackNumberService.setTrackNumber(trackNumber);
-    
+
     this.showTrackPopup = true;
     /* If you prefer navigation instead:
        this.router.navigate(['dashboard','contactfollowtrack', lead['tracknumber']]);
@@ -112,10 +113,10 @@ export class TrackLeadsComponent implements OnInit {
   closeTrackPopup(): void {
     this.showTrackPopup = false;
     this.selectedTrackNumber = null;
-    
+
     // Clear the track number from the service when closing popup
     this.trackNumberService.clearTrackNumber();
-    
+
     // Refresh the report to get updated data
     this.loadLeads();
   }
@@ -136,12 +137,12 @@ export class TrackLeadsComponent implements OnInit {
   // Search functionality
   applySearch(): void {
     this.filteredLeads = this.allLeads.filter(lead => {
-      const nameMatch = !this.searchName || 
+      const nameMatch = !this.searchName ||
         (lead['name'] && lead['name'].toString().toLowerCase().includes(this.searchName.toLowerCase()));
-      
-      const mobileMatch = !this.searchMobileNumber || 
+
+      const mobileMatch = !this.searchMobileNumber ||
         (lead['mobilenumber'] && lead['mobilenumber'].toString().includes(this.searchMobileNumber));
-      
+
       return nameMatch && mobileMatch;
     });
   }

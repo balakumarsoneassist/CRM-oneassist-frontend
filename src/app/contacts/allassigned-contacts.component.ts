@@ -45,9 +45,11 @@ export class AllassignedContactsComponent implements OnInit {
         { key: 'emailid', label: 'Email', visible: true },
         { key: 'location', label: 'Location', visible: true },
         { key: 'mobilenumber', label: 'Mobile Number', visible: true },
+        { key: 'contacttype', label: 'Contact Source', visible: true },
         { key: 'status', label: 'Status', visible: true },
         { key: 'tracknumber', label: 'Track Number', visible: true },
         { key: 'followedbyname', label: 'Follower', visible: true },
+
     ];
 
     get contacts(): Record<string, any>[] {
