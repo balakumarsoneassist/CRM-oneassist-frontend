@@ -48,11 +48,11 @@ export class UnassignedContactsComponent implements OnInit {
     { key: 'firstname', label: 'First Name', visible: true },
     { key: 'lastname', label: 'Last Name', visible: true },
     { key: 'mobilenumber', label: 'Mobile Number', visible: true },
-    { key: 'location', label: 'Location', visible: true },
     { key: 'emailid', label: 'Email', visible: true },
-    { key: 'createddt', label: 'Created Date', visible: true },
+    { key: 'location', label: 'Location', visible: true },
     { key: 'contactsource', label: 'Contact Source', visible: true },
-    { key: 'referencename', label: 'Reference Name', visible: true }
+    { key: 'referencename', label: 'Reference Name', visible: true },
+    { key: 'createddt', label: 'Created Date', visible: true },
   ];
 
   get contacts(): Record<string, any>[] {

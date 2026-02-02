@@ -31,11 +31,11 @@ export class TrackContactsComponent implements OnInit {
 
   fields: FieldMeta[] = [
     { key: 'name', label: 'Name', visible: true },
-    { key: 'emailid', label: 'Email', visible: true },
-    { key: 'referencename', label: 'Reference Name', visible: true },
-    { key: 'location', label: 'Location', visible: true },
     { key: 'mobilenumber', label: 'Mobile Number', visible: true },
+    { key: 'emailid', label: 'Email', visible: true },
+    { key: 'location', label: 'Location', visible: true },
     { key: 'contacttype', label: 'Contact Source', visible: true },
+    { key: 'referencename', label: 'Reference Name', visible: true },
     { key: 'status', label: 'Status', visible: true },
     { key: 'appointmentdate', label: 'Appointment Date', visible: true },
     { key: 'tracknumber', label: 'Track Number', visible: true }

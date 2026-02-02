@@ -3,14 +3,20 @@
         <div class="header-content">
             <span class="header-icon">📋</span>
             <div class="header-text">
-                <h2>{{ employmentType === 'salaried' ? 'Salaried' : 'Self Employed' }} Checklist</h2>
+                <h2 *ngIf="employmentType === 'salaried'">Salaried Checklist</h2>
+
+                <h2 *ngIf="employmentType === 'self-employed'">Self Employed Checklist</h2>
+
+                <h2 *ngIf="employmentType === 'property-documents'">
+                    Property Document Checklist
+                </h2>
                 <p>Required documents for loan processing</p>
             </div>
         </div>
     </div>
 
     <!-- View Switcher Tabs -->
-    <div class="view-tabs">
+    <div class="view-tabs" *ngIf="employmentType !== 'property-documents'">
         <button [class.active]="activeMode === 'checklist'" (click)="setActiveMode('checklist')">
             <span class="tab-icon">📑</span> Documents Checklist
         </button>
@@ -33,15 +39,52 @@
 
         <div class="checklist-card">
             <div class="checklist-header">
-                <h3>{{ employmentType === 'salaried' ? 'Salaried Employee Checklist' : 'Business Checklist' }}</h3>
+                <h3 *ngIf="employmentType === 'salaried'"> Salaried Employee Checklist</h3>
+                <h3 *ngIf="employmentType === 'self-employed'">Business Checklist</h3>
+                <h3 *ngIf="employmentType === 'property-documents'">Property Document Checklist</h3>
+            </div>
+            <div class="category-tabs" *ngIf="subType=== 'partnership'">
+                <button [class.active]="classifyType === 'company'" (click)="setClassifyType('company')">
+                    Company
+                </button>
+
+                <button [class.active]="classifyType === 'partner'" (click)="setClassifyType('partner')">
+                    Partner
+                </button>
             </div>
 
-            <div class="checklist-items">
+            <div class="category-tabs" *ngIf="subType=== 'company'">
+                <button [class.active]="ltdType === 'company'" (click)="setLtdType('company')">
+                    Company
+                </button>
+
+                <button [class.active]="ltdType === 'partner'" (click)="setLtdType('partner')">
+                    Partner
+                </button>
+            </div>
+
+            <div class="checklist-items" *ngIf="subType=== 'partnership'">
+                <div *ngFor="let item of filteredChecklist" class="checklist-item fixed-item">
+                    <span class="bullet-icon">📄</span>
+                    <span class="label-text">{{ item.label }}</span>
+                </div>
+            </div>
+
+            <div class="checklist-items" *ngIf="subType=== 'company'">
+                <div *ngFor="let item of filteredltdChecklist" class="checklist-item fixed-item">
+                    <span class="bullet-icon">📄</span>
+                    <span class="label-text">{{ item.label }}</span>
+                </div>
+            </div>
+
+
+            <div class="checklist-items" *ngIf="subType!== 'partnership' && subType!== 'company'">
                 <div *ngFor="let item of currentChecklist" class="checklist-item fixed-item">
                     <span class="bullet-icon">📄</span>
                     <span class="label-text">{{ item.label }}</span>
                 </div>
             </div>
+
         </div>
     </div>
 

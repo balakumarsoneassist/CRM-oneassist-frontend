@@ -25,8 +25,8 @@ export class UnassignedLeadsComponent implements OnInit {
     { key: 'mobilenumber', label: 'Mobile Number', visible: true },
     { key: 'location', label: 'Location', visible: true },
     { key: 'contacttype', label: 'Contact Source', visible: true },
-    { key: 'modifyon', label: 'Modify On', visible: true },
     { key: 'referencename', label: 'Reference Name', visible: true },
+    { key: 'modifyon', label: 'Modify On', visible: true },
     { key: 'tracknumber', label: 'Track Number', visible: true }
   ];
 
