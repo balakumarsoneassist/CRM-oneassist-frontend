@@ -38,7 +38,7 @@ export class ContactComponent implements OnInit {
       firstname: ['', Validators.required],
       lastname: [''],
       mobilenumber: ['', Validators.pattern('^[0-9]{10,15}$')],
-      whatsappnumber: ['', Validators.pattern('^[0-9]{10,15}$')], // New field
+      // whatsappnumber: ['', Validators.pattern('^[0-9]{10,15}$')], // New field
       locationid: [null, Validators.required],
       email: ['', [Validators.email]],
       dateofbirth: [''],
@@ -83,17 +83,17 @@ export class ContactComponent implements OnInit {
     }
 
     // Auto-fill Whatsapp number from mobile if empty (optional convenience)
-    this.form.get('mobilenumber')?.valueChanges.subscribe(val => {
-      const waControl = this.form.get('whatsappnumber');
-      if (val && !waControl?.value && !waControl?.dirty) {
-        waControl?.setValue(val);
-      }
-    });
+    // this.form.get('mobilenumber')?.valueChanges.subscribe(val => {
+    //   const waControl = this.form.get('whatsappnumber');
+    //   if (val && !waControl?.value && !waControl?.dirty) {
+    //     waControl?.setValue(val);
+    //   }
+    // });
   }
 
-  ngOnDestroy(): void {
-    this.stopStatusPolling();
-  }
+  // ngOnDestroy(): void {
+  //   this.stopStatusPolling();
+  // }
 
   loadContactData(): void {
     if (!this.leadId) return;
@@ -112,11 +112,11 @@ export class ContactComponent implements OnInit {
 
         // Patch the form with existing data
         this.form.patchValue(data);
-        this.checkVerificationStatus(data);
+
         // Only refresh status if we have a whatsapp number
-        if (data.whatsappnumber) {
-          this.refreshStatus(true);
-        }
+        // if (data.whatsappnumber) {
+        //   this.refreshStatus(true);
+        // }
       },
       error: (err) => {
         console.error('Failed to load contact data', err);
@@ -189,133 +189,133 @@ export class ContactComponent implements OnInit {
     return localStorage.getItem('organizationid') || '';
   }
 
-  verifyWhatsApp(): void {
-    const waNumber = this.form.get('whatsappnumber')?.value;
-    if (!waNumber) {
-      alert('Please enter a WhatsApp number first');
-      return;
-    }
+  // verifyWhatsApp(): void {
+  //   const waNumber = this.form.get('whatsappnumber')?.value;
+  //   if (!waNumber) {
+  //     alert('Please enter a WhatsApp number first');
+  //     return;
+  //   }
 
-    // Guard: Prevent sending if already verifying or verification is sent
-    if (this.verifying) return;
-    if (this.verificationSent) {
-      this.refreshStatus();
-      return;
-    }
+  //   // Guard: Prevent sending if already verifying or verification is sent
+  //   if (this.verifying) return;
+  //   if (this.verificationSent) {
+  //     this.refreshStatus();
+  //     return;
+  //   }
 
-    this.verifying = true;
-    this.whatsappService.sendVerification(waNumber).subscribe({
-      next: (res) => {
-        this.verifying = false;
-        this.verificationSent = true;
+  //   this.verifying = true;
+  //   this.whatsappService.sendVerification(waNumber).subscribe({
+  //     next: (res) => {
+  //       this.verifying = false;
+  //       this.verificationSent = true;
 
-        this.startStatusPolling();
-      },
-      error: (err) => {
-        this.verifying = false;
-        console.error('WhatsApp Verification Error:', err);
-        alert('Failed to send verification. Please check backend logs.');
-      }
-    });
-  }
+  //       this.startStatusPolling();
+  //     },
+  //     error: (err) => {
+  //       this.verifying = false;
+  //       console.error('WhatsApp Verification Error:', err);
+  //       alert('Failed to send verification. Please check backend logs.');
+  //     }
+  //   });
+  // }
 
-  startStatusPolling(): void {
-    this.stopStatusPolling();
-    console.log('🚀 Starting Contact WhatsApp status polling...');
-    this.statusPollingInterval = setInterval(() => {
-      this.refreshStatus(true);
-    }, 5000);
-    setTimeout(() => this.refreshStatus(true), 3000);
-  }
+  // startStatusPolling(): void {
+  //   this.stopStatusPolling();
+  //   console.log('🚀 Starting Contact WhatsApp status polling...');
+  //   this.statusPollingInterval = setInterval(() => {
+  //     this.refreshStatus(true);
+  //   }, 5000);
+  //   setTimeout(() => this.refreshStatus(true), 3000);
+  // }
 
-  stopStatusPolling(): void {
-    if (this.statusPollingInterval) {
-      console.log('🛑 Stopping Contact WhatsApp status polling.');
-      clearInterval(this.statusPollingInterval);
-      this.statusPollingInterval = null;
-    }
-  }
+  // stopStatusPolling(): void {
+  //   if (this.statusPollingInterval) {
+  //     console.log('🛑 Stopping Contact WhatsApp status polling.');
+  //     clearInterval(this.statusPollingInterval);
+  //     this.statusPollingInterval = null;
+  //   }
+  // }
 
   noop(): void { }
 
-  checkVerificationStatus(data: any): void {
-    const remarks = data?.remarks || '';
-    const waStatus = data?.whatsapp_status || '';
+  // checkVerificationStatus(data: any): void {
+  //   const remarks = data?.remarks || '';
+  //   const waStatus = data?.whatsapp_status || '';
 
-    if (remarks.includes('[WhatsApp Verified]') || waStatus === 'Verified') {
-      this.isWhatsAppVerified = true;
-      this.isNotOnWhatsApp = false;
-      this.verificationSent = false;
-    } else if (remarks.includes('[Not on WhatsApp]') || waStatus === 'Not on WhatsApp') {
-      this.isWhatsAppVerified = false;
-      this.isNotOnWhatsApp = true;
-      this.verificationSent = false;
-    } else if (remarks.includes('[WhatsApp Requested]') || waStatus === 'Requested') {
-      this.isWhatsAppVerified = false;
-      this.isNotOnWhatsApp = false;
-      this.verificationSent = true;
-    } else {
-      // Default state for any other status or no status
-      this.isWhatsAppVerified = false;
-      this.isNotOnWhatsApp = false;
-      this.verificationSent = false;
-    }
-    // Logic to disable form is REMOVED intentionally
-    this.cdr.detectChanges();
-  }
+  //   if (remarks.includes('[WhatsApp Verified]') || waStatus === 'Verified') {
+  //     this.isWhatsAppVerified = true;
+  //     this.isNotOnWhatsApp = false;
+  //     this.verificationSent = false;
+  //   } else if (remarks.includes('[Not on WhatsApp]') || waStatus === 'Not on WhatsApp') {
+  //     this.isWhatsAppVerified = false;
+  //     this.isNotOnWhatsApp = true;
+  //     this.verificationSent = false;
+  //   } else if (remarks.includes('[WhatsApp Requested]') || waStatus === 'Requested') {
+  //     this.isWhatsAppVerified = false;
+  //     this.isNotOnWhatsApp = false;
+  //     this.verificationSent = true;
+  //   } else {
+  //     // Default state for any other status or no status
+  //     this.isWhatsAppVerified = false;
+  //     this.isNotOnWhatsApp = false;
+  //     this.verificationSent = false;
+  //   }
+  //   // Logic to disable form is REMOVED intentionally
+  //   this.cdr.detectChanges();
+  // }
 
   toggleFormState(): void {
     // Logic REMOVED - Saving is now allowed regardless of verification status
   }
 
-  refreshStatus(silent: boolean = false): void {
-    const waNumber = this.form.get('whatsappnumber')?.value;
-    if (!waNumber) return;
+  // refreshStatus(silent: boolean = false): void {
+  //   const waNumber = this.form.get('whatsappnumber')?.value;
+  //   if (!waNumber) return;
 
-    if (!silent) {
-      this.verifying = true;
-      this.cdr.detectChanges();
-    }
+  //   if (!silent) {
+  //     this.verifying = true;
+  //     this.cdr.detectChanges();
+  //   }
 
-    console.log(`🔄 Contact ${silent ? 'Auto' : 'Direct'} Refresh. Number:`, waNumber);
-    const checkUrl = `${environment.apiUrl}/api/whatsapp/status/${waNumber}`;
+  //   console.log(`🔄 Contact ${silent ? 'Auto' : 'Direct'} Refresh. Number:`, waNumber);
+  //   const checkUrl = `${environment.apiUrl}/api/whatsapp/status/${waNumber}`;
 
-    this.http.get<any>(checkUrl).subscribe({
-      next: (response) => {
-        if (!silent) this.verifying = false;
-        const statusData = response.data;
-        if (statusData) {
-          if (statusData.status === 'Verified') {
-            this.isWhatsAppVerified = true;
-            this.isNotOnWhatsApp = false;
-            this.verificationSent = false;
-            this.stopStatusPolling();
-          } else if (statusData.status === 'Not on WhatsApp') {
-            this.isWhatsAppVerified = false;
-            this.isNotOnWhatsApp = true;
-            this.verificationSent = false;
-            this.stopStatusPolling();
-          } else if (statusData.status === 'Requested' || statusData.status === 'Pending') {
-            this.isWhatsAppVerified = false;
-            this.isNotOnWhatsApp = false;
-            this.verificationSent = true;
-          } else {
-            this.verificationSent = false;
-            this.stopStatusPolling();
-          }
-        } else {
-          this.verificationSent = false;
-          this.stopStatusPolling();
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        if (!silent) {
-          this.verifying = false;
-          console.error('Failed to refresh status', err);
-          this.cdr.detectChanges();
-        }
-      }
-    });
-  }
+  //   this.http.get<any>(checkUrl).subscribe({
+  //     next: (response) => {
+  //       if (!silent) this.verifying = false;
+  //       const statusData = response.data;
+  //       if (statusData) {
+  //         if (statusData.status === 'Verified') {
+  //           this.isWhatsAppVerified = true;
+  //           this.isNotOnWhatsApp = false;
+  //           this.verificationSent = false;
+  //           this.stopStatusPolling();
+  //         } else if (statusData.status === 'Not on WhatsApp') {
+  //           this.isWhatsAppVerified = false;
+  //           this.isNotOnWhatsApp = true;
+  //           this.verificationSent = false;
+  //           this.stopStatusPolling();
+  //         } else if (statusData.status === 'Requested' || statusData.status === 'Pending') {
+  //           this.isWhatsAppVerified = false;
+  //           this.isNotOnWhatsApp = false;
+  //           this.verificationSent = true;
+  //         } else {
+  //           this.verificationSent = false;
+  //           this.stopStatusPolling();
+  //         }
+  //       } else {
+  //         this.verificationSent = false;
+  //         this.stopStatusPolling();
+  //       }
+  //       this.cdr.detectChanges();
+  //     },
+  //     error: (err) => {
+  //       if (!silent) {
+  //         this.verifying = false;
+  //         console.error('Failed to refresh status', err);
+  //         this.cdr.detectChanges();
+  //       }
+  //     }
+  //   });
+  // }
 }

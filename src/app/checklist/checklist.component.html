@@ -43,7 +43,7 @@
                 <h3 *ngIf="employmentType === 'self-employed'">Business Checklist</h3>
                 <h3 *ngIf="employmentType === 'property-documents'">Property Document Checklist</h3>
             </div>
-            <div class="category-tabs" *ngIf="subType=== 'partnership'">
+            <div class="category-tabs" *ngIf="subType=== 'partnership'&& employmentType === 'self-employed'">
                 <button [class.active]="classifyType === 'company'" (click)="setClassifyType('company')">
                     Company
                 </button>
@@ -53,7 +53,7 @@
                 </button>
             </div>
 
-            <div class="category-tabs" *ngIf="subType=== 'company'">
+            <div class="category-tabs" *ngIf="subType=== 'company'&& employmentType === 'self-employed'">
                 <button [class.active]="ltdType === 'company'" (click)="setLtdType('company')">
                     Company
                 </button>
@@ -63,14 +63,14 @@
                 </button>
             </div>
 
-            <div class="checklist-items" *ngIf="subType=== 'partnership'">
+            <div class="checklist-items" *ngIf="subType=== 'partnership' && employmentType === 'self-employed'">
                 <div *ngFor="let item of filteredChecklist" class="checklist-item fixed-item">
                     <span class="bullet-icon">📄</span>
                     <span class="label-text">{{ item.label }}</span>
                 </div>
             </div>
 
-            <div class="checklist-items" *ngIf="subType=== 'company'">
+            <div class="checklist-items" *ngIf="subType=== 'company' && employmentType === 'self-employed'">
                 <div *ngFor="let item of filteredltdChecklist" class="checklist-item fixed-item">
                     <span class="bullet-icon">📄</span>
                     <span class="label-text">{{ item.label }}</span>
@@ -78,7 +78,8 @@
             </div>
 
 
-            <div class="checklist-items" *ngIf="subType!== 'partnership' && subType!== 'company'">
+            <div class="checklist-items" *ngIf="employmentType !== 'self-employed' 
+            || (subType !== 'partnership' && subType !== 'company')">
                 <div *ngFor="let item of currentChecklist" class="checklist-item fixed-item">
                     <span class="bullet-icon">📄</span>
                     <span class="label-text">{{ item.label }}</span>

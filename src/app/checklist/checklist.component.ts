@@ -148,16 +148,27 @@ export class ChecklistComponent implements OnInit {
 
             if (type === 'salaried') {
                 this.employmentType = 'salaried';
+                this.subType = 'proprietorship';
+                this.classifyType = 'company';
+                this.ltdType = 'company';
                 this.updateChecklist();
             }
             else if (type === 'self-employed') {
                 this.employmentType = 'self-employed';
+
+                this.subType = 'proprietorship';
+                this.classifyType = 'company';
+                this.ltdType = 'company';
                 this.updateChecklist();
                 this.updatePartnershipChecklist();
                 this.updateLtdChecklist();
             }
             else if (type === 'property-documents') {
+                this.activeMode = 'checklist';
                 this.employmentType = 'property-documents';
+                this.subType = 'proprietorship';
+                this.classifyType = 'company';
+                this.ltdType = 'company';
                 this.updateChecklist();
             }
         });
@@ -168,8 +179,9 @@ export class ChecklistComponent implements OnInit {
         if (this.employmentType === 'salaried') {
             this.currentChecklist = this.salariedChecklist;
         } else if (this.employmentType === 'property-documents') {
+            this.activeMode = 'checklist';
             this.currentChecklist = this.propertyDocumentsChecklist;
-        } else {
+        } else if (this.employmentType === 'self-employed') {
             switch (this.subType) {
                 case 'proprietorship': this.currentChecklist = this.proprietorshipChecklist; break;
                 case 'partnership': this.currentChecklist = this.partnershipChecklist; break;
